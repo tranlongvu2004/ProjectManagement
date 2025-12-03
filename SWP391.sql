@@ -3,6 +3,7 @@ GO
 USE LabProjectManagement;
 GO
 
+
 /* ================================
    A. ROLES & USERS
 =================================*/
@@ -87,21 +88,6 @@ CREATE TABLE TaskAssignment (
     FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
-
-
--- 7. TaskStatusHistory (Timeline & Status log)
-CREATE TABLE TaskStatusHistory (
-    HistoryId INT IDENTITY(1,1) PRIMARY KEY,
-    TaskId INT NOT NULL,
-    OldStatus NVARCHAR(20),
-    NewStatus NVARCHAR(20),
-    ChangedBy INT NOT NULL,
-    ChangedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
-    FOREIGN KEY (ChangedBy) REFERENCES Users(UserId)
-);
-
-
 /* ================================
    C. COMMUNICATION
 =================================*/
