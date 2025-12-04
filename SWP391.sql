@@ -108,13 +108,12 @@ CREATE TABLE Comments (
 =================================*/
 
 -- 10. Progress Reports (daily/weekly)
-CREATE TABLE ProgressReports (
+CREATE TABLE Reports (
     ReportId INT IDENTITY(1,1) PRIMARY KEY,
     ProjectId INT NOT NULL,
     LeaderId INT NOT NULL,
     ReportType NVARCHAR(20),    -- daily / weekly
-    Summary NVARCHAR(MAX),
-    Blockers NVARCHAR(MAX),
+    FilePath NVARCHAR(MAX) NOT NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
     FOREIGN KEY (LeaderId) REFERENCES Users(UserId)
