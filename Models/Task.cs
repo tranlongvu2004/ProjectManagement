@@ -2,7 +2,19 @@
 using System.Collections.Generic;
 
 namespace PorjectManagement.Models;
-
+public enum TaskStatus
+{
+    ToDo,
+    Doing,
+    Completed
+}
+public enum TaskPriority
+{
+    Low,
+    Medium,
+    High,
+    Necessary
+}
 public partial class Task
 {
     public int TaskId { get; set; }
@@ -13,9 +25,9 @@ public partial class Task
 
     public string? Description { get; set; }
 
-    public string? Priority { get; set; }
+    public TaskPriority? Priority { get; set; }
 
-    public string? Status { get; set; }
+    public TaskStatus? Status { get; set; } = TaskStatus.ToDo;
 
     public int? ProgressPercent { get; set; }
 
