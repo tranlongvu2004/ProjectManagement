@@ -12,9 +12,21 @@ namespace PorjectManagement.Repository
             _context = context;
         }
 
+        public User? CreateAccount(User user)
+        {
+            var exist = _context.Users.Any(u => u.Email == user.Email);
+            if (exist)
+            {
+                return null; 
+            }
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            return user;
+        }
+
         public User? GetUserByEmail(string email)
         {
-            return _context.Users.FirstOrDefault(u => u.Email.Equals(email)) ;
+            return _context.Users.FirstOrDefault(u => u.Email == email) ;
         }
 
         public IQueryable<User> GetUsers()
@@ -25,6 +37,16 @@ namespace PorjectManagement.Repository
         public bool IsloginValid(string email, string password)
         {
             return _context.Users.Any(u => u.Email == email && u.PasswordHash == password);
+        }
+
+        public void UpdateUser(User user)
+        {
+            var exist = _context.Users.FirstOrDefault(u => u.Email ==  user.Email);
+            if (exist != null)
+            {
+                exist.PasswordHash = user.PasswordHash;
+            }
+            _context.SaveChanges();
         }
     }
 }

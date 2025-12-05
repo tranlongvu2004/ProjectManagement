@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Login";
+    ViewBag.Title = "Register";
 }
 
 <style>
@@ -8,16 +8,16 @@
         font-family: Arial, sans-serif;
     }
 
-    .login-container {
-        width: 350px;
-        margin: 80px auto;
+    .register-container {
+        width: 380px;
+        margin: 70px auto;
         padding: 25px;
         background: white;
         border-radius: 12px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.15);
     }
 
-        .login-container h2 {
+        .register-container h2 {
             text-align: center;
             margin-bottom: 20px;
             font-weight: bold;
@@ -50,7 +50,7 @@
                 outline: none;
             }
 
-    .btn-login {
+    .btn-register {
         width: 100%;
         padding: 10px;
         background: #0066ff;
@@ -63,7 +63,7 @@
         margin-top: 5px;
     }
 
-        .btn-login:hover {
+        .btn-register:hover {
             background: #004fcc;
         }
 
@@ -92,10 +92,15 @@
     }
 </style>
 
-<div class="login-container">
-    <h2>Đăng nhập</h2>
+<div class="register-container">
+    <h2>Đăng ký</h2>
 
-    <form method="post" action="/User/Login">
+    <form method="post" action="/User/Register">
+
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" name="fullName" />
+        </div>
 
         <div class="form-group">
             <label>Email</label>
@@ -107,16 +112,20 @@
             <input type="password" name="password" />
         </div>
 
+        <div class="form-group">
+            <label>Confirm Password</label>
+            <input type="password" name="confirmpassword" />
+        </div>
+
         @if (ViewBag.Error != null)
         {
             <p class="error">@ViewBag.Error</p>
         }
 
-        <button type="submit" class="btn-login">Login</button>
+        <button type="submit" class="btn-register">Register</button>
 
         <div class="links">
-            <a href="/User/Register">Chưa có tài khoản? Đăng ký ngay</a>
-            <a href="/User/ResetPassword">Quên mật khẩu?</a>
+            <a href="/User/Login">Đã có tài khoản? Đăng nhập</a>
         </div>
     </form>
 </div>

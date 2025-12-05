@@ -6,6 +6,9 @@ namespace PorjectManagement.Repository.Interface
     {
         IQueryable<User> GetUsers();
         User? GetUserByEmail(string email);
+        User? CreateAccount(User user);
+        void UpdateUser(User user);
+
         bool IsloginValid(string email, string password);
     }
 }

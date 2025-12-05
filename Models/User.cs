@@ -23,7 +23,7 @@ public partial class User
 
     public string? AvatarUrl { get; set; }
 
-    public UserStatus? Status { get; set; } = UserStatus.Active;
+    public UserStatus? Status { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
