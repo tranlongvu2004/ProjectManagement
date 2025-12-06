@@ -1,6 +1,7 @@
 ﻿// Service/UserProjectService.cs
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
+using PorjectManagement.Repository;
 using PorjectManagement.Repository.Interface;
 using PorjectManagement.Service.Interface;
 using System;
@@ -94,7 +95,10 @@ namespace PorjectManagement.Service
                 .AsNoTracking()
                 .ToListAsync();
         }
-
+        public async Task<List<User>> GetUsersByProjectIdAsync(int projectId)
+        {
+            return await _repo.GetUsersByProjectIdAsync(projectId);
+        }
 
     }
 }

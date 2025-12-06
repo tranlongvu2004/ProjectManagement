@@ -12,6 +12,8 @@ namespace PorjectManagement.Service.Interface
         Task<Dictionary<int, string>> AddUsersToProjectAsync(int projectId, List<int> userIds);
         Task<bool> IsUserInProjectAsync(int userId, int projectId);
         Task<List<Project>> GetAllProjectsAsync();
+        Task<List<User>> GetUsersByProjectIdAsync(int projectId);
+
 
 
     }

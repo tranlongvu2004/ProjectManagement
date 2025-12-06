@@ -1,0 +1,173 @@
+﻿@model PorjectManagement.ViewModels.TaskCreateViewModel
+
+@{
+    ViewData["Title"] = "Tạo Task mới";
+}
+@if (ViewBag.SuccessMessage != null)
+{
+    <div class="alert alert-success">
+        @ViewBag.SuccessMessage
+    </div>
+}
+
+
+<style>
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 25px;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .input-custom {
+        border-radius: 10px;
+        padding: 10px 14px;
+    }
+
+    .member-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #4A6CF7;
+        color: white;
+        font-weight: 600;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .badge-role {
+        background: #e8e8e8;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .btn-primary-custom {
+        background: #4169E1;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .btn-primary-custom:hover {
+        background: #3154b4;
+    }
+</style>
+
+<h2 class="page-title">Tạo Task mới</h2>
+
+<div class="card">
+
+    <form asp-action="CreateTask" method="post">
+
+        <!-- CHỌN PROJECT -->
+        <div class="mb-4">
+            <label class="form-label">Chọn dự án</label>
+            <select asp-for="ProjectId"
+                    class="form-select input-custom"
+                    asp-items="ViewBag.ProjectList"
+                    onchange="this.form.submit()">
+                <option value="">-- Chọn dự án --</option>
+            </select>
+        </div>
+
+        @if (Model.ProjectId > 0)
+        {
+            <!-- TÊN TASK -->
+            <div class="mb-4">
+                <label class="form-label">Tên Task</label>
+                <input asp-for="Title" class="form-control input-custom" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <!-- MÔ TẢ -->
+            <div class="mb-4">
+                <label class="form-label">Mô tả</label>
+                <textarea asp-for="Description" class="form-control input-custom" rows="3"></textarea>
+            </div>
+
+            <!-- PRIORITY + DEADLINE -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Mức ưu tiên</label>
+                    <select asp-for="Priority" class="form-select input-custom">
+                        <option value="1">Low</option>
+                        <option value="2">Medium</option>
+                        <option value="3">High</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Deadline</label>
+                    <input asp-for="Deadline" type="date" class="form-control input-custom" />
+                </div>
+            </div>
+
+            <!-- ASSIGN MEMBERS -->
+            <div class="mb-4">
+                <label class="form-label">Giao cho thành viên</label>
+
+                @if (Model.ProjectMembers != null && Model.ProjectMembers.Any())
+                {
+                    <div class="card" style="padding:0">
+                        @foreach (var u in Model.ProjectMembers)
+                        {
+                            <label class="member-item">
+                                <input type="checkbox" name="SelectedUserIds" value="@u.UserId" style="transform: scale(1.2);" />
+
+                                <div class="avatar">
+                                    @u.FullName.Substring(0,1).ToUpper()
+                                </div>
+
+                                <div style="flex-grow:1;">
+                                    <div style="font-weight:600">@u.FullName</div>
+                                    <div class="text-muted" style="font-size:13px">@u.Email</div>
+                                </div>
+
+                                <span class="badge-role">@u.Role?.RoleName</span>
+                            </label>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Dự án này chưa có thành viên.</p>
+                }
+            </div>
+
+            <div class="text-end">
+                <a href="/Project/Details/@Model.ProjectId" class="btn btn-outline-secondary me-2">Hủy</a>
+                <button class="btn btn-primary-custom">Tạo Task</button>
+            </div>
+        }
+
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -12,6 +12,8 @@ namespace PorjectManagement.Repository.Interface
         Task<bool> IsUserInProjectAsync(int userId, int projectId);
         System.Threading.Tasks.Task AddUsersToProjectAsync(List<UserProject> userProjects);
         Task<List<Project>> GetAllProjectsAsync();
+        Task<List<User>> GetUsersByProjectIdAsync(int projectId);
+
 
     }
 }

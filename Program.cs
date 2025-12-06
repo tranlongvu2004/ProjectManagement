@@ -19,6 +19,8 @@ builder.Services.AddScoped<IUserServices,UserServices>();
 builder.Services.AddScoped<IUserProjectRepo, UserProjectRepo>();
 builder.Services.AddScoped<IUserProjectService, UserProjectService>();
 
+builder.Services.AddScoped<ITaskRepo, TaskRepo>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 
 var app = builder.Build();

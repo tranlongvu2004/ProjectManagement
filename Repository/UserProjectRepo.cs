@@ -49,6 +49,12 @@ namespace PorjectManagement.Repository
                 .AsNoTracking()
                 .ToListAsync();
         }
-
+        public async Task<List<User>> GetUsersByProjectIdAsync(int projectId)
+        {
+            return await _context.UserProjects
+                .Where(up => up.ProjectId == projectId)
+                .Select(up => up.User)
+                .ToListAsync();
+        }
     }
 }
