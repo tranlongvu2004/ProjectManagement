@@ -31,10 +31,6 @@ public partial class LabProjectManagementContext : DbContext
 
     public virtual DbSet<UserProject> UserProjects { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("server =(local); database = LabProjectManagement;Trusted_Connection=SSPI;Encrypt=false;TrustServerCertificate=true");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Comment>(entity =>
@@ -66,8 +62,7 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.Deadline).HasColumnType("datetime");
             entity.Property(e => e.ProjectName).HasMaxLength(200);
             entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .HasDefaultValue("In Progress");
+                .HasConversion<string>();
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -114,12 +109,10 @@ public partial class LabProjectManagementContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Deadline).HasColumnType("datetime");
             entity.Property(e => e.Priority)
-                .HasMaxLength(20)
-                .HasDefaultValue("Medium");
+                .HasConversion<string>();
             entity.Property(e => e.ProgressPercent).HasDefaultValue(0);
             entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .HasDefaultValue("ToDo");
+                .HasConversion<string>();
             entity.Property(e => e.Title).HasMaxLength(200);
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -170,8 +163,7 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .HasDefaultValue("active");
+                .HasConversion<string>();
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)
