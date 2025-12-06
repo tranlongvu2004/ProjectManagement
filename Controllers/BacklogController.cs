@@ -1,12 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PorjectManagement.Models;
 
 namespace PorjectManagement.Controllers
 {
     public class BacklogController : Controller
     {
-        public IActionResult Index()
+        private LabProjectManagementContext _context;
+        public BacklogController(LabProjectManagementContext context)
         {
-            return View();
+            _context = context;
+        }
+        public IActionResult BacklogUI()
+        {
+            var tasks = _context.Tasks.Include(t => t.CreatedByNavigation).ToList();
+            return View(tasks);
         }
     }
 }
