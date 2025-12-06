@@ -4,6 +4,7 @@ using PorjectManagement.Repository.Interface;
 using PorjectManagement.Service;
 using PorjectManagement.Service.Interface;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,6 +15,11 @@ builder.Services.AddSession();
 // Dependency Injection for Repositories and Services
 builder.Services.AddScoped<IUserRepo,UserRepo>();
 builder.Services.AddScoped<IUserServices,UserServices>();
+
+builder.Services.AddScoped<IUserProjectRepo, UserProjectRepo>();
+builder.Services.AddScoped<IUserProjectService, UserProjectService>();
+
+
 
 var app = builder.Build();
 app.UseSession();
