@@ -9,9 +9,9 @@ namespace PorjectManagement.Repository.Interface
         User? GetUserByEmail(string email);
         User? CreateAccount(User user);
         void UpdateUser(User user);
-
         bool IsloginValid(string email, string password);
         
+        // Thêm method mới
         Task<List<User>> GetAllUsersWithRolesAsync();
     }
 }
