@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PorjectManagement.Models;
+using PorjectManagement.Models.ViewModels;
 using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
 
@@ -17,11 +18,24 @@ namespace PorjectManagement.Controllers
         }
 
         // GET: /Project
-        // Trang Project List: tạm thời lấy tất cả project
+        // Trang Project List: hiển thị projects của user hiện tại
         public async Task<IActionResult> Index()
         {
-            // TODO: sau này filter theo user đang đăng nhập
-            List<Project> projects = await _projectServices.GetAllProjectsAsync();
+            // Lấy thông tin user đang login
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            var currentUser = _userServices.GetUser(userEmail);
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            // Lấy projects của user hiện tại
+            List<ProjectListVM> projects = await _projectServices.GetProjectsOfUserAsync(currentUser.UserId);
             return View(projects);   // View: Views/Project/Index.cshtml
         }
 
