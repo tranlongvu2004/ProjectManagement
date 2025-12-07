@@ -14,6 +14,8 @@ builder.Services.AddSession();
 // Dependency Injection for Repositories and Services
 builder.Services.AddScoped<IUserRepo,UserRepo>();
 builder.Services.AddScoped<IUserServices,UserServices>();
+builder.Services.AddScoped<IProjectRepo, ProjectRepo>();
+builder.Services.AddScoped<IProjectServices, ProjectServices>();
 
 var app = builder.Build();
 app.UseSession();
