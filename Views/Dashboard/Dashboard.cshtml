@@ -71,7 +71,7 @@
 
     <div class="col-md-3">
         <div class="stat-card">
-            <div>In progress</div>
+            <div>Doing</div>
             <div class="stat-number">@ViewBag.inProgressTasks</div>
         </div>
     </div>
@@ -101,7 +101,7 @@
         let filtered = tasks.filter(t => t.Title.toLowerCase().includes(keyword));
 
         document.querySelector(".stat-card:nth-child(1) .stat-number").textContent = filtered.length;
-        document.querySelector(".stat-card:nth-child(2) .stat-number").textContent = filtered.filter(t => t.Status == Models.TaskStatus.InProgress).length;
+        document.querySelector(".stat-card:nth-child(2) .stat-number").textContent = filtered.filter(t => t.Status == Models.TaskStatus.Doing).length;
         document.querySelector(".stat-card:nth-child(3) .stat-number").textContent = filtered.filter(t => t.Status == Models.TaskStatus.Stuck).length;
         document.querySelector(".stat-card:nth-child(4) .stat-number").textContent = filtered.filter(t => t.Status == Models.TaskStatus.Completed).length;
     });
