@@ -5,7 +5,7 @@ namespace PorjectManagement.Models;
 public enum TaskStatus
 {
     ToDo,
-    InProgress,
+    Doing,
     Completed,
     Stuck,
     Not_Started
