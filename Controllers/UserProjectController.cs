@@ -16,7 +16,6 @@ namespace PorjectManagement.Controllers
             _userProjectService = userProjectService;
         }
 
-        // GET: /UserProject/AddMembers/5
         [HttpGet]
         public async Task<IActionResult> AddMembers(int? id)
         {
@@ -24,7 +23,6 @@ namespace PorjectManagement.Controllers
 
             if (id == null)
             {
-                // nếu chưa chọn project → show dropdown nhưng user list rỗng
                 return View(new AddMembersViewModel
                 {
                     ProjectId = 0,
@@ -60,7 +58,6 @@ namespace PorjectManagement.Controllers
         }
 
 
-       // POST: /UserProject/AddMembers
        [HttpPost]
        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMembers(AddMembersViewModel model)
@@ -72,7 +69,6 @@ namespace PorjectManagement.Controllers
 
             if (!ModelState.IsValid)
             {
-                // reload projects + users để render view lại
                 model.AllProjects = await _userProjectService.GetAllProjectsAsync();
                 var users = await _userProjectService.GetAllUsersAsync();
                 model.Users = users
@@ -93,7 +89,6 @@ namespace PorjectManagement.Controllers
 
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
             {
-                // gọi service để thêm (service sẽ xử lý skip user đã có trong project)
                 var result = await _userProjectService.AddUsersToProjectAsync(model.ProjectId, model.SelectedUserIds);
 
                 TempData["AddResults"] = System.Text.Json.JsonSerializer.Serialize(result);

@@ -18,9 +18,6 @@ namespace PorjectManagement.Controllers
             _userProjectService = userProjectService;
         }
 
-        // ==========================
-        // GET: Create Task
-        // ==========================
         [HttpGet]
         public async Task<IActionResult> CreateTask(int? projectId)
         {
@@ -44,9 +41,7 @@ namespace PorjectManagement.Controllers
             return View(vm);
         }
 
-        // ==========================
-        // POST: Create Task
-        // ==========================
+    
         [HttpPost]
         public async Task<IActionResult> CreateTask(TaskCreateViewModel model)
         {
@@ -88,7 +83,6 @@ namespace PorjectManagement.Controllers
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
 
-            // 4️⃣ Trả lại message thành công
             ViewBag.SuccessMessage = "Tạo task thành công!";
 
             // Load lại member list

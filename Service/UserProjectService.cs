@@ -25,7 +25,7 @@ namespace PorjectManagement.Service
         public async Task<List<User>> GetAllUsersAsync()
         {
             return await _context.Users
-       .Include(u => u.Role)     //  QUAN TRỌNG
+       .Include(u => u.Role)    
        .ToListAsync();
         }
 

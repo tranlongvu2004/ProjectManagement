@@ -8,10 +8,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <style>
 
-    /* Tổng thể card */
-    /* ==========================
-       🔵 CARD & LAYOUT
-    ========================== */
+   
     .card {
         border: none;
         border-radius: 18px;
@@ -35,9 +32,6 @@
             border-bottom: 1px solid #e2e6ef;
         }
 
-    /* ==========================
-       🔵 USER ROW
-    ========================== */
     .user-row {
         transition: 0.15s ease-in-out;
     }
@@ -46,14 +40,12 @@
             background: #eef4ff !important;
         }
 
-    /* Checkbox */
     .user-check,
     #selectAll {
         transform: scale(1.25);
         cursor: pointer;
     }
 
-    /* Avatar Circle */
     .rounded-circle {
         background: linear-gradient(135deg, #5673ff, #3a56ff) !important;
         color: #fff;
@@ -63,15 +55,10 @@
         height: 40px;
     }
 
-    /* Intern Name */
     .fw-bold {
         font-size: 15px;
         color: #222;
     }
-
-    /* ==========================
-       🔵 PROGRESS BAR
-    ========================== */
     .progress {
         background: #e6ebf4 !important;
         border-radius: 14px;
@@ -83,9 +70,6 @@
         border-radius: 14px;
     }
 
-    /* ==========================
-       🔵 BADGES / STATUS
-    ========================== */
     .badge {
         padding: 6px 12px;
         font-size: 12px;
@@ -108,15 +92,11 @@
             color: #555 !important;
         }
 
-        /* Role – intern lead màu đẹp hơn */
         .badge.bg-warning.text-dark {
             background-color: #ffe9b6 !important;
             color: #7a5a00 !important;
         }
 
-    /* ==========================
-       🔵 SELECT PROJECT
-    ========================== */
     #projectSelect {
         border-radius: 12px;
         padding: 10px 14px;
@@ -130,9 +110,6 @@
             box-shadow: 0 0 0 3px rgba(71, 99, 255, 0.25);
         }
 
-    /* ==========================
-       🔵 SEARCH BOX
-    ========================== */
     #searchBox {
         border-radius: 12px;
         padding: 10px 14px;
@@ -146,9 +123,6 @@
             box-shadow: 0 0 0 3px rgba(61,115,255,0.25);
         }
 
-    /* ==========================
-       🔵 BUTTONS
-    ========================== */
     button.btn-primary {
         background: #3d6bff !important;
         border: none;
@@ -170,18 +144,12 @@
         border-radius: 12px;
     }
 
-    /* ==========================
-       🔵 SELECTED COUNT
-    ========================== */
     #selectedCount {
         font-weight: 600;
         color: #3d4a63;
         font-size: 14px;
     }
 
-    /* ==========================
-       🔵 ALERT MESSAGE
-    ========================== */
     .alert {
         border-radius: 14px;
         padding: 16px 18px;
@@ -193,7 +161,6 @@
 
 <div class="container my-4">
 
-    <!-- 🔵 NEW: Dropdown chọn Project -->
     <div class="mb-3">
         <label class="form-label fw-bold">Chọn dự án</label>
         <select id="projectSelect" class="form-select" onchange="onProjectChange()">
@@ -209,10 +176,6 @@
             }
         </select>
     </div>
-
-
-    <!-- END Dropdown -->
-
 
 
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -247,7 +210,6 @@
         var u = Model.Users[i];
         <tr class="user-row" data-name="@u.FullName.ToLower()">
 
-            <!-- Checkbox -->
             <td>
                 <input class="form-check-input user-check"
                        name="SelectedUserIds"
@@ -255,7 +217,6 @@
                        value="@u.UserId" />
             </td>
 
-            <!-- Intern -->
             <td>
                 <div class="d-flex align-items-center">
                     <div class="rounded-circle bg-secondary me-2"
@@ -270,10 +231,8 @@
                 </div>
             </td>
 
-            <!-- Gmail -->
             <td>@u.Email</td>
 
-            <!-- Ngày bắt đầu -->
             <td>
                 @(u.CreatedAt.HasValue
                     ? u.CreatedAt.Value.ToString("dd/MM/yyyy")
@@ -287,8 +246,6 @@
                                 </span>
                             </td>
 
-
-            <!-- Trạng thái -->
             <td>
                 @switch (u.Status)
                 {
@@ -352,7 +309,8 @@
                 <span id="selectedCount">0 thực tập sinh đã được chọn</span>
             </div>
             <div>
-                <a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectId" class="btn btn-outline-secondary me-2">Hủy</a>
+                <a asp-controller="Home" asp-action="Index"
+                   class="btn btn-outline-secondary me-2">Hủy</a>
                 <button type="submit" class="btn btn-primary">Thêm (<span id="addCount">0</span>)</button>
             </div>
         </div>

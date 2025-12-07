@@ -14,7 +14,7 @@ namespace PorjectManagement.ViewModels
         public string RoleName { get; set; } = "";
         public int RoleId { get; set; }
         public DateTime? CreatedAt { get; set; }
-        public int ProgressPercent { get; set; } // nếu bạn lưu progress, thay bằng giá trị thật
+        public int ProgressPercent { get; set; }
         public string Status { get; set; } = ""; // "Đang thực tập", "Hoàn thành", ...
     }
 
@@ -25,7 +25,7 @@ namespace PorjectManagement.ViewModels
         public List<UserListItemVM>? Users { get; set; }
         public List<int>? SelectedUserIds { get; set; } 
 
-        public List<Project>? AllProjects { get; set; }   // thêm dòng này
+        public List<Project>? AllProjects { get; set; }  
        
 
     }
