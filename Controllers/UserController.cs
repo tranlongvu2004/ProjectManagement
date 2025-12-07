@@ -39,8 +39,27 @@ namespace PorjectManagement.Controllers
                 ViewBag.Error = "Email hoặc mật khẩu không đúng.";
                 return View();
             }
-            HttpContext.Session.SetString("UserEmail", email);
-            return RedirectToAction("Index", "Home");
+            var user = _userService.GetUser(email);
+            if (user == null)
+            {
+                ViewBag.Error = "Không tìm thấy tài khoản.";
+                return View();
+            }
+            HttpContext.Session.SetString("UserEmail", user.Email);
+            HttpContext.Session.SetInt32("RoleId", user.RoleId);
+            if (user.RoleId == 1)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            else if (user.RoleId == 2)
+            {
+                return RedirectToAction("ManagerDashboard", "Manager");
+            }
+            else if (user.RoleId == 3)
+            {
+                return RedirectToAction("Index", "Project");
+            }
+            return RedirectToAction("Index", "Project");
         }
 
 
