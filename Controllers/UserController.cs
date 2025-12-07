@@ -65,6 +65,11 @@ namespace PorjectManagement.Controllers
                 ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
                 return View();
             }
+            if (password.Length <= 3 && confirmpassword.Length <= 3)
+            {
+                ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
+                return View();
+            }
             var existUser = _userService.GetUser(email);
             if (existUser != null)
             {
@@ -131,6 +136,11 @@ namespace PorjectManagement.Controllers
             {
                 ViewBag.Error = "Mật khẩu xác nhận không khớp.";
                 ViewBag.Email = email;
+                return View();
+            }
+            if (newpassword.Length <= 3 && confirmpassword.Length <= 3)
+            {
+                ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
                 return View();
             }
             var user = _userService.GetUser(email);
