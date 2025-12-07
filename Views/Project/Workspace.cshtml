@@ -1,0 +1,136 @@
+﻿@model PorjectManagement.ViewModels.ProjectWorkspaceViewModel
+
+@{
+    ViewData["Title"] = "Workspace - Chi tiết dự án";
+}
+
+<div class="container-fluid py-4">
+
+    <div class="row">
+        <!-- LEFT PANEL: Project Information -->
+        <div class="col-12 col-lg-3 mb-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h4 class="fw-bold">@Model.Project.ProjectName</h4>
+
+                    @if (!string.IsNullOrEmpty(Model.Project.Description))
+                    {
+                        <p class="text-muted small">@Model.Project.Description</p>
+                    }
+
+                    <hr />
+
+                    <p><strong>Trạng thái:</strong> @Model.Project.Status</p>
+                    <p><strong>Hạn:</strong> @(Model.Project.Deadline?.ToString("dd/MM/yyyy") ?? "Chưa có")</p>
+
+                    <p class="mb-1"><strong>Tiến độ chung:</strong> @Model.OverallProgress %</p>
+
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary"
+                             role="progressbar"
+                             style="width: @Model.OverallProgress%;"
+                             aria-valuenow="@Model.OverallProgress"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members List -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Thành viên</h5>
+
+                    @foreach (var member in Model.Members)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>
+                                <strong>@member.FullName</strong><br />
+                                <small class="text-muted">@member.RoleName</small>
+                            </span>
+
+                            @if (member.IsLeader)
+                            {
+                                <span class="badge bg-success">Leader</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Task Table -->
+        <div class="col-12 col-lg-9">
+            <h4 class="fw-bold mb-3">Danh sách công việc</h4>
+
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tiêu đề</th>
+                        <th>Ưu tiên</th>
+                        <th>Trạng thái</th>
+                        <th>Tiến độ</th>
+                        <th>Assignees</th>
+                        <th>Hạn</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (!Model.Tasks.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                Chưa có công việc nào.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var task in Model.Tasks)
+                        {
+                            <tr>
+                                <td>@task.Title</td>
+
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        @(task.Priority ?? "N/A")
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-info">
+                                        @(task.Status ?? "N/A")
+                                    </span>
+                                </td>
+
+                                <td style="width: 150px;">
+                                    @{
+                                        var percent = task.ProgressPercent ?? 0;
+                                    }
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-primary"
+                                             role="progressbar"
+                                             style="width: @percent%;"
+                                             aria-valuenow="@percent"
+                                             aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </td>
+
+
+                                <td>@task.Assignees</td>
+
+                                <td>
+                                    @task.Deadline?.ToString("dd/MM/yyyy")
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
