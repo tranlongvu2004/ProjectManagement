@@ -1,4 +1,4 @@
-﻿// Controllers/UserProjectController.cs
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace PorjectManagement.Controllers
 {
+    [Authorize(Roles = "InternLead")]
     public class UserProjectController : BaseController
     {
         private readonly IUserProjectService _userProjectService;
@@ -19,6 +20,14 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> AddMembers(int? id)
         {
+            var role = HttpContext.Session.GetInt32("RoleId");
+
+            
+            if (role != 2)
+            {
+                TempData["Error"] = "Bạn không có quyền truy cập chức năng này.";
+                return RedirectToAction("Index", "Home");
+            }
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
             var allProjects = await _userProjectService.GetAllProjectsAsync(); // NEW
@@ -64,6 +73,12 @@ namespace PorjectManagement.Controllers
        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMembers(AddMembersViewModel model)
         {
+            var role = HttpContext.Session.GetInt32("RoleId");
+            if (role != 2)
+            {
+                TempData["Error"] = "Bạn không có quyền truy cập chức năng này.";
+                return RedirectToAction("Index", "Home");
+            }
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
             if (model.ProjectId <= 0)

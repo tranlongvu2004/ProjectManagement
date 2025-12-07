@@ -12,7 +12,7 @@ public class ProjectController : Controller
 
     public async Task<IActionResult> Index()
     {
-        int currentUserId = 2; // TODO: lấy từ auth
+        int currentUserId = HttpContext.Session.GetInt32("RoleId") ?? 0;
 
         var model = await _projectServices.GetProjectsOfUserAsync(currentUserId);
 
