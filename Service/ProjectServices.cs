@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
+using PorjectManagement.Models.ViewModels;
 using PorjectManagement.Repository.Interface;
 using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
@@ -22,7 +23,7 @@ namespace PorjectManagement.Service
             _userRepo = userRepo;
         }
 
-        // Existing methods...
+            // ===== Methods từ HEAD (dev/nghiafix1) =====
         public async Task<List<Project>> GetAllProjectsAsync()
         {
             return await _projectRepo.GetAllProjectsAsync();
@@ -48,7 +49,6 @@ namespace PorjectManagement.Service
             return await _projectRepo.GetWorkspaceAsync(projectId);
         }
 
-        // New methods
         public async Task<int> CreateProjectWithTeamAsync(ProjectCreateViewModel model, int createdByUserId)
         {
             // 1. Tạo Project
@@ -88,6 +88,25 @@ namespace PorjectManagement.Service
                 FullName = u.FullName,
                 Email = u.Email,
                 RoleName = u.Role.RoleName
+            }).ToList();
+        }
+
+        // ===== Method từ origin/dev/Vu =====
+        public async Task<List<ProjectListVM>> GetProjectsOfUserAsync(int userId)
+        {
+            var projects = await _projectRepo.GetProjectsOfUserAsync(userId);
+
+            return projects.Select(p => new ProjectListVM
+            {
+                ProjectId = p.ProjectId,
+                ProjectName = p.ProjectName,
+                Deadline = p.Deadline,
+                Status = p.Status,
+                LeaderName = p.UserProjects
+                    .Where(x => x.IsLeader == true)
+                    .Select(x => x.User.FullName)
+                    .FirstOrDefault() ?? "Không xác định",
+                MemberCount = p.UserProjects.Count
             }).ToList();
         }
     }

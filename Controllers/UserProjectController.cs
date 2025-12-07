@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PorjectManagement.Controllers
 {
-    public class UserProjectController : Controller
+    public class UserProjectController : BaseController
     {
         private readonly IUserProjectService _userProjectService;
 
@@ -19,6 +19,8 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> AddMembers(int? id)
         {
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
             var allProjects = await _userProjectService.GetAllProjectsAsync(); // NEW
 
             if (id == null)
@@ -62,6 +64,8 @@ namespace PorjectManagement.Controllers
        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMembers(AddMembersViewModel model)
         {
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
             if (model.ProjectId <= 0)
             {
                 ModelState.AddModelError("", "Bạn phải chọn một dự án trước khi thêm thành viên.");

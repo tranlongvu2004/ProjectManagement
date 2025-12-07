@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
 using PorjectManagement.Repository.Interface;
 using PorjectManagement.ViewModels;
@@ -13,14 +13,15 @@ namespace PorjectManagement.Repository
         {
             _context = context;
         }
+
+        // ===== Methods từ HEAD =====
         public async Task<List<Project>> GetAllProjectsAsync()
         {
-            // sau này bạn có thể filter theo user đang login
             return await _context.Projects
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
         }
-        // 1. Lấy thông tin cơ bản của dự án
+
         public async Task<ProjectDetailDto?> GetProjectByIdAsync(int projectId)
         {
             var project = await _context.Projects
@@ -31,23 +32,20 @@ namespace PorjectManagement.Repository
             if (project == null)
                 return null;
 
-            // Map thủ công sang DTO
             return new ProjectDetailDto
             {
                 ProjectId = project.ProjectId,
                 ProjectName = project.ProjectName,
                 Description = project.Description,
-                Status = project.Status?.ToString(), // Convert enum sang string
+                Status = project.Status?.ToString(),
                 Deadline = project.Deadline,
                 CreatedAt = project.CreatedAt,
                 UpdatedAt = project.UpdatedAt
             };
         }
 
-        // 2. Lấy danh sách thành viên của dự án
         public async Task<List<ProjectMemberItem>> GetProjectMembersAsync(int projectId)
         {
-            // JOIN UserProject + Users + Roles
             var query =
                 from up in _context.UserProjects
                 join u in _context.Users on up.UserId equals u.UserId
@@ -65,7 +63,6 @@ namespace PorjectManagement.Repository
             return await query.ToListAsync();
         }
 
-        // 3. Lấy danh sách task của dự án
         public async Task<List<ProjectTaskItem>> GetProjectTasksAsync(int projectId)
         {
             var tasksQuery =
@@ -94,11 +91,9 @@ namespace PorjectManagement.Repository
             return await tasksQuery.ToListAsync();
         }
 
-
-        // 4. Lấy full thông tin workspace
         public async Task<ProjectWorkspaceViewModel?> GetWorkspaceAsync(int projectId)
         {
-            var project = await GetProjectByIdAsync(projectId); // Giờ trả về ProjectDetailDto
+            var project = await GetProjectByIdAsync(projectId);
             if (project == null)
             {
                 return null;
@@ -116,19 +111,36 @@ namespace PorjectManagement.Repository
 
             return new ProjectWorkspaceViewModel
             {
-                Project = project, // ProjectDetailDto
+                Project = project,
                 Members = members,
                 Tasks = tasks,
                 OverallProgress = overallProgress
             };
         }
 
-        // Thêm project mới
         public async Task<int> CreateProjectAsync(Project project)
         {
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
-            return project.ProjectId; // Trả về ProjectId vừa tạo
+            return project.ProjectId;
+        }
+
+        // ===== Methods từ origin/dev/Vu =====
+        public async Task<List<Project>> GetProjectsOfUserAsync(int userId)
+        {
+            return await _context.Projects
+                .Include(p => p.UserProjects)
+                    .ThenInclude(up => up.User)
+                .Where(p => p.UserProjects.Any(up => up.UserId == userId))
+                .ToListAsync();
+        }
+
+        public async Task<Project?> GetByIdAsync(int projectId)
+        {
+            return await _context.Projects
+                .Include(p => p.UserProjects)
+                    .ThenInclude(up => up.User)
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
         }
     }
 }
