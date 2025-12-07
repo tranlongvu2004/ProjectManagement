@@ -51,12 +51,16 @@
 
                     <td>
                         @{
-                            string statusClass = t.Status switch
+                            
+                            var statusClass = t.Status switch
                             {
-                                "Working on it" => "bg-warning text-dark",
-                                "Done" => "bg-success",
-                                "Stuck" => "bg-danger",
-                                "Not Started" => "bg-secondary",
+                                @using TaskStatus = PorjectManagement.Models.TaskStatus
+
+                                TaskStatus.ToDo => "bg-warning text-dark",
+                                TaskStatus.Doing => "bg-warning text-dark",
+                                TaskStatus.Completed => "bg-success",
+                                TaskStatus.Stuck => "bg-danger",
+                                TaskStatus.Not_Started => "bg-secondary",
                                 _ => "bg-light text-dark"
                             };
                         }
@@ -71,9 +75,11 @@
                         @{
                             string priorityClass = t.Priority switch
                             {
-                                "Low" => "bg-primary",
-                                "Medium" => "bg-warning text-dark",
-                                "High" => "bg-dark",
+                    @using TaskPriority = PorjectManagement.Models.TaskPriority
+                                TaskPriority.Low => "bg-primary",
+                                        TaskPriority.Medium => "bg-warning text-dark",
+                                        TaskPriority.High => "bg-dark",
+                                        TaskPriority.Necessary => "bg-danger",
                                 _ => "bg-light text-dark"
                             };
                         }
