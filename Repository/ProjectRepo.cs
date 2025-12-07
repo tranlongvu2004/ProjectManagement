@@ -122,5 +122,13 @@ namespace PorjectManagement.Repository
                 OverallProgress = overallProgress
             };
         }
+
+        // Thêm project mới
+        public async Task<int> CreateProjectAsync(Project project)
+        {
+            _context.Projects.Add(project);
+            await _context.SaveChangesAsync();
+            return project.ProjectId; // Trả về ProjectId vừa tạo
+        }
     }
 }

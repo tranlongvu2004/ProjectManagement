@@ -1,4 +1,5 @@
-﻿using PorjectManagement.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using PorjectManagement.Models;
 
 namespace PorjectManagement.Repository.Interface
 {
@@ -10,5 +11,7 @@ namespace PorjectManagement.Repository.Interface
         void UpdateUser(User user);
 
         bool IsloginValid(string email, string password);
+        
+        Task<List<User>> GetAllUsersWithRolesAsync();
     }
 }

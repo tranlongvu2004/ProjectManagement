@@ -9,7 +9,9 @@ namespace PorjectManagement.Service.Interface
         Task<List<ProjectMemberItem>> GetProjectMembersAsync(int projectId);
         Task<List<ProjectTaskItem>> GetProjectTasksAsync(int projectId);
         Task<ProjectWorkspaceViewModel?> GetWorkspaceAsync(int projectId);
-        // 
         Task<List<Project>> GetAllProjectsAsync();
+        
+        Task<int> CreateProjectWithTeamAsync(ProjectCreateViewModel model, int createdByUserId);
+        Task<List<AvailableUserItem>> GetAvailableUsersAsync();
     }
 }

@@ -10,5 +10,7 @@ namespace PorjectManagement.Repository.Interface
         Task<List<ProjectMemberItem>> GetProjectMembersAsync(int projectId);
         Task<List<ProjectTaskItem>> GetProjectTasksAsync(int projectId);
         Task<ProjectWorkspaceViewModel?> GetWorkspaceAsync(int projectId);
+        //
+        Task<int> CreateProjectAsync(Project project);
     }
 }
