@@ -1,21 +1,31 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PorjectManagement.Service.Interface;
 
-public class ProjectController : Controller
+namespace PorjectManagement.Controllers
 {
-    private readonly IProjectServices _projectServices;
-
-    public ProjectController(IProjectServices projectServices)
+    public class ProjectController : BaseController
     {
-        _projectServices = projectServices;
-    }
+        private readonly IProjectServices _projectServices;
 
-    public async Task<IActionResult> Index()
-    {
-        int currentUserId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+        public ProjectController(IProjectServices projectServices)
+        {
+            _projectServices = projectServices;
+        }
 
-        var model = await _projectServices.GetProjectsOfUserAsync(currentUserId);
+        // GET: /Project
+        public async Task<IActionResult> Index()
+        {
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
 
-        return View(model);
+            int currentUserId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (currentUserId == 0)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            var model = await _projectServices.GetProjectsOfUserAsync(currentUserId);
+            return View(model);
+        }
     }
 }

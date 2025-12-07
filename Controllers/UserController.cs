@@ -45,8 +45,12 @@ namespace PorjectManagement.Controllers
                 ViewBag.Error = "Không tìm thấy tài khoản.";
                 return View();
             }
+            
+            // Lưu cả UserId VÀ RoleId
             HttpContext.Session.SetString("UserEmail", user.Email);
             HttpContext.Session.SetInt32("RoleId", user.RoleId);
+            HttpContext.Session.SetInt32("UserId", user.UserId);  
+    
             if (user.RoleId == 1)
             {
                 return RedirectToAction("Index", "Home");
