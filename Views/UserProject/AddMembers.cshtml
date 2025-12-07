@@ -224,7 +224,7 @@
         </form>
     </div>
 
-    <form asp-controller="UserProject" asp-action="AddMembers" method="post">
+    <form id="addForm" asp-controller="UserProject" asp-action="AddMembers" method="post">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="ProjectId" />
 
@@ -324,7 +324,7 @@
                                         {
                                             "success" => "Thêm thành công",
                                             "exists" => " Đã tồn tại trong dự án",
-                                            "invalid_status" => "Không thể thêm: intern không tồn tại",
+                                            "invalid_status" => "Không thể thêm: thực tập sinh không tồn tại",
                                             _ => "Không xác định"
                                         };
                                     }
@@ -333,6 +333,13 @@
                             }
                         </div>
                     }
+                    @if (TempData["Info"] != null)
+                    {
+                        <div class="alert alert-danger mt-3">
+                            @TempData["Info"]
+                        </div>
+                    }
+
 
 
 
@@ -368,7 +375,7 @@
 
         function updateCounts() {
             const checked = document.querySelectorAll('.user-check:checked').length;
-            selectedCountSpan.textContent = `${checked} intern đã được chọn`;
+            selectedCountSpan.textContent = `${checked} thực tập sinh đã được chọn`;
             addCountSpan.textContent = checked;
         }
 
@@ -406,6 +413,21 @@
 
         updateCounts();
     })();
+     document.getElementById("addForm").addEventListener("submit", function (e) {
+        const project = document.getElementById("projectSelect").value;
+        const checked = document.querySelectorAll(".user-check:checked").length;
+
+        if (!project) {
+            e.preventDefault();
+            alert("Bạn cần chọn một dự án!");
+            return;
+        }
+
+        if (checked === 0) {
+            e.preventDefault();
+            alert("Bạn phải chọn ít nhất 1 thực tập sinh!");
+        }
+    });
 </script>
 
 

@@ -50,6 +50,11 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTask(TaskCreateViewModel model)
         {
+            if (model.Deadline < DateTime.Now)
+            {
+                ModelState.AddModelError("Deadline", "Deadline không được là thời gian trong quá khứ");
+            }
+
             if (!ModelState.IsValid)
             {
                 // load lại project list

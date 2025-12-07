@@ -123,7 +123,11 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Deadline</label>
-                    <input asp-for="Deadline" type="date" class="form-control input-custom" />
+                    @* <input asp-for="Deadline" type="date" class="form-control input-custom" /> *@
+                    <input asp-for="Deadline" type="datetime-local" class="form-control" />
+                    <span asp-validation-for="Deadline" class="text-danger"></span>
+
+
                 </div>
             </div>
 
