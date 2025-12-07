@@ -59,7 +59,7 @@ namespace PorjectManagement.Controllers
             {
                 return RedirectToAction("Index", "Project");
             }
-            return RedirectToAction("Index", "Project");
+            return RedirectToAction("Index", "Home");
         }
 
 
