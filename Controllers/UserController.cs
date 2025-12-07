@@ -39,7 +39,26 @@ namespace PorjectManagement.Controllers
                 ViewBag.Error = "Email hoặc mật khẩu không đúng.";
                 return View();
             }
-            HttpContext.Session.SetString("UserEmail", email);
+            var user = _userService.GetUser(email);
+            if (user == null)
+            {
+                ViewBag.Error = "Không tìm thấy tài khoản.";
+                return View();
+            }
+            HttpContext.Session.SetString("UserEmail", user.Email);
+            HttpContext.Session.SetInt32("RoleId", user.RoleId);
+            if (user.RoleId == 1)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            else if (user.RoleId == 2)
+            {
+                return RedirectToAction("ManagerDashboard", "Manager");
+            }
+            else if (user.RoleId == 3)
+            {
+                return RedirectToAction("Index", "Project");
+            }
             return RedirectToAction("Index", "Home");
         }
 
@@ -63,6 +82,11 @@ namespace PorjectManagement.Controllers
                 string.IsNullOrEmpty(password))
             {
                 ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
+                return View();
+            }
+            if (password.Length <= 3 && confirmpassword.Length <= 3)
+            {
+                ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
                 return View();
             }
             var existUser = _userService.GetUser(email);
@@ -131,6 +155,11 @@ namespace PorjectManagement.Controllers
             {
                 ViewBag.Error = "Mật khẩu xác nhận không khớp.";
                 ViewBag.Email = email;
+                return View();
+            }
+            if (newpassword.Length <= 3 && confirmpassword.Length <= 3)
+            {
+                ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
                 return View();
             }
             var user = _userService.GetUser(email);

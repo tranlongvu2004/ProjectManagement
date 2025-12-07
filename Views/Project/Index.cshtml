@@ -1,0 +1,56 @@
+﻿@model List<PorjectManagement.Models.ViewModels.ProjectListVM>
+
+<div class="p-4">
+
+    <a asp-controller="Home" asp-action="Index"
+       class="btn btn-primary px-4 py-2"
+       style="border-radius:10px; font-size:18px;">
+        Danh sách dự án →
+    </a>
+    <a asp-controller="Project" asp-action="Create"
+       class="btn btn-secondary px-4 py-2 ms-3"
+       style="border-radius:10px; font-size:18px;">
+        Tạo dự án →
+    </a>
+
+    <table class="table table-bordered table-striped shadow-sm bg-white">
+        <thead class="table-light">
+            <tr>
+                <th>Tên dự án</th>
+                <th>Leader</th>
+                <th>Thành viên</th>
+                <th>Deadline</th>
+                <th>Trạng thái</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>@p.ProjectName</td>
+                    <td>@p.LeaderName</td>
+                    <td>@p.MemberCount</td>
+                    <td>@p.Deadline.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        @switch (p.Status)
+                        {
+                            case ProjectStatus.InProgress:
+                                <span class="badge bg-primary">Đang tiến hành</span>
+                                break;
+
+                            case ProjectStatus.Completed:
+                                <span class="badge bg-success">Hoàn thành</span>
+                                break;
+
+                            case ProjectStatus.Dropped:
+                                <span class="badge bg-danger">Hủy bỏ</span>
+                                break;
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>

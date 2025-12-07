@@ -7,9 +7,57 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PorjectManagement.styles.css" asp-append-version="true" />
+    <style>
+        body {
+            background: #f5f7fb;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: white;
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid #e6e6e6;
+            padding: 20px;
+            top: 60px;
+            left: 0;
+        }
+
+            .sidebar h5 {
+                font-weight: 700;
+                margin-bottom: 20px;
+            }
+
+            .sidebar .menu-item {
+                padding: 10px 8px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 15px;
+                margin-bottom: 6px;
+            }
+
+                .sidebar .menu-item:hover,
+                .sidebar .menu-item.active {
+                    background: #eef3ff;
+                    color: #2b65ff;
+                }
+
+        /* Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+
+        footer {
+            display: none; /* Ẩn footer mặc định */
+        }
+    </style>
 </head>
 <body>
-    <header>
+    @* Original ASP navbar*@
+    @* <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PorjectManagement</a>
@@ -29,8 +77,65 @@
                 </div>
             </div>
         </nav>
+    </header> *@
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+
+                <!-- Logo -->
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                    ProjectManagement
+                </a>
+
+                <!-- Mobile button -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Navbar content -->
+                <div class="collapse navbar-collapse justify-content-between" id="mainNavbar">
+                    <!-- SEARCH BAR (CENTER) -->
+                    <form class="d-flex mx-auto" style="width: 350px;">
+                        <input class="form-control rounded-pill px-3" type="search" placeholder="Tìm kiếm dự án, thành viên..."
+                               aria-label="Search" />
+                    </form>
+
+                    <!-- RIGHT ICONS -->
+                    <div class="d-flex align-items-center">
+
+                        <!-- Icon 1 -->
+                        <img src="~/images/icon1.png"
+                             style="width: 32px; height: 32px; margin-right: 12px; cursor: pointer;" />
+
+                        <!-- Icon 2 -->
+                        <img src="~/images/icon2.png"
+                             style="width: 32px; height: 32px; cursor: pointer;" />
+
+                    </div>
+
+                </div>
+            </div>
+        </nav>
     </header>
-    <div class="container">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h5>MENU</h5>
+
+        <div class="menu-item active">
+            <a asp-controller="Home" asp-action="Index" style="text-decoration:none;color:inherit;">Tổng quan</a>
+        </div>
+
+        <div class="menu-item">Dự án của tôi</div>
+        <div class="menu-item">Nhóm của tôi</div>
+        <hr />
+
+        <h6 class="mt-3">WORKSPACE</h6>
+        <div class="menu-item">Main workspace</div>
+    </div>
+
+    <div class="main-content">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
