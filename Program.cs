@@ -11,6 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSqlServer<LabProjectManagementContext>(builder.Configuration.GetConnectionString("MyCnn"));
 builder.Services.AddSession();
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/User/Login";
+    });
+
+builder.Services.AddAuthorization();
 
 // Dependency Injection for Repositories and Services
 builder.Services.AddScoped<IUserRepo,UserRepo>();
@@ -35,7 +42,7 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

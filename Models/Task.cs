@@ -6,7 +6,9 @@ public enum TaskStatus
 {
     ToDo,
     Doing,
-    Completed
+    Completed,
+    Stuck,
+    Not_Started
 }
 public enum TaskPriority
 {
