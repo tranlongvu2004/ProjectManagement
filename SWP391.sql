@@ -118,8 +118,6 @@ CREATE TABLE Reports (
     FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
     FOREIGN KEY (LeaderId) REFERENCES Users(UserId)
 );
-
-
 /* ================================
    E. SEED ROLES (optional)
 =================================*/
@@ -128,3 +126,63 @@ INSERT INTO Roles (RoleName) VALUES
 ('Mentor'),
 ('InternLead'),
 ('Intern');
+
+INSERT INTO Users(FullName, Email, PasswordHash, RoleId)
+VALUES
+('Nguyen Thanh Mentor', 'mentor@example.com', '123', 1),
+('Tran Van Leader', 'leader@example.com', '123', 2),
+('Intern A', 'internA@example.com', '123', 3),
+('Intern B', 'internB@example.com', '123', 3),
+('Intern C', 'internC@example.com', '123', 3);
+
+INSERT INTO Projects (ProjectName, Description, Deadline, CreatedBy)
+VALUES
+('Lab Management System', 'System for managing lab tasks', '2025-03-30', 1),
+('Intern Evaluation Tool', 'Evaluation tool for interns', '2025-04-15', 2);
+
+-- Project 1
+INSERT INTO UserProject (UserId, ProjectId, IsLeader)
+VALUES
+(1, 1, 0),  -- Mentor
+(2, 1, 1),  -- Leader
+(3, 1, 0),  -- Intern A
+(4, 1, 0);  -- Intern B
+
+-- Project 2
+INSERT INTO UserProject (UserId, ProjectId, IsLeader)
+VALUES
+(2, 2, 1),  -- Leader
+(5, 2, 0),  -- Intern C
+(3, 2, 0);  -- Intern A
+
+INSERT INTO Tasks (ProjectId, Title, Priority, Status, Deadline, CreatedBy)
+VALUES
+(1, 'Design database schema', 'High', 'InProgress', '2025-02-10', 2),
+(1, 'API development', 'Medium', 'ToDo', '2025-02-20', 3),
+(1, 'Frontend UI', 'Low', 'ToDo', '2025-02-28', 4),
+
+(2, 'Define evaluation criteria', 'High', 'InProgress', '2025-03-01', 2),
+(2, 'Build report module', 'Medium', 'ToDo', '2025-03-10', 5);
+
+INSERT INTO TaskAssignment (TaskId, UserId)
+VALUES
+(1, 2),  -- Leader làm task 1
+(2, 3),  -- Intern A
+(3, 4),  -- Intern B
+(4, 2),  -- Leader
+(5, 5);  -- Intern C
+
+INSERT INTO Comments (TaskId, UserId, Content)
+VALUES
+(1, 3, 'Hoàn thành bản nháp ERD'),
+(1, 2, 'OK, thêm bảng phân quyền'),
+(2, 3, 'Đang viết API'),
+(3, 4, 'UI cần chốt màu chủ đạo');
+
+INSERT INTO Reports (ProjectId, LeaderId, ReportType, FilePath)
+VALUES
+(1, 2, 'weekly', '/reports/week1_project1.pdf'),
+(2, 2, 'daily', '/reports/day1_project2.pdf');
+
+
+
