@@ -5,7 +5,7 @@ using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Controllers
 {
-    public class TaskController : Controller
+    public class TaskController : BaseController
     {
         private readonly ITaskService _taskService;
         private readonly IUserProjectService _userProjectService;
@@ -21,6 +21,8 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateTask(int? projectId)
         {
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
             var vm = new TaskCreateViewModel();
 
             // Load toàn bộ project cho dropdown
@@ -45,6 +47,8 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTask(TaskCreateViewModel model)
         {
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
             if (model.Deadline < DateTime.Now)
             {
                 ModelState.AddModelError("Deadline", "Deadline không được là thời gian trong quá khứ");
