@@ -18,6 +18,7 @@ namespace PorjectManagement.Controllers
             int stuckTasks = tasks.Count(t => t.Status == Models.TaskStatus.Stuck);
             int inProgressTasks = tasks.Count(t => t.Status == Models.TaskStatus.InProgress);
 
+            ViewBag.Tasks = System.Text.Json.JsonSerializer.Serialize(tasks);
             ViewBag.TotalTasks = totalTasks;
             ViewBag.CompletedTasks = completedTasks;
             ViewBag.StuckTasks = stuckTasks;
