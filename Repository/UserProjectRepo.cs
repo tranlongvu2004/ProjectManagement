@@ -12,7 +12,6 @@ namespace PorjectManagement.Repository
     public class UserProjectRepo : IUserProjectRepo
     {
         private readonly LabProjectManagementContext _context;
-
         public UserProjectRepo(LabProjectManagementContext context)
         {
             _context = context;
@@ -56,22 +55,6 @@ namespace PorjectManagement.Repository
                 .Where(up => up.ProjectId == projectId)
                 .Select(up => up.User)
                 .ToListAsync();
-        }
-
-        public async System.Threading.Tasks.Task AddMembersToProjectAsync(int projectId, List<int> userIds, int? leaderId)
-        {
-            foreach (var userId in userIds)
-            {
-                var userProject = new UserProject
-                {
-                    ProjectId = projectId,
-                    UserId = userId,
-                    IsLeader = (leaderId.HasValue && userId == leaderId.Value),
-                    JoinedAt = DateTime.Now
-                };
-                _context.UserProjects.Add(userProject);
-            }
-            await _context.SaveChangesAsync();
         }
     }
 }

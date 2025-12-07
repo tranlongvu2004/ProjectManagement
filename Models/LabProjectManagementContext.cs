@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace PorjectManagement.Models;
 
@@ -63,16 +62,7 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.Deadline).HasColumnType("datetime");
             entity.Property(e => e.ProjectName).HasMaxLength(200);
             entity.Property(e => e.Status)
-                .HasConversion(
-                    v => v == ProjectStatus.InProgress ? "In Progress" 
-                        : v == ProjectStatus.Completed ? "Completed" 
-                        : v == ProjectStatus.Dropped ? "Dropped" 
-                        : null,
-                    v => v == "In Progress" ? ProjectStatus.InProgress 
-                        : v == "Completed" ? ProjectStatus.Completed 
-                        : v == "Dropped" ? ProjectStatus.Dropped 
-                        : (ProjectStatus?)null
-                );
+                .HasConversion<string>();
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -119,30 +109,10 @@ public partial class LabProjectManagementContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Deadline).HasColumnType("datetime");
             entity.Property(e => e.Priority)
-                .HasConversion(
-                    v => v == TaskPriority.Low ? "Low" 
-                        : v == TaskPriority.Medium ? "Medium" 
-                        : v == TaskPriority.High ? "High" 
-                        : v == TaskPriority.Necessary ? "Necessary" 
-                        : null,
-                    v => v == "Low" ? TaskPriority.Low 
-                        : v == "Medium" ? TaskPriority.Medium 
-                        : v == "High" ? TaskPriority.High 
-                        : v == "Necessary" ? TaskPriority.Necessary 
-                        : (TaskPriority?)null
-                );
+                .HasConversion<string>();
             entity.Property(e => e.ProgressPercent).HasDefaultValue(0);
             entity.Property(e => e.Status)
-                .HasConversion(
-                    v => v == TaskStatus.ToDo ? "ToDo" 
-                        : v == TaskStatus.Doing ? "InProgress" 
-                        : v == TaskStatus.Completed ? "Completed" 
-                        : null,
-                    v => v == "ToDo" ? TaskStatus.ToDo 
-                        : v == "InProgress" ? TaskStatus.Doing 
-                        : v == "Completed" ? TaskStatus.Completed 
-                        : (TaskStatus?)null
-                );
+                .HasConversion<string>();
             entity.Property(e => e.Title).HasMaxLength(200);
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -193,16 +163,7 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Status)
-                .HasConversion(
-                    v => v == UserStatus.Active ? "active" 
-                        : v == UserStatus.Inactive ? "inactive" 
-                        : v == UserStatus.Dropped ? "Dropped" 
-                        : null,
-                    v => v == "active" ? UserStatus.Active 
-                        : v == "inactive" ? UserStatus.Inactive 
-                        : v == "Dropped" ? UserStatus.Dropped 
-                        : (UserStatus?)null
-                );
+                .HasConversion<string>();
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)

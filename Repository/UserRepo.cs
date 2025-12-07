@@ -1,6 +1,5 @@
 ﻿using PorjectManagement.Models;
 using PorjectManagement.Repository.Interface;
-using Microsoft.EntityFrameworkCore;
 
 namespace PorjectManagement.Repository
 {
@@ -48,14 +47,6 @@ namespace PorjectManagement.Repository
                 exist.PasswordHash = user.PasswordHash;
             }
             _context.SaveChanges();
-        }
-
-        public async Task<List<User>> GetAllUsersWithRolesAsync()
-        {
-            return await _context.Users
-                .Include(u => u.Role)
-                .Where(u => u.Status == UserStatus.Active) // Chỉ lấy active users
-                .ToListAsync();
         }
     }
 }
