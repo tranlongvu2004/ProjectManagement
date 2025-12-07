@@ -30,6 +30,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Backlog}/{action=BacklogUI}/{id?}");
+    pattern: "{controller=Dashboard}/{action=Dashboard}/{id?}");
 
 app.Run();
