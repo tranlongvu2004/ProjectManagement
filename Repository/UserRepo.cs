@@ -1,5 +1,6 @@
 ﻿using PorjectManagement.Models;
 using PorjectManagement.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace PorjectManagement.Repository
 {
@@ -26,7 +27,7 @@ namespace PorjectManagement.Repository
 
         public User? GetUserByEmail(string email)
         {
-            return _context.Users.FirstOrDefault(u => u.Email == email) ;
+            return _context.Users.FirstOrDefault(u => u.Email == email);
         }
 
         public IQueryable<User> GetUsers()
@@ -41,12 +42,21 @@ namespace PorjectManagement.Repository
 
         public void UpdateUser(User user)
         {
-            var exist = _context.Users.FirstOrDefault(u => u.Email ==  user.Email);
+            var exist = _context.Users.FirstOrDefault(u => u.Email == user.Email);
             if (exist != null)
             {
                 exist.PasswordHash = user.PasswordHash;
             }
             _context.SaveChanges();
+        }
+
+        // ✅ Thêm method mới
+        public async Task<List<User>> GetAllUsersWithRolesAsync()
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .Where(u => u.Status == UserStatus.Active) // Chỉ lấy active users
+                .ToListAsync();
         }
     }
 }

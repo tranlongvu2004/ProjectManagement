@@ -12,6 +12,7 @@ namespace PorjectManagement.Repository
     public class UserProjectRepo : IUserProjectRepo
     {
         private readonly LabProjectManagementContext _context;
+        
         public UserProjectRepo(LabProjectManagementContext context)
         {
             _context = context;
@@ -49,12 +50,33 @@ namespace PorjectManagement.Repository
                 .AsNoTracking()
                 .ToListAsync();
         }
+
         public async Task<List<User>> GetUsersByProjectIdAsync(int projectId)
         {
             return await _context.UserProjects
                 .Where(up => up.ProjectId == projectId)
                 .Select(up => up.User)
                 .ToListAsync();
+        }
+
+        // ✅ THÊM METHOD MỚI
+        public async System.Threading.Tasks.Task AddMembersToProjectAsync(
+            int projectId, 
+            List<int> selectedUserIds, 
+            int? leaderId)
+        {
+            // Tạo danh sách UserProject
+            var userProjects = selectedUserIds.Select(userId => new UserProject
+            {
+                ProjectId = projectId,
+                UserId = userId,
+                IsLeader = (leaderId.HasValue && userId == leaderId.Value), // Set leader nếu match
+                JoinedAt = DateTime.Now
+            }).ToList();
+
+            // Thêm vào database
+            await _context.UserProjects.AddRangeAsync(userProjects);
+            await _context.SaveChangesAsync();
         }
     }
 }
