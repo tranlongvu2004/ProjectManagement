@@ -11,10 +11,19 @@ namespace PorjectManagement.Controllers
         {
             _context = context;
         }
-        public IActionResult BacklogUI()
+        public IActionResult BacklogUI(int projectId)
         {
-            var tasks = _context.Tasks.Include(t => t.CreatedByNavigation).ToList();
+            
+            var tasks = _context.Tasks
+                .Include(t => t.CreatedByNavigation)
+                .Where(t => t.ProjectId == projectId)
+                .ToList();
+
+            
+            ViewBag.ProjectId = projectId;
+
             return View(tasks);
         }
+
     }
 }

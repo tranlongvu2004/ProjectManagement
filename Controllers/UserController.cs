@@ -53,7 +53,7 @@ namespace PorjectManagement.Controllers
             }
             else if (user.RoleId == 2)
             {
-                return RedirectToAction("ManagerDashboard", "Manager");
+                return RedirectToAction("Index", "Home");
             }
             else if (user.RoleId == 3)
             {

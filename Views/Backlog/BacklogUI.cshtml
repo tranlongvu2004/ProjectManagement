@@ -23,21 +23,28 @@
     <div class="d-flex gap-2 my-3">
 
         <div>
-
             <button id="btnSearch" class="btn btn-light border">
                 <i class="fa fa-search"></i>Search
-                </button>
+            </button>
             <input id="searchInput" type="text" class="form-control form-control-sm search-hidden" placeholder="Type to search" />
-
         </div>
 
-        
         <button class="btn btn-light border">Person</button>
         <button class="btn btn-light border">Filter</button>
         <button class="btn btn-light border">Sort</button>
         <button class="btn btn-light border">Hide</button>
         <button class="btn btn-light border">Group By</button>
+
+        <!-- ⭐ Nút Add Member -->
+        <a class="btn btn-primary"
+           href="@Url.Action("AddMembers", "UserProject", new { id = ViewBag.ProjectId })">
+            <i class="fa fa-user-plus"></i> Add Member
+        </a>
+
+
+
     </div>
+
 
     <table class="table align-middle shadow-sm">
         <thead class="table-light">
