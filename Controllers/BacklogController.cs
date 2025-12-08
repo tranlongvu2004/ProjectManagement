@@ -17,13 +17,9 @@ namespace PorjectManagement.Controllers
             var tasks = _context.Tasks
                 .Include(t => t.CreatedByNavigation)
                 .Where(t => t.ProjectId == projectId)
-                .ToList();
-
-            
+                .ToList();           
             ViewBag.ProjectId = projectId;
-
             return View(tasks);
         }
-
     }
 }
