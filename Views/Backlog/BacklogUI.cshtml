@@ -3,7 +3,6 @@
 
 @{
     ViewData["Title"] = "Main Table";
-    // ✅ GỘP CẢ 2: Lấy cả projectId VÀ roleId
     var projectId = ViewBag.ProjectId;
     var roleId = Context.Session.GetInt32("RoleId") ?? 0;
 }
@@ -70,17 +69,25 @@
         <button class="btn btn-light border">Group By</button>
 
         <!-- ⭐ Nút Add Member -->
-        <a class="btn btn-primary"
-           href="@Url.Action("AddMembers", "UserProject", new { id = ViewBag.ProjectId })">
-            <i class="fa fa-user-plus"></i> Add Member
-        </a>
-        @if(roleId == 2 && roleId == 3) 
+        @if (roleId == 2 || roleId == 3)
         {
+            <!-- Có quyền -->
+            <a class="btn btn-primary"
+               href="@Url.Action("AddMembers", "UserProject", new { id = ViewBag.ProjectId })">
+                <i class="fa fa-user-plus"></i> Add Member
+            </a>
             <a class="btn btn-success"
                href="@Url.Action("CreateTask", "Task", new { id = ViewBag.ProjectId })">
                 <i class="bi bi-plus-circle"></i> Create Task
             </a>
         }
+        else
+        {
+            <!-- Không có quyền -->
+            <button class="btn btn-primary" onclick="showNoPermission()">
+                <i class="fa fa-user-plus"></i> Add Member
+            </button>
+        }       
         <a href="/Dashboard/Dashboard" class="dashboard-btn">
             <i class="fa fa-chart-line"></i> Dashboard
         </a>
@@ -190,5 +197,7 @@
             row.style.display = matched ? "" : "none";
         });
     });
-
+    function showNoPermission() {
+        alert("Bạn không có quyền làm điều này!");
+    }
 </script>

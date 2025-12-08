@@ -201,6 +201,23 @@
                 background: #8ea2d8;
             }
 
+        .btn-logout {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #fa5252, #e03131);
+            color: #fff !important;
+            border-radius: 999px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.25s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+            .btn-logout:hover {
+                background: linear-gradient(135deg, #c92a2a, #a51111);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+            }
+
     </style>
 </head>
 <body>
@@ -230,20 +247,9 @@
                         <input class="form-control rounded-pill px-3" type="search" placeholder="Tìm kiếm dự án, thành viên..."
                                aria-label="Search" />
                     </form>
-
                     <!-- RIGHT ICONS -->
                     <div class="d-flex align-items-center">
-
-                        <!-- Icon 1 -->
-                        <img src="~/images/icon1.png"
-                             style="width: 32px; height: 32px; margin-right: 12px; cursor: pointer;" 
-                             alt="Notification" />
-
-                        <!-- Icon 2 -->
-                        <img src="~/images/icon2.png"
-                             style="width: 32px; height: 32px; cursor: pointer;" 
-                             alt="Settings" />
-
+                        <a href="/User/LogOut">Đăng xuất</a>
                     </div>
 
                 </div>
