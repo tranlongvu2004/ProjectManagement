@@ -37,9 +37,17 @@
                             </span>
                         </p>
                     </div>
-                    <a asp-controller="Project" asp-action="Index" class="btn btn-outline-secondary">
-                        Quay lại
-                    </a>
+                    <div class="d-flex gap-2">
+                        <a asp-controller="Backlog" 
+                           asp-action="BacklogUI" 
+                           asp-route-projectId="@Model.Project.ProjectId" 
+                           class="btn btn-primary">
+                            <i class="bi bi-list-task"></i> Xem Backlog
+                        </a>
+                        <a asp-controller="Project" asp-action="Index" class="btn btn-outline-secondary">
+                            Quay lại
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Description -->
