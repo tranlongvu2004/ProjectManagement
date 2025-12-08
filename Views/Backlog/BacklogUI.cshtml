@@ -41,7 +41,7 @@
            href="@Url.Action("AddMembers", "UserProject", new { id = ViewBag.ProjectId })">
             <i class="fa fa-user-plus"></i> Add Member
         </a>
-        @if(roleId == 1) 
+        @if(roleId == 2) 
         {
             <a class="btn btn-primary"
                href="@Url.Action("CreateTask", "Task", new { id = ViewBag.ProjectId })">
