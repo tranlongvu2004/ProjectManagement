@@ -8,51 +8,198 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PorjectManagement.styles.css" asp-append-version="true" />
     <style>
+        /* ============================
+           GLOBAL
+        ============================ */
         body {
             background: #f5f7fb;
             font-family: 'Segoe UI', sans-serif;
+            color: #333;
         }
 
-        /* Sidebar */
+        a {
+            text-decoration: none;
+        }
+
+        /* ============================
+           NAVBAR
+        ============================ */
+        .navbar {
+            height: 60px;
+            background: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2b65ff !important;
+        }
+
+        /* SEARCH BAR */
+        .navbar input[type="search"] {
+            border: 1px solid #d8d8d8;
+            transition: 0.2s;
+        }
+
+            .navbar input[type="search"]:focus {
+                box-shadow: 0 0 5px rgba(43, 101, 255, 0.4);
+                border-color: #2b65ff;
+            }
+
+        /* LOGOUT */
+        .navbar .logout-link {
+            margin-right: 15px;
+            font-weight: 500;
+            color: #444;
+        }
+
+            .navbar .logout-link:hover {
+                color: #2b65ff;
+            }
+
+        /* Icons */
+        .navbar img {
+            transition: 0.2s;
+        }
+
+            .navbar img:hover {
+                transform: scale(1.15);
+            }
+
+        /* ============================
+           SIDEBAR
+        ============================ */
         .sidebar {
             width: 240px;
             background: white;
-            height: 100vh;
+            height: calc(100vh - 60px);
             position: fixed;
-            border-right: 1px solid #e6e6e6;
-            padding: 20px;
             top: 60px;
             left: 0;
+            padding: 20px;
+            border-right: 1px solid #e6e6e6;
+            overflow-y: auto;
         }
 
             .sidebar h5 {
                 font-weight: 700;
-                margin-bottom: 20px;
+                margin-bottom: 15px;
+                color: #222;
             }
 
-            .sidebar .menu-item {
-                padding: 10px 8px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 15px;
-                margin-bottom: 6px;
+            .sidebar h6 {
+                color: #555;
+                font-weight: 600;
             }
 
-                .sidebar .menu-item:hover,
-                .sidebar .menu-item.active {
-                    background: #eef3ff;
-                    color: #2b65ff;
-                }
+        /* MENU ITEM */
+        .menu-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            margin-bottom: 6px;
+            transition: 0.2s;
+            color: #333;
+        }
 
-        /* Content */
+            .menu-item a {
+                color: inherit;
+            }
+
+            .menu-item:hover,
+            .menu-item.active {
+                background: #eef3ff;
+                color: #2b65ff;
+                font-weight: 600;
+            }
+
+        /* ============================
+           MAIN CONTENT
+        ============================ */
         .main-content {
             margin-left: 260px;
             padding: 30px;
         }
 
-        footer {
-            display: none; /* Ẩn footer mặc định */
+        /* ============================
+           TABLES
+        ============================ */
+        table {
+            border-radius: 8px;
+            overflow: hidden;
         }
+
+        .table thead {
+            background: #f1f4ff !important;
+        }
+
+        .table tbody tr:hover {
+            background: #f8faff;
+        }
+
+        /* ============================
+           DASHBOARD BUTTON
+        ============================ */
+        .dashboard-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #4c6ef5, #3b5bdb);
+            color: white !important;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            transition: 0.25s ease;
+        }
+
+            .dashboard-btn:hover {
+                background: linear-gradient(135deg, #364fc7, #2f44ad);
+                color: #e9ecef !important;
+                transform: translateY(-2px);
+                box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+            }
+
+        /* ============================
+           BUTTONS FOR TOOLBAR
+        ============================ */
+        .btn-tool {
+            background: white;
+            border: 1px solid #d8d8d8;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+            .btn-tool:hover {
+                background: #eef3ff;
+                color: #2b65ff;
+                border-color: #c3d4ff;
+            }
+
+        /* ============================
+           SCROLLBAR CUSTOM
+        ============================ */
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f0f2f7;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #b9c4e2;
+            border-radius: 10px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #8ea2d8;
+            }
+
     </style>
 </head>
 <body>   
