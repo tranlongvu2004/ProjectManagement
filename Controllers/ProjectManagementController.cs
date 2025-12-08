@@ -38,6 +38,8 @@ namespace PorjectManagement.Controllers
                 TempData["Error"] = "Chỉ Mentor mới có quyền tạo project.";
                 return RedirectToAction("Index", "Project");
             }
+            TempData.Remove("Error");
+            TempData.Remove("Success");
 
             var model = new ProjectCreateViewModel
             {
@@ -70,6 +72,11 @@ namespace PorjectManagement.Controllers
                 return RedirectToAction("Index", "Project");
             }
 
+            if (model.Deadline.Date < DateTime.Now.Date)
+            {
+                ModelState.AddModelError("Deadline", "Deadline không được để past");
+            }
+
             if (!ModelState.IsValid)
             {
                 model.AvailableUsers = await _projectServices.GetAvailableUsersAsync();
@@ -93,11 +100,15 @@ namespace PorjectManagement.Controllers
             try
             {
                 int projectId = await _projectServices.CreateProjectWithTeamAsync(model, currentUser.UserId);
+               
+                TempData.Remove("Error");
                 TempData["Success"] = "Tạo project thành công!";
+                
                 return RedirectToAction("Details", "Workspace", new { id = projectId });
             }
             catch (Exception ex)
             {
+                TempData.Remove("Success");
                 ModelState.AddModelError("", $"Lỗi khi tạo project: {ex.Message}");
                 model.AvailableUsers = await _projectServices.GetAvailableUsersAsync();
                 return View(model);

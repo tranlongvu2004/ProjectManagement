@@ -22,19 +22,12 @@ namespace PorjectManagement.Controllers
             {
                 return BadRequest("Project id không hợp lệ.");
             }
-
             // Lấy workspace data
             var model = await _projectServices.GetWorkspaceAsync(id);
             if (model == null)
             {
                 return NotFound();
             }
-
-            // Lấy danh sách projects cho sidebar
-            int currentUserId = HttpContext.Session.GetInt32("UserId") ?? 0;
-            var projects = await _projectServices.GetProjectsOfUserAsync(currentUserId);
-            ViewBag.Projects = projects;
-
             return View(model);
         }
     }
