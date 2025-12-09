@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using PorjectManagement.Service.Interface;
+using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Controllers
 {
@@ -36,7 +37,7 @@ namespace PorjectManagement.Controllers
                     }
                     catch
                     {
-                        ViewBag.Projects = new List<PorjectManagement.Models.ViewModels.ProjectListVM>();
+                        ViewBag.Projects = new List<ProjectListVM>();
                     }
                 }
             }
