@@ -1,5 +1,4 @@
-﻿// Repository/Interface/IUserProjectRepo.cs
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using PorjectManagement.Models;
 
@@ -13,7 +12,6 @@ namespace PorjectManagement.Repository.Interface
         System.Threading.Tasks.Task AddUsersToProjectAsync(List<UserProject> userProjects);
         Task<List<Project>> GetAllProjectsAsync();
         Task<List<User>> GetUsersByProjectIdAsync(int projectId);
-
-
+        System.Threading.Tasks.Task AddMembersToProjectAsync(int projectId, List<int> selectedUserIds, int? leaderId);
     }
 }

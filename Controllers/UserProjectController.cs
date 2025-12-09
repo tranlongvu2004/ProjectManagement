@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace PorjectManagement.Controllers
 {
-    [Authorize(Roles = "InternLead")]
     public class UserProjectController : BaseController
     {
         private readonly IUserProjectService _userProjectService;

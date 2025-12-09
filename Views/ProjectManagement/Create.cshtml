@@ -1,0 +1,232 @@
+﻿@model PorjectManagement.ViewModels.ProjectCreateViewModel
+
+@{
+    ViewData["Title"] = "Tạo Project Mới";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">
+                    <i class="bi bi-folder-plus"></i> Tạo Project Mới
+                </h2>
+                <a asp-action="Index" asp-controller="Project" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+            </div>
+
+            <!-- Error/Success Messages -->
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            else if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Form Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Project Name -->
+                        <div class="mb-4">
+                            <label asp-for="ProjectName" class="form-label fw-semibold">
+                                <i class="bi bi-pencil-square text-primary"></i> Tên Project <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ProjectName" class="form-control form-control-lg" 
+                                   placeholder="Ví dụ: Lab Management System" 
+                                   autofocus />
+                            <span asp-validation-for="ProjectName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-semibold">
+                                <i class="bi bi-card-text text-info"></i> Mô tả
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="4" 
+                                      placeholder="Mô tả ngắn gọn về project..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Deadline -->
+                        <div class="mb-4">
+                            <label asp-for="Deadline" class="form-label fw-semibold">
+                                <i class="bi bi-calendar-event text-warning"></i> Deadline <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Deadline" 
+                                   type="date" 
+                                   class="form-control" 
+                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" 
+                                   value="@Model.Deadline.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="Deadline" class="text-danger small"></span>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Select Members -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-people-fill text-success"></i> Chọn Thành Viên <span class="text-danger">*</span>
+                            </label>
+                            <div class="card border-0 bg-light p-3" style="max-height: 300px; overflow-y: auto;">
+                                @if (Model.AvailableUsers != null && Model.AvailableUsers.Any())
+                                {
+                                    @foreach (var user in Model.AvailableUsers)
+                                    {
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input user-checkbox" 
+                                                   type="checkbox" 
+                                                   name="SelectedUserIds" 
+                                                   value="@user.UserId" 
+                                                   id="user_@user.UserId" />
+                                            <label class="form-check-label d-flex align-items-center" for="user_@user.UserId">
+                                                <div class="avatar-circle bg-primary text-white me-2" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                                    @user.FullName.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold">@user.FullName</div>
+                                                    <small class="text-muted">@user.Email - @user.RoleName</small>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Không có user nào khả dụng.</p>
+                                }
+                            </div>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle"></i> Đã chọn: <span id="selected-count">0</span> thành viên
+                            </small>
+                        </div>
+
+                        <!-- Select Leader -->
+                        <div class="mb-4">
+                            <label asp-for="LeaderId" class="form-label fw-semibold">
+                                <i class="bi bi-star-fill text-warning"></i> Chọn Leader
+                            </label>
+                            <select asp-for="LeaderId" class="form-select" id="leader-select">
+                                <option value="">-- Chọn Leader (tùy chọn) --</option>
+                            </select>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle"></i> Leader phải là thành viên đã chọn ở trên
+                            </small>
+                            <span asp-validation-for="LeaderId" class="text-danger small"></span>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" asp-controller="Project" class="btn btn-secondary px-4">
+                                <i class="bi bi-x-circle"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle"></i> Tạo Project
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function () {
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            $('.user-checkbox').on('change', function () {
+                updateSelectedCount();
+                updateLeaderOptions();
+            });
+
+            function updateSelectedCount() {
+                const count = $('.user-checkbox:checked').length;
+                $('#selected-count').text(count);
+            }
+
+            function updateLeaderOptions() {
+                const leaderSelect = $('#leader-select');
+                const currentLeader = leaderSelect.val();
+                
+                // Clear existing options (trừ option đầu tiên)
+                leaderSelect.find('option:not(:first)').remove();
+
+                // Add options cho các user đã chọn
+                $('.user-checkbox:checked').each(function () {
+                    const userId = $(this).val();
+                    const userName = $(this).next('label').find('.fw-semibold').text();
+                    
+                    leaderSelect.append(
+                        $('<option></option>')
+                            .val(userId)
+                            .text(userName)
+                    );
+                });
+
+                // Restore leader nếu vẫn còn trong danh sách
+                if (currentLeader) {
+                    leaderSelect.val(currentLeader);
+                }
+            }
+            updateSelectedCount();
+        });
+    </script>
+}
+
+<style>
+    .avatar-circle {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5568d3 0%, #65408b 100%);
+    }
+
+    .alert {
+        border-radius: 10px;
+        border-left: 4px solid;
+    }
+
+    .alert-danger {
+        border-left-color: #dc3545;
+    }
+
+    .alert-success {
+        border-left-color: #28a745;
+    }
+</style>
