@@ -1,4 +1,6 @@
-﻿namespace PorjectManagement.Models.ViewModels
+﻿using PorjectManagement.Models;
+
+namespace PorjectManagement.ViewModels
 {
     public class ProjectListVM
     {

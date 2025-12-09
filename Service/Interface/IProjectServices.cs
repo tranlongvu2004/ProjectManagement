@@ -1,5 +1,4 @@
 using PorjectManagement.Models;
-using PorjectManagement.Models.ViewModels;
 using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Service.Interface

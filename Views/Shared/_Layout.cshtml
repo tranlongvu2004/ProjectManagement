@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using PorjectManagement.ViewModels
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -259,7 +260,6 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <h5>MENU</h5>
 
         <a asp-controller="Home" asp-action="Index" class="menu-item">
             Tổng quan
@@ -286,7 +286,7 @@
         <h6 class="mt-3 text-uppercase text-muted" style="font-size: 0.85rem;">WORKSPACE</h6>
         
         @{
-            var projects = ViewBag.Projects as List<PorjectManagement.Models.ViewModels.ProjectListVM>;
+            var projects = ViewBag.Projects as List<ProjectListVM>;
         }
 
         @if (projects != null && projects.Any())
