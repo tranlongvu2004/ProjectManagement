@@ -23,27 +23,50 @@ namespace PorjectManagement.Controllers
         {
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
+
             var vm = new TaskCreateViewModel();
 
-            // Load toàn bộ project cho dropdown
-            var projectList = await _userProjectService.GetAllProjectsAsync();
-            ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
+            // Nếu projectId = null → lấy từ URL referrer
+            if (!projectId.HasValue)
+            {
+                var referer = Request.Headers["Referer"].ToString();
 
-            // Nếu có projectId → load thành viên
-            if (projectId.HasValue)
-            {
-                vm.ProjectId = projectId.Value;
-                vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
+                if (!string.IsNullOrEmpty(referer))
+                {
+                    var uri = new Uri(referer);
+                    var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+                    if (query.TryGetValue("projectId", out var value))
+                    {
+                        projectId = int.Parse(value);
+                    }
+                }
             }
-            else
+
+            // Nếu sau khi detect vẫn null → fallback
+            if (!projectId.HasValue)
             {
+                // vẫn load dropdown nếu không tìm được projectId
+                var projectList = await _userProjectService.GetAllProjectsAsync();
+                ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
                 vm.ProjectMembers = new List<PorjectManagement.Models.User>();
+                return View(vm);
             }
+
+            // Đến đây chắc chắn có projectId
+            vm.ProjectId = projectId.Value;
+
+            // Load thành viên trong project
+            vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
+
+            // Ẩn dropdown project trong view
+            ViewBag.HideProjectDropdown = true;
 
             return View(vm);
         }
 
-    
+
+
         [HttpPost]
         public async Task<IActionResult> CreateTask(TaskCreateViewModel model)
         {
