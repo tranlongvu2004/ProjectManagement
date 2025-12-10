@@ -63,11 +63,11 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.ProjectName).HasMaxLength(200);
             entity.Property(e => e.Status)
                 .HasConversion(
-                    v => v == ProjectStatus.InProgress ? "In Progress" 
+                    v => v == ProjectStatus.InProgress ? "InProgress" 
                         : v == ProjectStatus.Completed ? "Completed" 
                         : v == ProjectStatus.Dropped ? "Dropped" 
                         : null,
-                    v => v == "In Progress" ? ProjectStatus.InProgress 
+                    v => v == "InProgress" ? ProjectStatus.InProgress 
                         : v == "Completed" ? ProjectStatus.Completed 
                         : v == "Dropped" ? ProjectStatus.Dropped 
                         : (ProjectStatus?)null
@@ -134,11 +134,11 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.Status)
                 .HasConversion(
                     v => v == TaskStatus.ToDo ? "ToDo" 
-                        : v == TaskStatus.Doing ? "InProgress" 
+                        : v == TaskStatus.Doing ? "Doing" 
                         : v == TaskStatus.Completed ? "Completed" 
                         : null,
                     v => v == "ToDo" ? TaskStatus.ToDo 
-                        : v == "InProgress" ? TaskStatus.Doing 
+                        : v == "Doing" ? TaskStatus.Doing 
                         : v == "Completed" ? TaskStatus.Completed 
                         : (TaskStatus?)null
                 );
