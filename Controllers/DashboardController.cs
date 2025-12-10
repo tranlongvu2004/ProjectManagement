@@ -10,15 +10,23 @@ namespace PorjectManagement.Controllers
         {
             _context = context;
         }
-        public IActionResult Dashboard()
+        public IActionResult Dashboard(int projectId)
         {
-            var tasks = _context.Tasks.ToList();
+            var tasks = _context.Tasks
+                .Select(t => new
+                {
+                    t.ProjectId,
+                    t.Title,
+                    Status = t.Status.ToString()
+                })
+                .Where(t => t.ProjectId == projectId)
+                .ToList();
             int totalTasks = tasks.Count;
-            int completedTasks = tasks.Count(t => t.Status == Models.TaskStatus.Completed);
-            int stuckTasks = tasks.Count(t => t.Status == Models.TaskStatus.Stuck);
-            int inProgressTasks = tasks.Count(t => t.Status == Models.TaskStatus.Doing);
+            int completedTasks = tasks.Count(t => t.Status == "Completed");
+            int stuckTasks = tasks.Count(t => t.Status == "Stuck");
+            int inProgressTasks = tasks.Count(t => t.Status == "Doing");
 
-            ViewBag.Tasks = System.Text.Json.JsonSerializer.Serialize(tasks);
+            ViewBag.Tasks = System.Text.Json.JsonSerializer.Serialize(tasks);   
             ViewBag.TotalTasks = totalTasks;
             ViewBag.CompletedTasks = completedTasks;
             ViewBag.StuckTasks = stuckTasks;
