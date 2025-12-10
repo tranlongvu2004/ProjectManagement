@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using PorjectManagement.Models;
 
 namespace PorjectManagement.Controllers
@@ -17,7 +18,8 @@ namespace PorjectManagement.Controllers
                 {
                     t.ProjectId,
                     t.Title,
-                    Status = t.Status.ToString()
+                    Status = t.Status.ToString(),
+                    Owner = t.CreatedByNavigation.FullName ?? "Unknown"
                 })
                 .Where(t => t.ProjectId == projectId)
                 .ToList();
@@ -31,9 +33,27 @@ namespace PorjectManagement.Controllers
             ViewBag.CompletedTasks = completedTasks;
             ViewBag.StuckTasks = stuckTasks;
             ViewBag.InProgressTasks = inProgressTasks;
+            ViewBag.projectId = projectId;
+            ViewBag.UserId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
 
             return View();
+        }
+        [HttpGet]
+        public IActionResult GetTasks(int projectId)
+        {
+            var tasks = _context.Tasks
+                .Select(t => new
+                {
+                    t.ProjectId,
+                    t.Title,
+                    Status = t.Status.ToString(),
+                    Owner = t.CreatedByNavigation.FullName ?? "Unknown"
+                })
+                .Where(t => t.ProjectId == projectId)
+                .ToList();
+
+            return Json(tasks);
         }
     }
 }

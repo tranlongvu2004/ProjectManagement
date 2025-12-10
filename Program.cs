@@ -31,7 +31,7 @@ builder.Services.AddScoped<IUserProjectService, UserProjectService>();
 builder.Services.AddScoped<ITaskRepo, TaskRepo>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 
-
+builder.Services.AddSignalR();
 var app = builder.Build();
 app.UseSession();
 // Configure the HTTP request pipeline.
@@ -39,6 +39,9 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
 }
+
+app.MapHub<TaskHub>("/taskHub");
+
 app.UseStaticFiles();
 
 app.UseRouting();
