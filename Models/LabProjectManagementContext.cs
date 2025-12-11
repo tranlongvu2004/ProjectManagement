@@ -193,12 +193,12 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Status)
                 .HasConversion(
-                    v => v == UserStatus.Active ? "active" 
-                        : v == UserStatus.Inactive ? "inactive" 
+                    v => v == UserStatus.Active ? "Active" 
+                        : v == UserStatus.Inactive ? "Inactive" 
                         : v == UserStatus.Dropped ? "Dropped" 
                         : null,
-                    v => v == "active" ? UserStatus.Active 
-                        : v == "inactive" ? UserStatus.Inactive 
+                    v => v == "Active" ? UserStatus.Active 
+                        : v == "Anactive" ? UserStatus.Inactive 
                         : v == "Dropped" ? UserStatus.Dropped 
                         : (UserStatus?)null
                 );

@@ -62,12 +62,6 @@
             <input id="searchInput" type="text" class="form-control form-control-sm search-hidden" placeholder="Type to search" />
         </div>
 
-        <button class="btn btn-light border">Person</button>
-        <button class="btn btn-light border">Filter</button>
-        <button class="btn btn-light border">Sort</button>
-        <button class="btn btn-light border">Hide</button>
-        <button class="btn btn-light border">Group By</button>
-
         <!-- ⭐ Nút Add Member -->
         @if (roleId == 2 || roleId == 3)
         {
@@ -88,7 +82,7 @@
                 <i class="fa fa-user-plus"></i> Add Member
             </button>
         }       
-        <a href="/Dashboard/Dashboard" class="dashboard-btn">
+        <a href="/Dashboard/Dashboard?projectId=@projectId" class="dashboard-btn">
             <i class="fa fa-chart-line"></i> Dashboard
         </a>
     </div>

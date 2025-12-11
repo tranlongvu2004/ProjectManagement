@@ -2,7 +2,7 @@
 using PorjectManagement.Models;
 using PorjectManagement.Service;
 using PorjectManagement.Service.Interface;
-
+using System.Net.Mail;
 namespace PorjectManagement.Controllers
 {
     public class UserController : Controller
@@ -72,10 +72,27 @@ namespace PorjectManagement.Controllers
         {
             return View();
         }
-
+        bool IsValidEmail(string email)
+        {
+            try
+            {
+                var mail = new MailAddress(email);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         [HttpPost]
         public IActionResult Register(string fullName, string email, string password, string confirmpassword)
         {
+            if (!IsValidEmail(email))
+            {
+                ViewBag.Error = "Email không đúng định dạng.";
+                return View();
+            }
+
             if (password != confirmpassword)
             {
                 ViewBag.Error = "Mật khẩu xác nhận không khớp.";
@@ -88,7 +105,7 @@ namespace PorjectManagement.Controllers
                 ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
                 return View();
             }
-            if (password.Length <= 3 && confirmpassword.Length <= 3)
+            if (password.Length <= 4 && confirmpassword.Length <= 4)
             {
                 ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
                 return View();
@@ -161,7 +178,7 @@ namespace PorjectManagement.Controllers
                 ViewBag.Email = email;
                 return View();
             }
-            if (newpassword.Length <= 3 && confirmpassword.Length <= 3)
+            if (newpassword.Length <= 4 && confirmpassword.Length <= 4)
             {
                 ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
                 return View();
