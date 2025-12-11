@@ -109,18 +109,11 @@ namespace PorjectManagement.Controllers
             // 3️⃣ Sau đó mới assign user vào task
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
+            TempData["SuccessMessage"] = "Tạo task thành công!";
 
-            ViewBag.SuccessMessage = "Tạo task thành công!";
-
-            // Load lại member list
-            model.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(model.ProjectId);
-
-            // Xóa nội dung form sau khi tạo
-            ModelState.Clear();
-            model.Title = "";
-            model.Description = "";
-
-            return View(model);
+            // Redirect về BacklogUI (trang trong ảnh của m)
+            return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
     }
-}
+    }
+
