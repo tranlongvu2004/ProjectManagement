@@ -19,7 +19,7 @@ namespace PorjectManagement.Controllers
                 {
                     t.ProjectId,
                     t.Title,
-                    Status = t.Status.ToString(),
+                    Status = t.Status.ToString() ?? "Not_Started",
                     Owner = t.CreatedByNavigation.FullName ?? "Unknown"
                 })
                 .Where(t => t.ProjectId == projectId)
@@ -31,7 +31,7 @@ namespace PorjectManagement.Controllers
                 {
                     t.TaskId,
                     t.Title,
-                    Status = t.Status.ToString()
+                    Status = t.Status.ToString() ?? "Not_Started"
                 })
                 .ToList();
 
@@ -83,5 +83,11 @@ namespace PorjectManagement.Controllers
 
             return Json(tasks);
         }
+
+        public IActionResult DashboardPartial(int projectId, int userId)
+        {
+            return View("Dashboard"); // trả về cùng model Dashboard luôn
+        }
+
     }
 }

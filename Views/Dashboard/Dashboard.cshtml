@@ -1,4 +1,5 @@
 ﻿@{
+    Layout = null;
     ViewData["Title"] = "Dashboard";
 }
 
@@ -52,8 +53,6 @@
         }
 </style>
 
-
-<div class="dashboard-header">Dashboard and reporting ⭐</div>
 
 <!-- Toolbar -->
 <div class="dash-toolbar d-flex gap-2 mb-4">
@@ -145,6 +144,9 @@
         scales: {
             x: {
                 ticks: {
+                     maxRotation: 0,
+                     minRotation: 0,
+                     autoSkip: false,
                     font: {
                         size: 16
                     }
@@ -188,6 +190,9 @@
         scales: {
             x: {
                 ticks: {
+                     maxRotation: 0,
+                     minRotation: 0,
+                     autoSkip: false,
                     font: {
                         size: 16
                     }
@@ -204,6 +209,12 @@
         }
     }
         });
+
+
+        window.addEventListener("resize", () => {
+        projectChart.resize();
+        ownerChart.resize();
+    });
 
     // Project Task
         function getChartDataFromTasks(tasks) {
@@ -267,7 +278,7 @@
         const values = Object.values(ownerCount);
 
 
-        chart = new Chart(document.getElementById('myChart'), {
+        chart = new Chart(document.getElementById('projectChart'), {
             type: 'bar',
             data: {
                 labels: labels,
@@ -304,12 +315,16 @@
             });
     }
 
-    function updateStats(tasks) {
-        document.querySelector(".stat-card:nth-child(1) .stat-number").textContent = tasks.length;
-        document.querySelector(".stat-card:nth-child(2) .stat-number").textContent = tasks.filter(t => t.Status === "Doing").length;
-        document.querySelector(".stat-card:nth-child(3) .stat-number").textContent = tasks.filter(t => t.Status === "Stuck").length;
-        document.querySelector(".stat-card:nth-child(4) .stat-number").textContent = tasks.filter(t => t.Status === "Completed").length;
+        function updateStats(tasks) {
+        const cards = document.querySelectorAll(".stat-card .stat-number");
+        if (cards.length < 4) return; // Không crash
+
+        cards[0].textContent = tasks.length;
+        cards[1].textContent = tasks.filter(t => t.Status === "Doing").length;
+        cards[2].textContent = tasks.filter(t => t.Status === "Stuck").length;
+        cards[3].textContent = tasks.filter(t => t.Status === "Completed").length;
     }
+
 </script>
 
 
