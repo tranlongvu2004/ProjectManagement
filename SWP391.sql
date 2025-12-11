@@ -11,7 +11,7 @@ GO
 -- 1. Roles
 CREATE TABLE Roles (
     RoleId INT IDENTITY(1,1) PRIMARY KEY,
-    RoleName NVARCHAR(50) NOT NULL  -- Mentor / InternLead / Intern
+    RoleName NVARCHAR(50) NOT NULL   -- Mentor / Intern
 );
 
 -- 2. Users
@@ -27,22 +27,12 @@ CREATE TABLE Users (
     FOREIGN KEY (RoleId) REFERENCES Roles(RoleId)
 );
 
--- 3. UserProject (member of a project)
-CREATE TABLE UserProject (
-    UserProjectId INT IDENTITY(1,1) PRIMARY KEY,
-    UserId INT NOT NULL,
-    ProjectId INT NOT NULL,
-    IsLeader BIT DEFAULT 0,
-    JoinedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (UserId) REFERENCES Users(UserId)
-);
-
 
 /* ================================
    B. PROJECT MANAGEMENT
 =================================*/
 
--- 4. Projects
+-- 3. Projects
 CREATE TABLE Projects (
     ProjectId INT IDENTITY(1,1) PRIMARY KEY,
     ProjectName NVARCHAR(200) NOT NULL,
@@ -55,31 +45,40 @@ CREATE TABLE Projects (
     FOREIGN KEY (CreatedBy) REFERENCES Users(UserId)
 );
 
--- Update FK for UserProject → ProjectId
-ALTER TABLE UserProject
-ADD CONSTRAINT FK_UserProject_Project
-FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId);
+-- 4. UserProject
+CREATE TABLE UserProject (
+    UserProjectId INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT NOT NULL,
+    ProjectId INT NOT NULL,
+    IsLeader BIT DEFAULT 0,
+    JoinedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId),
+    FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId)
+);
 
 
--- 5. Tasks
+-- 5. Tasks (có IsParent + ParentId)
 CREATE TABLE Tasks (
     TaskId INT IDENTITY(1,1) PRIMARY KEY,
+    ParentId INT NULL,
+    IsParent BIT DEFAULT 0,                        -- NEW
     ProjectId INT NOT NULL,
     Title NVARCHAR(200) NOT NULL,
     Description NVARCHAR(MAX),
-    Priority NVARCHAR(20) DEFAULT 'Medium', -- Low / Medium / High
-    Status NVARCHAR(20) DEFAULT 'ToDo',    -- ToDo / InProgress / Done
+    Priority NVARCHAR(20) DEFAULT 'Medium',
+    Status NVARCHAR(20) DEFAULT 'ToDo',
     ProgressPercent INT DEFAULT 0,
     Deadline DATETIME,
     CreatedBy INT NOT NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
-    FOREIGN KEY (CreatedBy) REFERENCES Users(UserId)
+    FOREIGN KEY (CreatedBy) REFERENCES Users(UserId),
+    FOREIGN KEY (ParentId) REFERENCES Tasks(TaskId)
 );
 
 
--- 6. TaskAssignment (task ↔ multiple users)
+-- 6. TaskAssignment
 CREATE TABLE TaskAssignment (
     TaskAssignmentId INT IDENTITY(1,1) PRIMARY KEY,
     TaskId INT NOT NULL,
@@ -88,11 +87,27 @@ CREATE TABLE TaskAssignment (
     FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
+
+
+-- 7. TaskAttachments
+CREATE TABLE TaskAttachments (
+    AttachmentId INT IDENTITY(1,1) PRIMARY KEY,
+    TaskId INT NOT NULL,
+    FileName NVARCHAR(255),
+    FilePath NVARCHAR(MAX),
+    FileType NVARCHAR(50),
+    FileSize BIGINT,
+    UploadedBy INT NOT NULL,
+    UploadedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
+    FOREIGN KEY (UploadedBy) REFERENCES Users(UserId)
+);
+
+
 /* ================================
    C. COMMUNICATION
 =================================*/
 
--- 8. Comments (discussion inside task)
 CREATE TABLE Comments (
     CommentId INT IDENTITY(1,1) PRIMARY KEY,
     TaskId INT NOT NULL,
@@ -103,86 +118,102 @@ CREATE TABLE Comments (
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
 
+
 /* ================================
    D. REPORTS
 =================================*/
 
--- 10. Progress Reports (daily/weekly)
 CREATE TABLE Reports (
     ReportId INT IDENTITY(1,1) PRIMARY KEY,
     ProjectId INT NOT NULL,
     LeaderId INT NOT NULL,
-    ReportType NVARCHAR(20),    -- daily / weekly
+    ReportType NVARCHAR(20),
     FilePath NVARCHAR(MAX) NOT NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
     FOREIGN KEY (LeaderId) REFERENCES Users(UserId)
 );
+
+
 /* ================================
-   E. SEED ROLES (optional)
+   E. SEED DATA
 =================================*/
 
+-- Roles
 INSERT INTO Roles (RoleName) VALUES
 ('Mentor'),
-('InternLead'),
 ('Intern');
 
+-- Users
 INSERT INTO Users(FullName, Email, PasswordHash, RoleId)
 VALUES
 ('Nguyen Thanh Mentor', 'mentor@example.com', '123', 1),
-('Tran Van Leader', 'leader@example.com', '123', 2),
-('Intern A', 'internA@example.com', '123', 3),
-('Intern B', 'internB@example.com', '123', 3),
-('Intern C', 'internC@example.com', '123', 3);
+('Tran Van Intern 1', 'intern1@example.com', '123', 2),
+('Tran Van Intern 2', 'intern2@example.com', '123', 2),
+('Tran Van Intern 3', 'intern3@example.com', '123', 2);
 
+
+-- Projects
 INSERT INTO Projects (ProjectName, Description, Deadline, CreatedBy)
 VALUES
 ('Lab Management System', 'System for managing lab tasks', '2025-03-30', 1),
-('Intern Evaluation Tool', 'Evaluation tool for interns', '2025-04-15', 2);
+('Evaluation Tool', 'Evaluation tool for interns', '2025-04-10', 1);
 
--- Project 1
+-- Members
 INSERT INTO UserProject (UserId, ProjectId, IsLeader)
 VALUES
-(1, 1, 0),  -- Mentor
-(2, 1, 1),  -- Leader
-(3, 1, 0),  -- Intern A
-(4, 1, 0);  -- Intern B
+(1, 1, 1),
+(2, 1, 0),
+(3, 1, 0),
 
--- Project 2
-INSERT INTO UserProject (UserId, ProjectId, IsLeader)
+(1, 2, 1),
+(4, 2, 0);
+
+
+-- Tasks (Parents)
+INSERT INTO Tasks (ProjectId, Title, IsParent, Priority, Status, Deadline, CreatedBy)
 VALUES
-(2, 2, 1),  -- Leader
-(5, 2, 0),  -- Intern C
-(3, 2, 0);  -- Intern A
+(1, 'Design Database', 1, 'High', 'InProgress', '2025-02-10', 1),    -- TaskId = 1
+(1, 'Develop API', 1, 'Medium', 'ToDo', '2025-02-20', 2),             -- TaskId = 2
+(2, 'Define Evaluation Criteria', 1, 'High', 'InProgress', '2025-03-01', 1); -- TaskId = 3
 
-INSERT INTO Tasks (ProjectId, Title, Priority, Status, Deadline, CreatedBy)
+
+-- SubTasks
+INSERT INTO Tasks (ProjectId, ParentId, Title, IsParent, Status, CreatedBy)
 VALUES
-(1, 'Design database schema', 'High', 'InProgress', '2025-02-10', 2),
-(1, 'API development', 'Medium', 'ToDo', '2025-02-20', 3),
-(1, 'Frontend UI', 'Low', 'ToDo', '2025-02-28', 4),
+(1, 1, 'Create ERD', 0, 'InProgress', 2),          -- TaskId = 4
+(1, 1, 'Review ERD with mentor', 0, 'ToDo', 1),    -- TaskId = 5
+(1, 2, 'Build authentication API', 0, 'ToDo', 3);  -- TaskId = 6
 
-(2, 'Define evaluation criteria', 'High', 'InProgress', '2025-03-01', 2),
-(2, 'Build report module', 'Medium', 'ToDo', '2025-03-10', 5);
 
+-- TaskAssignments
 INSERT INTO TaskAssignment (TaskId, UserId)
 VALUES
-(1, 2),  -- Leader làm task 1
-(2, 3),  -- Intern A
-(3, 4),  -- Intern B
-(4, 2),  -- Leader
-(5, 5);  -- Intern C
+(1, 1),
+(2, 2),
+(3, 1),
+(4, 2),
+(5, 1),
+(6, 3);
 
+
+-- Comments
 INSERT INTO Comments (TaskId, UserId, Content)
 VALUES
-(1, 3, 'Hoàn thành bản nháp ERD'),
-(1, 2, 'OK, thêm bảng phân quyền'),
-(2, 3, 'Đang viết API'),
-(3, 4, 'UI cần chốt màu chủ đạo');
+(1, 2, 'Database đang thiết kế'),
+(4, 2, 'ERD bản nháp đã hoàn thành'),
+(6, 3, 'Đang code Auth API');
 
+
+-- Attachments
+INSERT INTO TaskAttachments (TaskId, FileName, FilePath, FileType, FileSize, UploadedBy)
+VALUES
+(4, 'erd_draft.png', '/uploads/erd_draft.png', 'image', 205000, 2),
+(1, 'db_schema.pdf', '/uploads/db_schema.pdf', 'pdf', 1034000, 1);
+
+
+-- Reports
 INSERT INTO Reports (ProjectId, LeaderId, ReportType, FilePath)
 VALUES
-(1, 2, 'weekly', '/reports/week1_project1.pdf'),
-(2, 2, 'daily', '/reports/day1_project2.pdf');
-
-
-
+(1, 1, 'weekly', '/reports/project1_week1.pdf'),
+(2, 1, 'daily', '/reports/project2_day1.pdf');
