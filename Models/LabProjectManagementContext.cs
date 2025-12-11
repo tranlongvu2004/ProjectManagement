@@ -19,6 +19,8 @@ public partial class LabProjectManagementContext : DbContext
 
     public virtual DbSet<Project> Projects { get; set; }
 
+    public virtual DbSet<RecycleBin> RecycleBins { get; set; }
+
     public virtual DbSet<Report> Reports { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
@@ -82,6 +84,18 @@ public partial class LabProjectManagementContext : DbContext
                 .HasForeignKey(d => d.CreatedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Projects__Create__4222D4EF");
+        });
+
+        modelBuilder.Entity<RecycleBin>(entity =>
+        {
+            entity.HasKey(e => e.RecycleId).HasName("PK__RecycleB__980B5DB28EA730D6");
+
+            entity.ToTable("RecycleBin");
+
+            entity.Property(e => e.DeletedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.EntityType).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Report>(entity =>
