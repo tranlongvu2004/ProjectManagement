@@ -32,11 +32,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
-
+          
             <!-- Form Card -->
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Create" method="post" id="createProjectForm">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <!-- Project Name -->
@@ -111,20 +111,24 @@
                             <small class="text-muted">
                                 <i class="bi bi-info-circle"></i> Đã chọn: <span id="selected-count">0</span> thành viên
                             </small>
+                            @* HIỂN THỊ LỖI SELECTED USERS *@
+                            <div>
+                                <span asp-validation-for="SelectedUserIds" class="text-danger small"></span>
+                            </div>
                         </div>
 
                         <!-- Select Leader -->
                         <div class="mb-4">
                             <label asp-for="LeaderId" class="form-label fw-semibold">
-                                <i class="bi bi-star-fill text-warning"></i> Chọn Leader
+                                <i class="bi bi-star-fill text-warning"></i> Chọn Leader <span class="text-danger">*</span>
                             </label>
-                            <select asp-for="LeaderId" class="form-select" id="leader-select">
-                                <option value="">-- Chọn Leader (tùy chọn) --</option>
+                            <select asp-for="LeaderId" class="form-select" id="leader-select" required>
+                                <option value="">-- Vui lòng chọn Leader --</option>
                             </select>
                             <small class="text-muted">
                                 <i class="bi bi-info-circle"></i> Leader phải là thành viên đã chọn ở trên
                             </small>
-                            <span asp-validation-for="LeaderId" class="text-danger small"></span>
+                            <span asp-validation-for="LeaderId" class="text-danger small d-block"></span>
                         </div>
 
                         <hr class="my-4" />
@@ -188,6 +192,26 @@
                     leaderSelect.val(currentLeader);
                 }
             }
+
+            // VALIDATE TRƯỚC KHI SUBMIT
+            $('#createProjectForm').on('submit', function(e) {
+                const selectedMembers = $('.user-checkbox:checked').length;
+                const selectedLeader = $('#leader-select').val();
+
+                if (selectedMembers === 0) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn ít nhất 1 thành viên!');
+                    return false;
+                }
+
+                if (!selectedLeader) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn Leader cho dự án!');
+                    $('#leader-select').focus();
+                    return false;
+                }
+            });
+
             updateSelectedCount();
         });
     </script>
@@ -228,5 +252,14 @@
 
     .alert-success {
         border-left-color: #28a745;
+    }
+
+    .alert-info {
+        border-left-color: #17a2b8;
+    }
+
+    .form-select:invalid,
+    .form-control:invalid {
+        border-color: #dc3545;
     }
 </style>
