@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
-using PorjectManagement.Models.ViewModels;
 using PorjectManagement.Repository.Interface;
 using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
