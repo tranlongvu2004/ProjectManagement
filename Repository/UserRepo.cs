@@ -54,8 +54,26 @@ namespace PorjectManagement.Repository
         {
             return await _context.Users
                 .Include(u => u.Role)
-                .Where(u => u.Status == UserStatus.Active && u.RoleId != 1) 
+                .Where(u => u.Status == UserStatus.Active)
                 .ToListAsync();
+        }
+
+        public User? getUserById(int userId)
+        {
+            return _context.Users.FirstOrDefault(u => u.UserId == userId);
+        }
+
+        public void UpdateProfile(User user)
+        {
+            var exist = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+            if (exist != null)
+            {
+                exist.FullName = user.FullName;
+                exist.Email = user.Email;
+                exist.AvatarUrl = user.AvatarUrl;
+                exist.Status = user.Status;
+            }
+            _context.SaveChanges();
         }
     }
 }

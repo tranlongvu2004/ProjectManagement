@@ -1,0 +1,69 @@
+﻿@model PorjectManagement.Models.User;
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+
+<div class="container mt-4" style="max-width: 700px;">
+    <h2 class="mb-4 text-primary">Thông tin cá nhân</h2>
+
+    @* Thông báo lỗi *@
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    @* Thông báo thành công *@
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-success">@ViewBag.Message</div>
+    }
+
+    <form method="post" enctype="multipart/form-data" class="border p-4 rounded shadow-sm">
+
+        <div class="text-center mb-3">
+            <img id="avatarPreview" src="@Model.AvatarUrl"
+                 alt="Avatar" class="rounded-circle border"
+                 style="width: 140px; height: 140px; object-fit: cover;">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Ảnh đại diện</label>
+            <input type="file" name="avatarFile" class="form-control" onchange="previewAvatar(this)">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Họ và tên</label>
+            <input name="fullName" class="form-control" value="@Model.FullName" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Email</label>
+            <input name="email" class="form-control" value="@Model.Email" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Trạng thái</label>
+            <input class="form-control" value="@Model.Status" readonly />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Tham gia từ</label>
+            <input class="form-control"
+                   value="@Model.CreatedAt?.ToString("yyyy/MM/dd")" readonly />
+        </div>
+
+        <button class="btn btn-primary w-100 mt-3">Cập nhật thông tin</button>
+    </form>
+</div>
+
+<script>
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById("avatarPreview").src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
