@@ -162,7 +162,7 @@
 <div class="container my-4">
 
     <div class="mb-3">
-        <label class="form-label fw-bold">Chọn dự án</label>
+        <label class="form-label fw-bold">Chọn dự án.</label>
         <select id="projectSelect" class="form-select" onchange="onProjectChange()">
             <option value="">-- Chọn dự án --</option>
             @if (Model.AllProjects != null)
@@ -249,12 +249,15 @@
             <td>
                 @switch (u.Status)
                 {
-                    case "Active":
-                        <span class="badge bg-success">Đang thực tập</span>;
+                    case "active":
+                        <span class="badge bg-success">Active</span>;
                         break;
 
-                    case "Completed":
-                        <span class="badge bg-primary">Hoàn thành</span>;
+                    case "inactive":
+                        <span class="badge bg-primary">Inactive</span>;
+                        break;
+                    case "dropped":
+                        <span class="badge bg-primary">Dropped</span>;
                         break;
 
                     default:

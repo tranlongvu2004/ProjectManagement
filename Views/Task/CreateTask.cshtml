@@ -124,15 +124,16 @@
     <form asp-action="CreateTask" method="post">
 
         <!-- CHỌN PROJECT -->
-        <div class="mb-4">
-            <label class="form-label">Chọn dự án</label>
-            <select asp-for="ProjectId"
-                    class="form-select input-custom"
-                    asp-items="ViewBag.ProjectList"
-                    onchange="this.form.submit()">
-                <option value="">-- Chọn dự án --</option>
-            </select>
-        </div>
+       <input type="hidden" asp-for="ProjectId" />
+       @if (Model.ProjectId == 0)
+{
+    <div class="alert alert-danger">
+        Không xác định được dự án. Vui lòng truy cập từ trang Backlog.
+    </div>
+    return;
+}
+
+
 
         @if (Model.ProjectId > 0)
         {

@@ -59,7 +59,7 @@ namespace PorjectManagement.Controllers
                     RoleName = u.Role?.RoleName ?? "",
                     CreatedAt = u.CreatedAt,
                     ProgressPercent = 0,
-                    Status = u.Status?.ToString() ?? "Unknown"
+                    Status = (u.Status?.ToString() ?? "unknown").ToLower()
                 }).ToList(),
                 AllProjects = allProjects
             };
@@ -99,7 +99,7 @@ namespace PorjectManagement.Controllers
                         RoleName = u.Role?.RoleName ?? "",
                         CreatedAt = u.CreatedAt,
                         ProgressPercent = 0,
-                        Status = u.Status?.ToString() ?? "Unknown"
+                        Status = (u.Status?.ToString() ?? "unknown").ToLower()
                     }).ToList();
 
                 return View(model);
