@@ -4,24 +4,24 @@ namespace PorjectManagement.ViewModels
 {
     public class ProjectCreateViewModel
     {
-        [Required(ErrorMessage = "Tên project không được để trống")]
-        [StringLength(200, ErrorMessage = "Tên project không được quá 200 ký tự")]
+        [Required]
+        [StringLength(200)]
         public string ProjectName { get; set; } = null!;
 
-        [StringLength(2000, ErrorMessage = "Mô tả không được quá 2000 ký tự")]
+        [StringLength(2000)]
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Deadline là bắt buộc")]
         [DataType(DataType.Date)]
         public DateTime Deadline { get; set; }
 
-        // Danh sách user IDs được chọn
+        [Required]
         public List<int>? SelectedUserIds { get; set; }
 
-        // Leader ID (phải nằm trong SelectedUserIds)
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn Leader cho dự án")]
         public int? LeaderId { get; set; }
 
-        // Danh sách users có thể assign (để hiển thị trong form)
         public List<AvailableUserItem> AvailableUsers { get; set; } = new();
     }
 }

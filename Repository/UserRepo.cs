@@ -50,12 +50,11 @@ namespace PorjectManagement.Repository
             _context.SaveChanges();
         }
 
-        // ✅ Thêm method mới
         public async Task<List<User>> GetAllUsersWithRolesAsync()
         {
             return await _context.Users
                 .Include(u => u.Role)
-                .Where(u => u.Status == UserStatus.Active) // Chỉ lấy active users
+                .Where(u => u.Status == UserStatus.Active && u.RoleId != 1) 
                 .ToListAsync();
         }
     }

@@ -3,7 +3,6 @@ using PorjectManagement.Models;
 using PorjectManagement.Repository.Interface;
 using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
-
 namespace PorjectManagement.Service
 {
     public class ProjectServices : IProjectServices
@@ -41,7 +40,7 @@ namespace PorjectManagement.Service
             }).ToList();
         }
 
-        // Workspace chi tiết
+        // Workspace detail
         public async Task<ProjectWorkspaceViewModel?> GetWorkspaceAsync(int projectId)
         {
             return await _projectRepo.GetWorkspaceAsync(projectId);
@@ -65,10 +64,8 @@ namespace PorjectManagement.Service
             return await _projectRepo.GetProjectTasksAsync(projectId);
         }
 
-        // Create project with team
         public async Task<int> CreateProjectWithTeamAsync(ProjectCreateViewModel model, int createdByUserId)
         {
-            // 1. Tạo Project
             var newProject = new Project
             {
                 ProjectName = model.ProjectName,
@@ -82,20 +79,29 @@ namespace PorjectManagement.Service
 
             int projectId = await _projectRepo.CreateProjectAsync(newProject);
 
-            // 2. Assign members vào project
+            var memberIds = new List<int> { createdByUserId };
+
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
             {
-                await _userProjectRepo.AddMembersToProjectAsync(
-                    projectId,
-                    model.SelectedUserIds,
-                    model.LeaderId
-                );
+                foreach (var userId in model.SelectedUserIds)
+                {
+                    if (!memberIds.Contains(userId))
+                    {
+                        memberIds.Add(userId);
+                    }
+                }
             }
+
+            await _userProjectRepo.AddMembersToProjectAsync(
+                projectId,
+                memberIds,
+                model.LeaderId
+            );
 
             return projectId;
         }
 
-        // Get available users
+        // Get available users - chỉ InternLead & Intern
         public async Task<List<AvailableUserItem>> GetAvailableUsersAsync()
         {
             var users = await _userRepo.GetAllUsersWithRolesAsync();

@@ -74,25 +74,26 @@ namespace PorjectManagement.Controllers
 
             if (model.Deadline.Date < DateTime.Now.Date)
             {
-                ModelState.AddModelError("Deadline", "Deadline không được để past");
+                ModelState.AddModelError("Deadline", "Deadline không được ở quá khứ");
+            }
+            
+            if (model.SelectedUserIds == null || !model.SelectedUserIds.Any())
+            {
+                ModelState.AddModelError("SelectedUserIds", "Vui lòng chọn ít nhất 1 thành viên cho project.");
+            }
+
+            if (!model.LeaderId.HasValue || model.LeaderId.Value <= 0)
+            {
+                ModelState.AddModelError("LeaderId", "Vui lòng chọn Leader cho dự án.");
+            }
+
+            else if (model.SelectedUserIds != null && !model.SelectedUserIds.Contains(model.LeaderId.Value))
+            {
+                ModelState.AddModelError("LeaderId", "Leader phải là thành viên của project.");
             }
 
             if (!ModelState.IsValid)
             {
-                model.AvailableUsers = await _projectServices.GetAvailableUsersAsync();
-                return View(model);
-            }
-
-            if (model.SelectedUserIds == null || !model.SelectedUserIds.Any())
-            {
-                ModelState.AddModelError("", "Vui lòng chọn ít nhất 1 thành viên cho project.");
-                model.AvailableUsers = await _projectServices.GetAvailableUsersAsync();
-                return View(model);
-            }
-
-            if (model.LeaderId.HasValue && !model.SelectedUserIds.Contains(model.LeaderId.Value))
-            {
-                ModelState.AddModelError("", "Leader phải là thành viên của project.");
                 model.AvailableUsers = await _projectServices.GetAvailableUsersAsync();
                 return View(model);
             }
