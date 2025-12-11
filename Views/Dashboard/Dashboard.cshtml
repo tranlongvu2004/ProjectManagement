@@ -40,6 +40,16 @@
         margin-top: 20px;
         font-weight: 500;
     }
+
+    .charts-row {
+        display: flex;
+        gap: 20px; /* khoảng cách giữa 2 chart */
+    }
+
+        .charts-row canvas {
+            width: 48% !important; /* mỗi chart chiếm 1 nửa */
+            max-height: 400px;
+        }
 </style>
 
 
@@ -95,40 +105,107 @@
 </div>
 
 
-<div>
-    <canvas id="myChart"></canvas>
+<div class="charts-row">
+    <canvas id="projectChart"></canvas>
+    <canvas id="ownerChart"></canvas>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
       let tasks = @Html.Raw(ViewBag.Tasks);
-      const ctx = document.getElementById('myChart');
+      let userTasks = @Html.Raw(ViewBag.OwnerTasks);
+      const ctx = document.getElementById('projectChart');
+      const ctx2 = document.getElementById('ownerChart');
       const chartData = getChartDataFromTasks(tasks);
-
-        function getTasksByOwner(tasks, userId) {
-        return tasks.filter(t => t.CreatedBy == userId);
-    }
+      const userChart = getUserChartData(userTasks);
+      //Project Chart
 
     new Chart(ctx, {
       type: 'bar',
       data: {
         labels: chartData.labels,
         datasets: [{
-          label: 'Task by Owner',
+          label: 'Project Task',
           data: chartData.values,
-          borderWidth: 5
+          borderWidth: 1
         }]
       },
       options: {
+        responsive: true,
+        Plugins: {
+            legend: {
+                labels: {
+                    font: {
+                        size: 16
+                    }
+                }
+            }
+        },
         scales: {
-          y: {
-            beginAtZero: true
-          }
+            x: {
+                ticks: {
+                    font: {
+                        size: 16
+                    }
+                }
+            },
+            y: {
+                ticks: {
+                    font: {
+                        size: 16
+                    }
+                },
+                beginAtZero: true
+            }
         }
-      }
+    }
     });
 
+    //User Chart
+
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: userChart.labels,
+                datasets: [{
+                    label: 'Owner Tasks',
+                    data: userChart.values,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+        responsive: true,
+        Plugins: {
+            legend: {
+                labels: {
+                    font: {
+                        size: 16
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: {
+                    font: {
+                        size: 16
+                    }
+                }
+            },
+            y: {
+                ticks: {
+                    font: {
+                        size: 16
+                    }
+                },
+                beginAtZero: true
+            }
+        }
+    }
+        });
+
+    // Project Task
         function getChartDataFromTasks(tasks) {
         const ownerCount = {};
 
@@ -141,6 +218,21 @@
             values: Object.values(ownerCount)
         };
     }
+
+    // User Task
+        function getUserChartData(tasks){
+            const statusCount = {};
+
+            tasks.forEach(t => {
+                statusCount[t.Status] = (statusCount[t.Status] || 0) + 1;
+            });
+
+            return {
+                labels: Object.keys(statusCount),
+                values: Object.values(statusCount)
+            };
+
+        }
 
 
 </script>
@@ -163,6 +255,7 @@
         updateChart(filtered);
     });
 
+    //Update chart
 
     function updateChart(list) {
         const ownerCount = {};
@@ -179,7 +272,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Task by Owner',
+                    label: 'Project Task',
                     data: values
                 }]
             }
