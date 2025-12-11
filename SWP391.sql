@@ -1,4 +1,10 @@
-﻿CREATE DATABASE LabProjectManagement;
+﻿IF EXISTS (SELECT name FROM sys.databases WHERE name = 'LabProjectManagement')
+BEGIN
+    ALTER DATABASE LabProjectManagement SET MULTI_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE LabProjectManagement;
+END
+GO
+CREATE DATABASE LabProjectManagement;
 GO
 USE LabProjectManagement;
 GO
