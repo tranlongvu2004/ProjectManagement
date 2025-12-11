@@ -218,7 +218,47 @@
                 transform: translateY(-2px);
                 box-shadow: 0 6px 14px rgba(0,0,0,0.3);
             }
+        /* ==========================================
+           NAVBAR: PROFILE + LOGOUT BUTTONS
+        ========================================== */
 
+        .btn-profile {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #4dabf7, #1c7ed6);
+            color: #fff !important;
+            border-radius: 999px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+            .btn-profile:hover {
+                background: linear-gradient(135deg, #1c7ed6, #1864ab);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+                color: #fff !important;
+            }
+
+        .btn-logout-nav {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #fa5252, #e03131);
+            color: #fff !important;
+            border-radius: 999px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+            .btn-logout-nav:hover {
+                background: linear-gradient(135deg, #c92a2a, #a51111);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 14px rgba(0,0,0,0.3);
     </style>
 </head>
 <body>
@@ -249,9 +289,18 @@
                                aria-label="Search" />
                     </form>
                     <!-- RIGHT ICONS -->
-                    <div class="d-flex align-items-center">
-                        <a href="/User/LogOut">Đăng xuất</a>
+                    <div class="d-flex align-items-center gap-2">
+
+                        <a href="/User/Profile?userId=@roleId" class="btn-profile">
+                            <i class="bi bi-person-circle me-1"></i> Hồ sơ
+                        </a>
+
+                        <a href="/User/LogOut" class="btn-logout-nav">
+                            <i class="bi bi-box-arrow-right me-1"></i> Đăng xuất
+                        </a>
+
                     </div>
+
 
                 </div>
             </div>
@@ -267,10 +316,6 @@
 
         <a asp-controller="Project" asp-action="Index" class="menu-item">
             Dự án của tôi
-        </a>
-
-        <a href="#" class="menu-item">
-            Nhóm của tôi
         </a>
 
         @* MENTOR *@
