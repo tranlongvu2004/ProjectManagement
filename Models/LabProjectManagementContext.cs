@@ -31,6 +31,8 @@ public partial class LabProjectManagementContext : DbContext
 
     public virtual DbSet<UserProject> UserProjects { get; set; }
 
+    public virtual DbSet<TaskAttachment> TaskAttachments { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Comment>(entity =>
@@ -146,6 +148,7 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.IsParent).HasDefaultValue(false);
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Tasks)
                 .HasForeignKey(d => d.CreatedBy)
@@ -156,6 +159,11 @@ public partial class LabProjectManagementContext : DbContext
                 .HasForeignKey(d => d.ProjectId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Tasks__ProjectId__619B8048");
+
+            entity.HasOne(d => d.Parent)
+                .WithMany(p => p.SubTasks)
+                .HasForeignKey(d => d.ParentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<TaskAssignment>(entity =>
@@ -229,6 +237,27 @@ public partial class LabProjectManagementContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserProje__UserI__534D60F1");
+        });
+
+        modelBuilder.Entity<TaskAttachment>(entity =>
+        {
+            entity.HasKey(e => e.AttachmentId);
+
+            entity.Property(e => e.FileName).HasMaxLength(255);
+            entity.Property(e => e.FileType).HasMaxLength(50);
+            entity.Property(e => e.UploadedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Task)
+                .WithMany(p => p.TaskAttachments)
+                .HasForeignKey(d => d.TaskId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.UploadedByNavigation)
+                .WithMany(p => p.TaskAttachments)
+                .HasForeignKey(d => d.UploadedBy)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         OnModelCreatingPartial(modelBuilder);

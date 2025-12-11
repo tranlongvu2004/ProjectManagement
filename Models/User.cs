@@ -40,4 +40,6 @@ public partial class User
     public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
 
     public virtual ICollection<UserProject> UserProjects { get; set; } = new List<UserProject>();
+
+    public virtual ICollection<TaskAttachment> TaskAttachments { get; set; } = new List<TaskAttachment>();
 }
