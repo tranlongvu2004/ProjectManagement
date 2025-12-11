@@ -195,11 +195,11 @@ public partial class LabProjectManagementContext : DbContext
                 .HasConversion(
                     v => v == UserStatus.Active ? "active" 
                         : v == UserStatus.Inactive ? "inactive" 
-                        : v == UserStatus.Dropped ? "Dropped" 
+                        : v == UserStatus.Dropped ? "dropped" 
                         : null,
                     v => v == "active" ? UserStatus.Active 
                         : v == "inactive" ? UserStatus.Inactive 
-                        : v == "Dropped" ? UserStatus.Dropped 
+                        : v == "dropped" ? UserStatus.Dropped 
                         : (UserStatus?)null
                 );
 

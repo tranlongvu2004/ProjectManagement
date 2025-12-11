@@ -2,7 +2,7 @@
 using PorjectManagement.Models;
 using PorjectManagement.Service;
 using PorjectManagement.Service.Interface;
-
+using System.Net.Mail;
 namespace PorjectManagement.Controllers
 {
     public class UserController : Controller
@@ -72,10 +72,27 @@ namespace PorjectManagement.Controllers
         {
             return View();
         }
-
+        bool IsValidEmail(string email)
+        {
+            try
+            {
+                var mail = new MailAddress(email);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         [HttpPost]
         public IActionResult Register(string fullName, string email, string password, string confirmpassword)
         {
+            if (!IsValidEmail(email))
+            {
+                ViewBag.Error = "Email không đúng định dạng.";
+                return View();
+            }
+
             if (password != confirmpassword)
             {
                 ViewBag.Error = "Mật khẩu xác nhận không khớp.";
@@ -88,7 +105,7 @@ namespace PorjectManagement.Controllers
                 ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
                 return View();
             }
-            if (password.Length <= 3 && confirmpassword.Length <= 3)
+            if (password.Length <= 4 && confirmpassword.Length <= 4)
             {
                 ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
                 return View();
@@ -161,7 +178,7 @@ namespace PorjectManagement.Controllers
                 ViewBag.Email = email;
                 return View();
             }
-            if (newpassword.Length <= 3 && confirmpassword.Length <= 3)
+            if (newpassword.Length <= 4 && confirmpassword.Length <= 4)
             {
                 ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
                 return View();
@@ -178,6 +195,72 @@ namespace PorjectManagement.Controllers
             return RedirectToAction("Login");
         }
 
+        //Change Password
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login");
+            }
+            return RedirectToAction("/User/ResetPassword");
+        }
+
+
+
+        //Change Password
+        [HttpGet]
+        public IActionResult Profile()
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            var user = _userService.GetUserById(userId.Value);
+            return View(user);
+        }
+
+        [HttpPost]
+        public IActionResult Profile(string fullName, string email, IFormFile? avatarFile)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login");
+
+            var user = _userService.GetUserById(userId.Value);
+
+            if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(email))
+            {
+                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
+                return View(user);
+            }
+
+            // Upload avatar
+            if (avatarFile != null && avatarFile.Length > 0)
+            {
+                var fileName = $"{Guid.NewGuid()}_{avatarFile.FileName}";
+                var savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/avatars", fileName);
+
+                using var stream = new FileStream(savePath, FileMode.Create);
+                avatarFile.CopyTo(stream);
+
+                user.AvatarUrl = "/avatars/" + fileName;
+            }
+
+            user.FullName = fullName;
+            user.Email = email;
+
+            _userService.UpdateProfile(user);
+
+            ViewBag.Message = "Cập nhật thông tin thành công!";
+            return View(user);
+        }
 
         // Logout
         public IActionResult Logout()

@@ -23,9 +23,19 @@ namespace PorjectManagement.Service
             return _userRepo.GetUserByEmail(email);
         }
 
+        public User? GetUserById(int userId)
+        {
+            return _userRepo.getUserById(userId);
+        }
+
         public bool IsLoginValid(string email, string password)
         {
             return _userRepo.IsloginValid(email, password);
+        }
+
+        public void UpdateProfile(User user)
+        {
+            _userRepo.UpdateProfile(user);
         }
 
         public void UpdateUser(User user)

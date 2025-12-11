@@ -24,7 +24,8 @@ namespace PorjectManagement.Controllers
 
             // Theo dev/Vu
             var tasks = _context.Tasks
-                .Include(t => t.CreatedByNavigation)
+                .Include(t => t.TaskAssignments)
+                .ThenInclude(ta => ta.User)
                 .Where(t => t.ProjectId == projectId)
                 .ToList();
 

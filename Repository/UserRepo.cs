@@ -50,13 +50,30 @@ namespace PorjectManagement.Repository
             _context.SaveChanges();
         }
 
-        // ✅ Thêm method mới
         public async Task<List<User>> GetAllUsersWithRolesAsync()
         {
             return await _context.Users
                 .Include(u => u.Role)
-                .Where(u => u.Status == UserStatus.Active) // Chỉ lấy active users
+                .Where(u => u.Status == UserStatus.Active) 
                 .ToListAsync();
+        }
+
+        public User? getUserById(int userId)
+        {
+            return _context.Users.FirstOrDefault(u => u.UserId == userId);
+        }
+
+        public void UpdateProfile(User user)
+        {
+            var exist = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+            if (exist != null)
+            {
+                exist.FullName = user.FullName;
+                exist.Email = user.Email;
+                exist.AvatarUrl = user.AvatarUrl;
+                exist.Status = user.Status;
+            }
+            _context.SaveChanges();
         }
     }
 }
