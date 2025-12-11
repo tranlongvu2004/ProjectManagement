@@ -54,7 +54,7 @@ namespace PorjectManagement.Repository
         {
             return await _context.Users
                 .Include(u => u.Role)
-                .Where(u => u.Status == UserStatus.Active)
+                .Where(u => u.Status == UserStatus.Active) 
                 .ToListAsync();
         }
 

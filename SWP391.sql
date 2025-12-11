@@ -1,4 +1,10 @@
-﻿CREATE DATABASE LabProjectManagement;
+﻿IF EXISTS (SELECT name FROM sys.databases WHERE name = 'LabProjectManagement')
+BEGIN
+    ALTER DATABASE LabProjectManagement SET MULTI_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE LabProjectManagement;
+END
+GO
+CREATE DATABASE LabProjectManagement;
 GO
 USE LabProjectManagement;
 GO
@@ -134,7 +140,17 @@ CREATE TABLE Reports (
     FOREIGN KEY (LeaderId) REFERENCES Users(UserId)
 );
 
+CREATE TABLE RecycleBin (
+    RecycleId INT IDENTITY(1,1) PRIMARY KEY,
 
+    EntityType NVARCHAR(50) NOT NULL,         -- 'Task'
+    EntityId INT NOT NULL,                    -- Id gốc của bản ghi
+
+    DataSnapshot NVARCHAR(MAX) NOT NULL,      -- Lưu JSON chứa toàn bộ dữ liệu Task
+
+    DeletedBy INT NULL,                       -- Id người xoá (nhưng không FK)
+    DeletedAt DATETIME DEFAULT GETDATE()
+);
 /* ================================
    E. SEED DATA
 =================================*/
