@@ -24,9 +24,9 @@ public partial class Task
 {
     public int TaskId { get; set; }
 
-    // ✨ NEW: Parent-Child relationship
     public int? ParentId { get; set; }
-    public bool IsParent { get; set; }
+
+    public bool? IsParent { get; set; }
 
     public int ProjectId { get; set; }
     public string Title { get; set; } = null!;
@@ -42,13 +42,13 @@ public partial class Task
     // Navigation properties
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public virtual User CreatedByNavigation { get; set; } = null!;
+
+    public virtual ICollection<Task> InverseParent { get; set; } = new List<Task>();
+
+    public virtual Task? Parent { get; set; }
+
     public virtual Project Project { get; set; } = null!;
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = new List<TaskAssignment>();
-    
-    // ✨ NEW: Self-referencing navigation
-    public virtual Task? Parent { get; set; }
-    public virtual ICollection<Task> SubTasks { get; set; } = new List<Task>();
-    
-    // ✨ NEW: Attachments
+
     public virtual ICollection<TaskAttachment> TaskAttachments { get; set; } = new List<TaskAttachment>();
 }
