@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = Model.Project.ProjectName;
-    var roleId = Context.Session.GetInt32("RoleId");
 }
 
 <div class="p-4">
@@ -108,60 +107,6 @@
             }
         </div>
     </div>
-@if (roleId == 1)
-{
-    <!-- Reports Section -->
-    <div class="card border-0 shadow-sm mt-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-4">Báo Cáo (@Model.Reports.Count)</h5>
-
-            @if (Model.Reports != null && Model.Reports.Any())
-            {
-                <div class="list-group">
-                    @foreach (var r in Model.Reports)
-                    {
-                        var fileName = System.IO.Path.GetFileName(r.FilePath);
-                        var ext = System.IO.Path.GetExtension(r.FilePath).ToLower();
-
-                        string icon = ext switch
-                        {
-                            ".pdf" => "bi-file-earmark-pdf text-danger",
-                            ".doc" or ".docx" => "bi-file-earmark-word text-primary",
-                            ".xls" or ".xlsx" => "bi-file-earmark-excel text-success",
-                            _ => "bi-file-earmark"
-                        };
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <i class="bi @icon fs-3 me-3"></i>
-                                <div>
-                                    <div class="fw-semibold">@r.ReportType</div>
-                                    <small class="text-muted">
-                                        Tập tin: @fileName
-                                    </small>
-                                    <br />
-                                    <small class="text-muted">
-                                        Leader ID: @r.LeaderId
-                                    </small>
-                                </div>
-                            </div>
-
-                            <a href="@Url.Content(r.FilePath)"
-                               target="_blank"
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-download"></i> Tải xuống
-                            </a>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <p class="text-muted text-center py-4">Chưa có báo cáo nào</p>
-            }
-        </div>
-    </div>
-    }
-
 </div>
 
 <style>

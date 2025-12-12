@@ -92,12 +92,7 @@ namespace PorjectManagement.Controllers
                 ViewBag.Error = "Email không đúng định dạng.";
                 return View();
             }
-            var existUser = _userService.GetUser(email);
-            if (existUser != null)
-            {
-                ViewBag.Error = "Email đã tồn tại.";
-                return View();
-            }
+
             if (password != confirmpassword)
             {
                 ViewBag.Error = "Mật khẩu xác nhận không khớp.";
@@ -110,11 +105,17 @@ namespace PorjectManagement.Controllers
                 ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
                 return View();
             }
-            if (password.Length <= 4 || confirmpassword.Length <= 4)
+            if (password.Length <= 4 && confirmpassword.Length <= 4)
             {
                 ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
                 return View();
-            }            
+            }
+            var existUser = _userService.GetUser(email);
+            if (existUser != null)
+            {
+                ViewBag.Error = "Email đã tồn tại.";
+                return View();
+            }
             var newUser = new User
             {
                 FullName = fullName,
@@ -170,13 +171,14 @@ namespace PorjectManagement.Controllers
                 ViewBag.Email = email;
                 return View();
             }
+
             if (newpassword != confirmpassword)
             {
                 ViewBag.Error = "Mật khẩu xác nhận không khớp.";
                 ViewBag.Email = email;
                 return View();
             }
-            if (newpassword.Length <= 4 || confirmpassword.Length <= 4)
+            if (newpassword.Length <= 4 && confirmpassword.Length <= 4)
             {
                 ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
                 return View();
@@ -186,7 +188,7 @@ namespace PorjectManagement.Controllers
             {
                 ViewBag.Error = "Không tìm thấy tài khoản.";
                 return View();
-            }                                
+            }
             user.PasswordHash = newpassword;
             _userService.UpdateUser(user);
 
@@ -197,6 +199,12 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public IActionResult ChangePassword()
         {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        {
             int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
             {
@@ -204,6 +212,8 @@ namespace PorjectManagement.Controllers
             }
             return RedirectToAction("/User/ResetPassword");
         }
+
+
 
         //Change Password
         [HttpGet]
