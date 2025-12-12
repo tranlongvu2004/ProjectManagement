@@ -1,12 +1,15 @@
+using NuGet.Packaging;
+using OfficeOpenXml;
 using PorjectManagement.Models;
 using PorjectManagement.Repository;
 using PorjectManagement.Repository.Interface;
 using PorjectManagement.Service;
 using PorjectManagement.Service.Interface;
+using System.ComponentModel;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
+ExcelPackage.License.SetNonCommercialPersonal("Task Lab");
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSqlServer<LabProjectManagementContext>(builder.Configuration.GetConnectionString("MyCnn"));
@@ -34,6 +37,9 @@ builder.Services.AddScoped<IInternRepo, InternRepo>();
 builder.Services.AddScoped<IInternService, InternService>();
 
 builder.Services.AddSignalR();
+
+
+
 var app = builder.Build();
 app.UseSession();
 // Configure the HTTP request pipeline.
