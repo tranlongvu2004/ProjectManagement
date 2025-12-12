@@ -70,27 +70,26 @@ namespace PorjectManagement.Service
 
         public async Task<bool> AssignTaskAsync(int taskId, int userId)
         {
-            var assignment = await _context.TaskAssignments
-                .FirstOrDefaultAsync(x => x.TaskId == taskId);
+        
+            bool exists = await _context.TaskAssignments
+                .AnyAsync(x => x.TaskId == taskId && x.UserId == userId);
 
-            if (assignment == null)
+            if (exists)
+                throw new Exception("Thành viên này đã được giao công việc này rồi.");
+
+            
+            var newAssignment = new TaskAssignment
             {
-                assignment = new TaskAssignment
-                {
-                    TaskId = taskId,
-                    UserId = userId,
-                    AssignedAt = DateTime.Now
-                };
-                _context.TaskAssignments.Add(assignment);
-            }
-            else
-            {
-                assignment.UserId = userId;
-                assignment.AssignedAt = DateTime.Now;
-            }
+                TaskId = taskId,
+                UserId = userId,
+                AssignedAt = DateTime.Now
+            };
+
+            _context.TaskAssignments.Add(newAssignment);
 
             await _context.SaveChangesAsync();
             return true;
         }
+
     }
 }

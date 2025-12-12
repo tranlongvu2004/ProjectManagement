@@ -26,7 +26,6 @@ namespace PorjectManagement.Controllers
 
             var vm = new TaskCreateViewModel();
 
-            // Nếu projectId = null → lấy từ URL referrer
             if (!projectId.HasValue)
             {
                 var referer = Request.Headers["Referer"].ToString();
@@ -43,23 +42,19 @@ namespace PorjectManagement.Controllers
                 }
             }
 
-            // Nếu sau khi detect vẫn null → fallback
             if (!projectId.HasValue)
             {
-                // vẫn load dropdown nếu không tìm được projectId
                 var projectList = await _userProjectService.GetAllProjectsAsync();
                 ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
                 vm.ProjectMembers = new List<PorjectManagement.Models.User>();
                 return View(vm);
             }
 
-            // Đến đây chắc chắn có projectId
+
             vm.ProjectId = projectId.Value;
 
-            // Load thành viên trong project
             vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
 
-            // Ẩn dropdown project trong view
             ViewBag.HideProjectDropdown = true;
 
             return View(vm);
@@ -100,7 +95,7 @@ namespace PorjectManagement.Controllers
                 Priority = model.Priority,
                 Status = PorjectManagement.Models.TaskStatus.ToDo,
                 Deadline = model.Deadline,
-                CreatedBy = 1, // TODO: thay bằng user đang login
+                CreatedBy = 1,
                 CreatedAt = DateTime.Now
             };
 
@@ -131,11 +126,20 @@ namespace PorjectManagement.Controllers
                 return View(model);
             }
 
-            await _taskService.AssignTaskAsync(model.TaskId, model.SelectedUserId);
-
-            TempData["Success"] = "Giao công việc thành công!";
-            return RedirectToAction("Assign", new { id = model.TaskId });
+            try
+            {
+                await _taskService.AssignTaskAsync(model.TaskId, model.SelectedUserId);
+                TempData["Success"] = "Giao công việc thành công!";
+                return RedirectToAction("Assign", new { id = model.TaskId });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                model = await _taskService.GetAssignTaskDataAsync(model.TaskId);
+                return View(model);
+            }
         }
+
     }
 }
     
