@@ -28,12 +28,16 @@ namespace PorjectManagement.Controllers
                 .ThenInclude(ta => ta.User)
                 .Where(t => t.ProjectId == projectId)
                 .ToList();
+            var parentTasks = tasks.Where(t => t.ParentId == null && t.IsParent == true).ToList();
+            var subTasks = tasks.Where(t => t.ParentId != null && t.IsParent == false).ToList();
 
+            ViewBag.ParentTasks = parentTasks;
+            ViewBag.SubTasks = subTasks;
             ViewBag.ProjectId = projectId;
 
             // ViewBag.Projects tự động load từ BaseController.OnActionExecuting
 
-            return View(tasks);
+            return View();
         }
     }
 }

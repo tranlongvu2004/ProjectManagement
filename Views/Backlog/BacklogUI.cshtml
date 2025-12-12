@@ -103,63 +103,64 @@
         </thead>
 
         <tbody>
-            @foreach (var t in Model)
+@foreach (var parent in ViewBag.ParentTasks as List<PorjectManagement.Models.Task>)
+{
+    <tr class="parent-row" data-id="@parent.TaskId">
+        <td>
+            <span class="toggle-btn" data-target="@parent.TaskId" style="cursor:pointer;">
+                ▶
+            </span>
+            <strong>@parent.Title</strong>
+        </td>
+
+        <td>
+            @foreach (var o in parent.TaskAssignments)
             {
-                <tr>
-                    <td>@t.Title</td>
-
-                    <td>
-                        @{
-                            var owner = t.TaskAssignments.FirstOrDefault()?.User;
-                        }
-                        @if (owner != null)
-                        {
-                            <span class="badge square bg-success p-3">@owner.FullName</span>
-                        }
-                        else
-                        {
-                            <span class="badge rounded-circle bg-secondary p-3">No Owner</span>
-                        }
-                    </td>
-
-                    <td>
-                        @{
-                            var statusClass = t.Status switch
-                            {
-                                @using TaskStatus = PorjectManagement.Models.TaskStatus
-
-                                TaskStatus.ToDo => "bg-warning text-dark",
-                                TaskStatus.Doing => "bg-warning text-dark",
-                                TaskStatus.Completed => "bg-success",
-                                TaskStatus.Stuck => "bg-danger",
-                                TaskStatus.Not_Started => "bg-secondary",
-                                _ => "bg-light text-dark"
-                            };
-                        }
-                        <span class="badge @statusClass p-2">@t.Status</span>
-                    </td>
-
-                    <td>
-                        @t.Deadline?.ToString("MMM d") 
-                    </td>
-
-                    <td>
-                        @{
-                            string priorityClass = t.Priority switch
-                            {
-                                @using TaskPriority = PorjectManagement.Models.TaskPriority
-                                TaskPriority.Low => "bg-primary",
-                                TaskPriority.Medium => "bg-warning text-dark",
-                                TaskPriority.High => "bg-dark",
-                                TaskPriority.Necessary => "bg-danger",
-                                _ => "bg-light text-dark"
-                            };
-                        }
-                        <span class="badge @priorityClass p-2">@t.Priority</span>
-                    </td>
-                </tr>
+                <img src="@o.User.AvatarUrl"
+                     style="width:32px;height:32px;object-fit:cover;border-radius:50%;margin-right:4px;"
+                     title="@o.User.FullName" />
             }
-        </tbody>
+        </td>
+
+        <td>
+            <span class="badge bg-info">@parent.Status</span>
+        </td>
+
+        <td>@parent.Deadline?.ToString("MMM d")</td>
+        <td><span class="badge bg-warning">@parent.Priority</span></td>
+    </tr>
+
+    <!-- SUBTASKS -->
+    
+
+    @foreach (var child in (ViewBag.SubTasks as List<PorjectManagement.Models.Task>)
+        .Where(c => c.ParentId == parent.TaskId))
+    {
+        <tr class="subtask-row subtask-of-@parent.TaskId" style="display:none; background:#fafafa;">
+            <td style="padding-left:40px;">
+                 <span>@child.Title</span>
+            </td>
+
+            <td>
+                @foreach (var o in child.TaskAssignments)
+                {
+                    <img src="@o.User.AvatarUrl"
+                         style="width:26px;height:26px;object-fit:cover;border-radius:50%;margin-right:2px;"
+                         title="@o.User.FullName" />
+                }
+            </td>
+
+            <td>
+                <span class="badge bg-secondary">@child.Status</span>
+            </td>
+
+            <td>@child.Deadline?.ToString("MMM d")</td>
+            <td><span class="badge bg-dark">@child.Priority</span></td>
+        </tr>
+    }
+}
+</tbody>
+
     </table>
 </div>
 
@@ -205,6 +206,23 @@
         });
     });
     function showNoPermission() {
-        alert("Bạn không có quyền làm điều này!");
+        alert("You don't have permission to do this!'");
     }
+</script>
+
+<script>
+document.querySelectorAll(".toggle-btn").forEach(btn => {
+    btn.addEventListener("click", function () {
+        let id = this.getAttribute("data-target");
+        let rows = document.querySelectorAll(`.subtask-of-${id}`);
+
+        rows.forEach(r => {
+            r.style.display = (r.style.display === "none" || r.style.display === "") 
+                ? "table-row" 
+                : "none";
+        });
+
+        this.textContent = (this.textContent.trim() === "▶") ? "▼" : "▶";
+    });
+});
 </script>
