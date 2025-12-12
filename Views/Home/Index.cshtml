@@ -28,6 +28,14 @@
         }
     </div>
 
+    <div class="mt-3">
+        <a asp-controller="Intern" asp-action="Index"
+           class="btn btn-info px-4 py-2"
+           style="border-radius:10px; font-size:18px; color:white;">
+            <i class="bi bi-people"></i> Danh sách thực tập sinh
+        </a>
+    </div>
+
     <div class="mt-4">
         <p class="text-muted">
             @switch (roleId)
@@ -36,9 +44,6 @@
                     <text>Bạn đang đăng nhập với quyền <strong>Mentor</strong></text>
                     break;
                 case 2:
-                    <text>Bạn đang đăng nhập với quyền <strong>InternLead</strong></text>
-                    break;
-                case 3:
                     <text>Bạn đang đăng nhập với quyền <strong>Intern</strong></text>
                     break;
                 default:
