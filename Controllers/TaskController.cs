@@ -111,9 +111,32 @@ namespace PorjectManagement.Controllers
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
             TempData["SuccessMessage"] = "Tạo task thành công!";
 
-            // Redirect về BacklogUI (trang trong ảnh của m)
             return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
+        public async Task<IActionResult> Assign(int id)
+        {
+            var vm = await _taskService.GetAssignTaskDataAsync(id);
+            if (vm == null) return NotFound();
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Assign(TaskAssignViewModel model)
+        {
+            if (model.SelectedUserId <= 0)
+            {
+                ModelState.AddModelError("", "Bạn phải chọn 1 thành viên.");
+                model = await _taskService.GetAssignTaskDataAsync(model.TaskId);
+                return View(model);
+            }
+
+            await _taskService.AssignTaskAsync(model.TaskId, model.SelectedUserId);
+
+            TempData["Success"] = "Giao công việc thành công!";
+            return RedirectToAction("Assign", new { id = model.TaskId });
+        }
     }
-    }
+}
+    
 
