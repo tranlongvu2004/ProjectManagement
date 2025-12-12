@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = Model.Project.ProjectName;
     var roleId = Context.Session.GetInt32("RoleId");
+    var currentUserId = Context.Session.GetInt32("UserId");
+    var isLeader = Model.Members.Any(x => x.UserId == currentUserId && x.IsLeader);
+
 }
 
 <div class="p-4">
@@ -108,6 +111,39 @@
             }
         </div>
     </div>
+    @if (isLeader)
+    {
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Tải lên báo cáo mới</h5>
+
+                <form asp-controller="Report"
+                      asp-action="Upload"
+                      enctype="multipart/form-data"
+                      method="post">
+
+                    <input type="hidden" name="ProjectId" value="@Model.Project.ProjectId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Loại báo cáo</label>
+                        <select class="form-select" name="ReportType">
+                            <option value="Daily">Báo cáo ngày</option>
+                            <option value="Weekly">Báo cáo tuần</option>
+                            <option value="Final">Báo cáo cuối kỳ</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">File báo cáo</label>
+                        <input class="form-control" type="file" name="ReportFile" required />
+                    </div>
+
+                    <button class="btn btn-primary">Tải lên</button>
+                </form>
+            </div>
+        </div>
+    }
+
 @if (roleId == 1)
 {
     <!-- Reports Section -->
