@@ -64,6 +64,20 @@ namespace PorjectManagement.Repository
 
             return await query.ToListAsync();
         }
+        public Task<List<ProjectReportItem>> GetProjectReportAsync(int projectId)
+        {
+           var query = from r in _context.Reports
+                       where r.ProjectId == projectId
+                       select new ProjectReportItem
+                       {
+                           ReportId = r.ReportId,
+                           ProjectId = r.ProjectId,
+                           LeaderId = r.LeaderId,
+                           ReportType = r.ReportType,
+                           FilePath = r.FilePath
+                       };
+            return query.ToListAsync();
+        }
 
         public async Task<List<ProjectTaskItem>> GetProjectTasksAsync(int projectId)
         {
@@ -103,7 +117,7 @@ namespace PorjectManagement.Repository
 
             var members = await GetProjectMembersAsync(projectId);
             var tasks = await GetProjectTasksAsync(projectId);
-
+            var report = await GetProjectReportAsync(projectId);
             var overallProgress = 0;
             if (tasks.Any())
             {
@@ -116,6 +130,7 @@ namespace PorjectManagement.Repository
                 Project = project,
                 Members = members,
                 Tasks = tasks,
+                Reports = report,
                 OverallProgress = overallProgress
             };
         }
@@ -144,6 +159,6 @@ namespace PorjectManagement.Repository
                 .Include(p => p.UserProjects)
                     .ThenInclude(up => up.User)
                 .FirstOrDefaultAsync(p => p.ProjectId == projectId);
-        }
+        }       
     }
 }

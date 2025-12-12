@@ -199,12 +199,6 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public IActionResult ChangePassword()
         {
-            return View();
-        }
-
-        [HttpPost]
-        public IActionResult ChangePassword(string currentPassword, string newPassword, string confirmPassword)
-        {
             int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
             {
@@ -212,8 +206,6 @@ namespace PorjectManagement.Controllers
             }
             return RedirectToAction("/User/ResetPassword");
         }
-
-
 
         //Change Password
         [HttpGet]
