@@ -145,5 +145,18 @@ namespace PorjectManagement.Repository
                     .ThenInclude(up => up.User)
                 .FirstOrDefaultAsync(p => p.ProjectId == projectId);
         }
+
+        public async Task<Project?> GetProjectEntityByIdAsync(int projectId)
+        {
+            return await _context.Projects
+                .Include(p => p.UserProjects)
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+        }
+
+        public async System.Threading.Tasks.Task UpdateProjectAsync(Project project)
+        {
+            _context.Projects.Update(project);
+            await _context.SaveChangesAsync();
+        }
     }
 }

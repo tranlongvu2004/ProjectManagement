@@ -1,5 +1,4 @@
-﻿// Repository/UserProjectRepo.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -76,6 +75,16 @@ namespace PorjectManagement.Repository
 
             // Thêm vào database
             await _context.UserProjects.AddRangeAsync(userProjects);
+            await _context.SaveChangesAsync();
+        }
+
+        public async System.Threading.Tasks.Task RemoveAllMembersFromProjectAsync(int projectId)
+        {
+            var userProjects = await _context.UserProjects
+                .Where(up => up.ProjectId == projectId)
+                .ToListAsync();
+            
+            _context.UserProjects.RemoveRange(userProjects);
             await _context.SaveChangesAsync();
         }
     }

@@ -29,8 +29,6 @@ public partial class LabProjectManagementContext : DbContext
 
     public virtual DbSet<TaskAssignment> TaskAssignments { get; set; }
 
-    public virtual DbSet<TaskAttachment> TaskAttachments { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserProject> UserProjects { get; set; }
@@ -275,29 +273,6 @@ public partial class LabProjectManagementContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserProje__UserI__46E78A0C");
         });
-
-        modelBuilder.Entity<TaskAttachment>(entity =>
-        {
-            entity.HasKey(e => e.AttachmentId);
-
-            entity.Property(e => e.FileName).HasMaxLength(255);
-            entity.Property(e => e.FileType).HasMaxLength(50);
-            entity.Property(e => e.UploadedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-
-            entity.HasOne(d => d.Task)
-                .WithMany(p => p.TaskAttachments)
-                .HasForeignKey(d => d.TaskId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.UploadedByNavigation)
-                .WithMany(p => p.TaskAttachments)
-                .HasForeignKey(d => d.UploadedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-        });
-
-        OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

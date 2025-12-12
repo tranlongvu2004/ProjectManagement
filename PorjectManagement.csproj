@@ -19,4 +19,10 @@
     <Folder Include="wwwroot\avatars\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Models\LabProjectManagementContext.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
 </Project>
