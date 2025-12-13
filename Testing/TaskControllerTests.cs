@@ -34,7 +34,6 @@ namespace PorjectManagement.Tests.Controllers
 
             var httpContext = new DefaultHttpContext();
 
-            // ✅ Session
             httpContext.Session = new TestSession();
             httpContext.Session.SetInt32("UserId", 1);
             _controller.ControllerContext = new ControllerContext
@@ -42,15 +41,12 @@ namespace PorjectManagement.Tests.Controllers
                 HttpContext = new DefaultHttpContext()
             };
 
-            // ✅ User (optional nhưng nên có)
             httpContext.User = new ClaimsPrincipal(
                 new ClaimsIdentity(
                     new[] { new Claim(ClaimTypes.NameIdentifier, "1") },
                     "TestAuth"
                 )
             );
-
-            // Mock IUrlHelper và IUrlHelperFactory
             var urlHelperMock = new Mock<IUrlHelper>();
             urlHelperMock
                 .Setup(x => x.Action(It.IsAny<UrlActionContext>()))
@@ -61,7 +57,6 @@ namespace PorjectManagement.Tests.Controllers
                 .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
                 .Returns(urlHelperMock.Object);
 
-            // ✅ ServiceProvider cho OnActionExecuting
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider
                 .Setup(x => x.GetService(typeof(IProjectServices)))
@@ -72,18 +67,15 @@ namespace PorjectManagement.Tests.Controllers
 
             httpContext.RequestServices = serviceProvider.Object;
 
-            // ✅ Gán vào controller
             _controller.ControllerContext = new ControllerContext
             {
                 HttpContext = httpContext
             };
 
-            // ✅ TempData (vì controller có dùng)
             _controller.TempData = new TempDataDictionary(
                 httpContext,
                 Mock.Of<ITempDataProvider>()
             );
-
 
             _controller.TempData = new TempDataDictionary(
                 httpContext,
