@@ -151,11 +151,11 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.Status)
                 .HasConversion(
                     v => v == TaskStatus.ToDo ? "ToDo" 
-                        : v == TaskStatus.Doing ? "Doing" 
+                        : v == TaskStatus.Doing ? "InProgress"
                         : v == TaskStatus.Completed ? "Completed" 
                         : null,
                     v => v == "ToDo" ? TaskStatus.ToDo 
-                        : v == "Doing" ? TaskStatus.Doing 
+                        : v == "InProgress" ? TaskStatus.Doing 
                         : v == "Completed" ? TaskStatus.Completed 
                         : (TaskStatus?)null
                 );

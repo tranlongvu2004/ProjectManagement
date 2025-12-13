@@ -90,7 +90,7 @@ namespace PorjectManagement.Controllers
 
         public IActionResult DashboardPartial(int projectId, int userId)
         {
-            return View("Dashboard"); // trả về cùng model Dashboard luôn
+            return View("Dashboard");
         }
         public IActionResult ExportDashboard(int projectId, int userId)
         {

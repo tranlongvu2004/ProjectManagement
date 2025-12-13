@@ -18,27 +18,27 @@ namespace PorjectManagement.Controllers
                 .Where(rb => rb.EntityType == "Task")
                 .OrderByDescending(rb => rb.DeletedAt)
                 .Select(x => new
-                {
-                    Recycle = x,
-                    DeletedUser = _context.Users.FirstOrDefault(u => u.UserId == x.DeletedBy)
-                })
+            {
+                Recycle = x,
+                DeletedUser = _context.Users.FirstOrDefault(u => u.UserId == x.DeletedBy)
+            })
             .AsEnumerable()
             .Select(x =>
-            {
-                var task = System.Text.Json.JsonSerializer.Deserialize<DTOTaskSnapshot>(x.Recycle.DataSnapshot);
+        {
+        var task = System.Text.Json.JsonSerializer.Deserialize<DTOTaskSnapshot>(x.Recycle.DataSnapshot);
 
-                return new RecyclebinVM
-                {
-                    RecycleId = x.Recycle.RecycleId,
-                    EntityType = "Task",
-                    Name = task?.TaskName ?? "(Unknown Task)",
-                    Owner = task?.Owner ?? "Unassigned",
-                    Status = task?.Status ?? "Unknown",
-                    DeletedBy = x.DeletedUser?.FullName ?? "Unknown",
-                    DeletedAt = x.Recycle.DeletedAt ?? DateTime.MinValue,
-                    ProjectId = task?.ProjectId ?? 0
-                };
-            })
+        return new RecyclebinVM
+        {
+            RecycleId = x.Recycle.RecycleId,
+            EntityType = "Task",
+            Name = task?.TaskName ?? "(Unknown Task)",  
+            Owner = task?.Owner ?? "Unassigned",
+            Status = task?.Status ?? "Unknown",
+            DeletedBy = x.DeletedUser?.FullName ?? "Unknown",
+            DeletedAt = x.Recycle.DeletedAt ?? DateTime.MinValue,
+            ProjectId = task?.ProjectId ?? 0
+        };
+        })
         .ToList();
 
             return View(data);
@@ -75,10 +75,10 @@ namespace PorjectManagement.Controllers
             return Ok();
         }
 
-
+        
     }
     public class RestoreRequest
-    {
-        public int RecycleId { get; set; }
-    }
+        {
+            public int RecycleId { get; set; }
+        }
 }

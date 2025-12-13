@@ -68,7 +68,7 @@ namespace PorjectManagement.Repository
             {
                 ProjectId = projectId,
                 UserId = userId,
-                IsLeader = (leaderId.HasValue && userId == leaderId.Value),
+                IsLeader = (leaderId.HasValue && userId == leaderId.Value), // Set leader nếu match
                 JoinedAt = DateTime.Now
             }).ToList();
 

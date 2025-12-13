@@ -24,7 +24,7 @@ namespace PorjectManagement.Controllers
             
             if (role != 2)
             {
-                TempData["Error"] = "You are not allowed to do this action.";
+                TempData["Error"] = "Bạn không có quyền truy cập chức năng này.";
                 return RedirectToAction("Index", "Home");
             }
             var redirect = RedirectIfNotLoggedIn();
@@ -59,7 +59,7 @@ namespace PorjectManagement.Controllers
                     RoleName = u.Role?.RoleName ?? "",
                     CreatedAt = u.CreatedAt,
                     ProgressPercent = 0,
-                    Status = (u.Status?.ToString() ?? "unknown").ToLower()
+                    Status = u.Status?.ToString() ?? "Unknown"
                 }).ToList(),
                 AllProjects = allProjects
             };
@@ -75,14 +75,14 @@ namespace PorjectManagement.Controllers
             var role = HttpContext.Session.GetInt32("RoleId");
             if (role != 2)
             {
-                TempData["Error"] = "You are not allowed to do this action.";
+                TempData["Error"] = "Bạn không có quyền truy cập chức năng này.";
                 return RedirectToAction("Index", "Home");
             }
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
             if (model.ProjectId <= 0)
             {
-                ModelState.AddModelError("", "You must choose project before add member");
+                ModelState.AddModelError("", "Bạn phải chọn một dự án trước khi thêm thành viên.");
             }
 
             if (!ModelState.IsValid)
@@ -99,7 +99,7 @@ namespace PorjectManagement.Controllers
                         RoleName = u.Role?.RoleName ?? "",
                         CreatedAt = u.CreatedAt,
                         ProgressPercent = 0,
-                        Status = (u.Status?.ToString() ?? "unknown").ToLower()
+                        Status = u.Status?.ToString() ?? "Unknown"
                     }).ToList();
 
                 return View(model);
@@ -114,7 +114,7 @@ namespace PorjectManagement.Controllers
             }
             else
             {
-                TempData["Info"] = "No member is selected";
+                TempData["Info"] = "Không có thành viên nào được chọn.";
             }
 
             return RedirectToAction("AddMembers", new { id = model.ProjectId });

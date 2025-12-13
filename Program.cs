@@ -35,8 +35,6 @@ builder.Services.AddScoped<ITaskRepo, TaskRepo>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IInternRepo, InternRepo>();
 builder.Services.AddScoped<IInternService, InternService>();
-builder.Services.AddScoped<IReportService, ReportService>();
-
 
 builder.Services.AddSignalR();
 

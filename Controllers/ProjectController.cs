@@ -12,6 +12,7 @@ namespace PorjectManagement.Controllers
             _projectServices = projectServices;
         }
 
+        // GET: /Project
         public async Task<IActionResult> Index()
         {
             var redirect = RedirectIfNotLoggedIn();

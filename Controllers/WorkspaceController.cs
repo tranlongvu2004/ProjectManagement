@@ -19,11 +19,9 @@ namespace PorjectManagement.Controllers
         // GET: /Workspace/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-            {
-                return RedirectToAction("Login");
-            }
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
+
             if (id <= 0)
             {
                 return BadRequest("Project id không hợp lệ.");
