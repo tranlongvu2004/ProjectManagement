@@ -1,18 +1,19 @@
 ﻿<style>
 
     .trash-page {
-        background: #0f172a;
-        color: #e5e7eb;
+        background: #ffffff;
+        color: #172b4d;
         padding: 30px;
         min-height: 100vh;
         font-family: Inter, sans-serif;
     }
 
     .subtitle {
-        color: #94a3b8;
+        color: #6b778c;
         margin-bottom: 20px;
     }
 
+    /* Toolbar */
     .toolbar {
         display: flex;
         gap: 12px;
@@ -20,54 +21,72 @@
     }
 
     .search-box {
-        background: #020617;
-        border: 1px solid #1e293b;
-        color: white;
+        background: #ffffff;
+        border: 1px solid #dfe1e6;
+        color: #172b4d;
         padding: 8px 12px;
         border-radius: 6px;
         width: 240px;
     }
 
+        .search-box::placeholder {
+            color: #97a0af;
+        }
+
     .filter-btn {
-        background: #020617;
-        border: 1px solid #1e293b;
-        color: white;
+        background: #ffffff;
+        border: 1px solid #dfe1e6;
+        color: #172b4d;
         padding: 8px 14px;
         border-radius: 6px;
         cursor: pointer;
     }
 
+        .filter-btn:hover {
+            background: #f4f5f7;
+        }
+
+    /* Table */
     .trash-table {
         width: 100%;
         border-collapse: collapse;
-        background: #020617;
+        background: #ffffff;
         border-radius: 8px;
         overflow: hidden;
+        border: 1px solid #dfe1e6;
     }
 
         .trash-table th,
         .trash-table td {
             padding: 14px;
-            border-bottom: 1px solid #1e293b;
+            border-bottom: 1px solid #f0f1f3;
             text-align: left;
+            font-size: 14px;
         }
 
         .trash-table th {
-            color: #94a3b8;
+            color: #6b778c;
             font-weight: 500;
+            background: #fafbfc;
         }
 
         .trash-table tr:hover {
-            background: #020617aa;
+            background: #f7f8fa;
         }
 
+    /* Action */
     .action-btn {
         background: transparent;
         border: none;
-        color: #94a3b8;
+        color: #6b778c;
         font-size: 20px;
         cursor: pointer;
     }
+
+        .action-btn:hover {
+            color: #172b4d;
+        }
+
 
 
 </style>
