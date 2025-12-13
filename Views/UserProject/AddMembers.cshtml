@@ -162,9 +162,9 @@
 <div class="container my-4">
 
     <div class="mb-3">
-        <label class="form-label fw-bold">Chọn dự án</label>
+        <label class="form-label fw-bold">Choose project.</label>
         <select id="projectSelect" class="form-select" onchange="onProjectChange()">
-            <option value="">-- Chọn dự án --</option>
+            <option value="">-- Choose project --</option>
             @if (Model.AllProjects != null)
             {
                 foreach (var p in Model.AllProjects)
@@ -179,11 +179,11 @@
 
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Thêm thành viên vào dự án: @Model.ProjectName</h3>
+        <h3>Add members to project: @Model.ProjectName</h3>
 
 
         <form class="d-flex" method="get" action="">
-            <input id="searchBox" class="form-control me-2" type="search" placeholder="Tìm theo tên của thực tập sinh" aria-label="Search">
+            <input id="searchBox" class="form-control me-2" type="search" placeholder="Search by intern's name" aria-label="Search">
         </form>
     </div>
 
@@ -197,11 +197,11 @@
                     <thead class="bg-light">
                         <tr>
                             <th style="width:40px;"><input id="selectAll" type="checkbox" /></th>
-                            <th>Tên thực tập sinh</th>
+                            <th>Intern Name</th>
                             <th>Gmail</th>
-                            <th>Ngày bắt đầu</th>
+                            <th>Start Day</th>
                             <th>Role</th>
-                            <th>Trạng thái</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
@@ -249,12 +249,15 @@
             <td>
                 @switch (u.Status)
                 {
-                    case "Active":
-                        <span class="badge bg-success">Đang thực tập</span>;
+                    case "active":
+                        <span class="badge bg-success">Active</span>;
                         break;
 
-                    case "Completed":
-                        <span class="badge bg-primary">Hoàn thành</span>;
+                    case "inactive":
+                        <span class="badge bg-primary">Inactive</span>;
+                        break;
+                    case "dropped":
+                        <span class="badge bg-primary">Dropped</span>;
                         break;
 
                     default:
@@ -279,10 +282,10 @@
                                     @{
                                         string msg = r.Value switch
                                         {
-                                            "success" => "Thêm thành công",
-                                            "exists" => " Đã tồn tại trong dự án",
-                                            "invalid_status" => "Không thể thêm: thực tập sinh không tồn tại",
-                                            _ => "Không xác định"
+                                            "success" => "Added successfully",
+                                            "exists" => " Already exists in the project",
+                                            "invalid_status" => "Cannot add: intern does not exist",
+                                            _ => "Undefined"
                                         };
                                     }
                                     @msg
@@ -306,12 +309,12 @@
 
         <div class="d-flex justify-content-between align-items-center mt-3">
             <div>
-                <span id="selectedCount">0 thực tập sinh đã được chọn</span>
+                <span id="selectedCount">0 interns selected</span>
             </div>
             <div>
                 <a asp-controller="Home" asp-action="Index"
-                   class="btn btn-outline-secondary me-2">Hủy</a>
-                <button type="submit" class="btn btn-primary">Thêm (<span id="addCount">0</span>)</button>
+                   class="btn btn-outline-secondary me-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">Add (<span id="addCount">0</span>)</button>
             </div>
         </div>
     </form>
@@ -333,7 +336,7 @@
 
         function updateCounts() {
             const checked = document.querySelectorAll('.user-check:checked').length;
-            selectedCountSpan.textContent = `${checked} thực tập sinh đã được chọn`;
+            selectedCountSpan.textContent = `${checked} intern chosen`;
             addCountSpan.textContent = checked;
         }
 
@@ -377,13 +380,13 @@
 
         if (!project) {
             e.preventDefault();
-            alert("Bạn cần chọn một dự án!");
+            alert("You need to select a project!");
             return;
         }
 
         if (checked === 0) {
             e.preventDefault();
-            alert("Bạn phải chọn ít nhất 1 thực tập sinh!");
+            alert("You must select at least 1 intern!");
         }
     });
 </script>

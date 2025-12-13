@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Packaging;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using PorjectManagement.Models;
+using System.ComponentModel;
 
 namespace PorjectManagement.Controllers
 {
@@ -88,6 +92,90 @@ namespace PorjectManagement.Controllers
         {
             return View("Dashboard"); // trả về cùng model Dashboard luôn
         }
+        public IActionResult ExportDashboard(int projectId, int userId)
+        {
+            // Lấy dữ liệu Dashboard như bạn đang làm
+            var tasks = _context.Tasks
+                .Where(t => t.ProjectId == projectId)
+                .Select(t => new
+                {
+                    t.TaskId,
+                    t.Title,
+                    Status = t.Status.ToString(),
+                    Owner = t.CreatedByNavigation.FullName
+                })
+                .ToList();
+
+            var ownerTasks = _context.Tasks
+                .Where(t => t.ProjectId == projectId &&
+                            t.TaskAssignments.Any(ta => ta.UserId == userId))
+                .Select(t => new
+                {
+                    t.TaskId,
+                    t.Title,
+                    Status = t.Status.ToString()
+                })
+                .ToList();
+
+            int totalTasks = tasks.Count;
+            int completedTasks = tasks.Count(t => t.Status == "Completed");
+            int stuckTasks = tasks.Count(t => t.Status == "Stuck");
+            int inProgressTasks = tasks.Count(t => t.Status == "Doing");
+
+            // Tạo file Excel
+            using var package = new ExcelPackage();
+
+            var ws = package.Workbook.Worksheets.Add("Summary");
+            ws.Cells["A1"].Value = "Metric";
+            ws.Cells["B1"].Value = "Value";
+            ws.Cells["A2"].Value = "TotalTasks";
+            ws.Cells["B2"].Value = totalTasks;
+            ws.Cells["A3"].Value = "Completed";
+            ws.Cells["B3"].Value = completedTasks;
+            ws.Cells["A4"].Value = "Stuck";
+            ws.Cells["B4"].Value = stuckTasks;
+            ws.Cells["A5"].Value = "Doing";
+            ws.Cells["B5"].Value = inProgressTasks;
+            ws.Cells.AutoFitColumns();
+
+            // Sheet AllTasks
+            var ws2 = package.Workbook.Worksheets.Add("AllTasks");
+            ws2.Cells[1, 1].Value = "TaskId";
+            ws2.Cells[1, 2].Value = "Title";
+            ws2.Cells[1, 3].Value = "Status";
+            ws2.Cells[1, 4].Value = "Owner";
+            int row = 2;
+            foreach (var t in tasks)
+            {
+                ws2.Cells[row, 1].Value = t.TaskId;
+                ws2.Cells[row, 2].Value = t.Title;
+                ws2.Cells[row, 3].Value = t.Status;
+                ws2.Cells[row, 4].Value = t.Owner;
+                row++;
+            }
+            ws2.Cells.AutoFitColumns();
+
+            // Sheet OwnerTasks
+            var ws3 = package.Workbook.Worksheets.Add("OwnerTasks");
+            ws3.Cells[1, 1].Value = "TaskId";
+            ws3.Cells[1, 2].Value = "Title";
+            ws3.Cells[1, 3].Value = "Status";
+            row = 2;
+            foreach (var t in ownerTasks)
+            {
+                ws3.Cells[row, 1].Value = t.TaskId;
+                ws3.Cells[row, 2].Value = t.Title;
+                ws3.Cells[row, 3].Value = t.Status;
+                row++;
+            }
+            ws3.Cells.AutoFitColumns();
+
+            var fileBytes = package.GetAsByteArray();
+            return File(fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Dashboard.xlsx");
+        }
+
 
     }
 }
