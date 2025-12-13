@@ -111,38 +111,26 @@
                 <th><input type="checkbox" /></th>
                 <th>Name</th>
                 <th>Type</th>
-                <th>Deleted from</th>
                 <th>Deleted by</th>
                 <th>Date</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
-
-            <!-- Row -->
-            <tr>
-                <td><input type="checkbox" /></td>
-                <td>Task 3</td>
-                <td>Item</td>
-                <td>Main workspace / SWP</td>
-                <td>Nghiem Minh Duc</td>
-                <td>9 days ago</td>
-                <td>
-                    <button class="action-btn">⋯</button>
-                </td>
-            </tr>
-
-            <tr>
-                <td><input type="checkbox" /></td>
-                <td>Dashboard and reporting</td>
-                <td>Dashboard</td>
-                <td>Main workspace</td>
-                <td>Nghiem Minh Duc</td>
-                <td>9 days ago</td>
-                <td>
-                    <button class="action-btn">⋯</button>
-                </td>
-            </tr>
+            @foreach(var item in Model)
+            {
+                
+                <tr>
+                    <td><input type="checkbox" /></td>
+                    <td>@item.Name</td>
+                    <td>@item.EntityType</td>
+                    <td>@item.DeletedBy</td>
+                    <td>@(DateTime.Now.Day - item.DeletedAt.Day) day(s) ago</td>
+                    <td>
+                        <button class="action-btn">⋯</button>
+                    </td>
+                </tr>
+            }
 
         </tbody>
     </table>

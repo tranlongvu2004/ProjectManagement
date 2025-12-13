@@ -1,6 +1,8 @@
 ﻿@using PorjectManagement.Models
 @model List<PorjectManagement.Models.Task>
 
+
+
 @{
     ViewData["Title"] = "Main Table";
     var projectId = ViewBag.ProjectId;
@@ -9,6 +11,8 @@
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
 <style>
     .dashboard-btn {
@@ -102,12 +106,19 @@
                 <th>Status</th>
                 <th>Due Date</th>
                 <th>Priority</th>
+                <th>Action</th>
             </tr>
         </thead>
 
         <tbody>
+
+            @{
+                var subTasks = ViewBag.SubTasks as List<PorjectManagement.Models.Task>;
+            }
+
 @foreach (var parent in ViewBag.ParentTasks as List<PorjectManagement.Models.Task>)
 {
+    var hasSubTasks = subTasks.Any(c => c.ParentId == parent.TaskId);
     <tr class="parent-row" data-id="@parent.TaskId">
         <td>
             <span class="toggle-btn" data-target="@parent.TaskId" style="cursor:pointer;">
@@ -131,6 +142,17 @@
 
         <td>@parent.Deadline?.ToString("MMM d")</td>
         <td><span class="badge bg-warning">@parent.Priority</span></td>
+        <td>
+                        @if (!hasSubTasks)
+                        {
+                            <button class="btn btn-sm btn-warning delete-btn"
+        data-task-id="@parent.TaskId"
+        data-task-name="@parent.Title">
+    <i class="bi bi-trash"></i> Delete
+</button>
+                        }
+                        
+</td>
     </tr>
 
     <!-- SUBTASKS -->
@@ -159,6 +181,14 @@
 
             <td>@child.Deadline?.ToString("MMM d")</td>
             <td><span class="badge bg-dark">@child.Priority</span></td>
+            <td>
+    <button class="btn btn-sm btn-warning delete-btn"
+        data-task-id="@child.TaskId"
+        data-task-name="@child.Title">
+    <i class="bi bi-trash"></i> Delete
+</button>
+
+</td>
         </tr>
     }
 }
@@ -166,6 +196,38 @@
 
     </table>
 </div>
+
+<!--    POP UP DELETE NOTI    -->
+<div class="modal fade" id="deleteTaskModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete task?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>
+                    <strong id="deleteTaskName"></strong>
+                </p>
+                <p class="text-muted">
+                    We'll keep it in your trash for 30 days, and then permanently delete it.
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 <div class="mt-5">
     <h3>📊 Dashboard</h3>
@@ -229,3 +291,39 @@ document.querySelectorAll(".toggle-btn").forEach(btn => {
     });
 });
 </script>
+
+<script>
+    //popup + API DeleteTask
+    let selectedTaskId = null;
+    const deleteModal = new bootstrap.Modal(
+        document.getElementById('deleteTaskModal')
+    );
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            selectedTaskId = this.dataset.taskId;
+            document.getElementById('deleteTaskName').innerText =
+                this.dataset.taskName;
+
+            deleteModal.show();
+        });
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        fetch('/Backlog/DeleteTask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ taskId: selectedTaskId })
+        })
+        .then(res => {
+            if (res.ok) {
+                location.reload(); // hoặc remove row mượt hơn
+            } else {
+                alert('Delete failed');
+            }
+        });
+    });
+</script>
+

@@ -26,6 +26,8 @@ namespace PorjectManagement.Controllers
             var tasks = _context.Tasks
                 .Include(t => t.TaskAssignments)
                 .ThenInclude(ta => ta.User)
+                .Include(t => t.TaskAttachments)
+                .Include(t => t.Comments)
                 .Where(t => t.ProjectId == projectId)
                 .ToList();
             var parentTasks = tasks.Where(t => t.ParentId == null && t.IsParent == true).ToList();
@@ -39,5 +41,58 @@ namespace PorjectManagement.Controllers
 
             return View();
         }
+
+        [HttpPost]
+        public IActionResult DeleteTask([FromBody] DeleteTaskRequest request)
+        {
+            var task = _context.Tasks
+                .Include(t => t.TaskAssignments)
+                .ThenInclude(ta => ta.User)
+                .Include(t => t.TaskAttachments)
+                .Include(t => t.Comments)
+                .FirstOrDefault(t => t.TaskId == request.TaskId);
+
+            if (task == null) return NotFound();
+            bool hasChildren = _context.Tasks.Any(t => t.ParentId == task.TaskId);
+            if (hasChildren)
+                return BadRequest("Task has subtasks");
+
+            var snapshot = new DTOTaskSnapshot
+            {
+                TaskId = task.TaskId,
+                TaskName = task.Title,
+                CreatedAt = task.CreatedAt,
+                Deadline = task.Deadline,
+                Owner = task.TaskAssignments.FirstOrDefault()?.User.FullName ?? "Unassigned",
+                Status = task.Status.ToString(),
+                ProjectId = task.ProjectId
+            };
+
+            var recycle = new RecycleBin
+            {
+                EntityType = "Task",
+                EntityId = task.TaskId,
+                DataSnapshot = System.Text.Json.JsonSerializer.Serialize(snapshot),
+                DeletedBy = HttpContext.Session.GetInt32("UserId") ?? 0,
+                DeletedAt = DateTime.Now
+            };
+
+            _context.RecycleBins.Add(recycle);
+            _context.TaskAssignments.RemoveRange(task.TaskAssignments);
+            _context.Comments.RemoveRange(task.Comments);
+            _context.TaskAttachments.RemoveRange(task.TaskAttachments);
+
+            _context.Tasks.Remove(task);
+
+            _context.SaveChanges();
+
+            return Ok();
+        }
     }
+
+    public class DeleteTaskRequest
+    {
+        public int TaskId { get; set; }
+    }
+
 }
