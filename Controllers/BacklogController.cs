@@ -9,18 +9,25 @@ namespace PorjectManagement.Controllers
     {
         private readonly LabProjectManagementContext _context;
         private readonly IProjectServices _projectServices;
+        private readonly IUserProjectService _up;
 
         public BacklogController(
             LabProjectManagementContext context,
-            IProjectServices projectServices)
+            IProjectServices projectServices,
+            IUserProjectService up)
         {
             _context = context;
             _projectServices = projectServices;
+            _up = up;
         }
         public IActionResult BacklogUI(int projectId)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login");
+            }
+            bool isLeader = _up.IsleaderOfProject(userId.Value, projectId);
 
             // Theo dev/Vu
 

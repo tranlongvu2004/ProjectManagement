@@ -30,20 +30,20 @@ namespace PorjectManagement.Controllers
             ViewBag.Email = email;
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
-                ViewBag.Error = "Vui lòng nhập email và password";
+                ViewBag.Error = "Please enter email and password";
                 return View();
             }
             bool isValid = _userService.IsLoginValid(email, password);
 
             if (!isValid)
             {
-                ViewBag.Error = "Email hoặc mật khẩu không đúng.";
+                ViewBag.Error = "Email or password is incorrect.";
                 return View();
             }
             var user = _userService.GetUser(email);
             if (user == null)
             {
-                ViewBag.Error = "Không tìm thấy tài khoản.";
+                ViewBag.Error = "Account not found.";
                 return View();
             }
             
@@ -92,31 +92,31 @@ namespace PorjectManagement.Controllers
             ViewBag.Email = email;
             if (!IsValidEmail(email))
             {
-                ViewBag.Error = "Email không đúng định dạng.";
+                ViewBag.Error = "Email is invalid format.";
                 return View();
             }
 
             if (password != confirmpassword)
             {
-                ViewBag.Error = "Mật khẩu xác nhận không khớp.";
+                ViewBag.Error = "Password missmatch.";
                 return View();
             }
             if (string.IsNullOrEmpty(fullName) ||
                 string.IsNullOrEmpty(email) ||
                 string.IsNullOrEmpty(password))
             {
-                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
+                ViewBag.Error = "Please enter all the field.";
                 return View();
             }
             if (password.Length <= 4 && confirmpassword.Length <= 4)
             {
-                ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
+                ViewBag.Error = "Password must have at least 4 character.";
                 return View();
             }
             var existUser = _userService.GetUser(email);
             if (existUser != null)
             {
-                ViewBag.Error = "Email đã tồn tại.";
+                ViewBag.Error = "Email existed.";
                 return View();
             }
             var newUser = new User
@@ -144,14 +144,14 @@ namespace PorjectManagement.Controllers
         {
             if (string.IsNullOrEmpty(email))
             {
-                ViewBag.Error = "Vui lòng nhập email.";
+                ViewBag.Error = "Please enter email.";
                 return View();
             }
 
             var user = _userService.GetUser(email);
             if (user == null)
             {
-                ViewBag.Error = "Email không tồn tại.";
+                ViewBag.Error = "Email does not exist.";
                 return View();
             }
 
@@ -170,26 +170,26 @@ namespace PorjectManagement.Controllers
         {
             if (string.IsNullOrEmpty(newpassword) || string.IsNullOrEmpty(confirmpassword))
             {
-                ViewBag.Error = "Vui lòng nhập đầy đủ.";
+                ViewBag.Error = "Please enter all the field.";
                 ViewBag.Email = email;
                 return View();
             }
 
             if (newpassword != confirmpassword)
             {
-                ViewBag.Error = "Mật khẩu xác nhận không khớp.";
+                ViewBag.Error = "Password missmatch.";
                 ViewBag.Email = email;
                 return View();
             }
             if (newpassword.Length <= 4 && confirmpassword.Length <= 4)
             {
-                ViewBag.Error = "Mật khẩu phải có ít nhất 4 ký tự.";
+                ViewBag.Error = "Password must have at least 4 character.";
                 return View();
             }
             var user = _userService.GetUser(email);
             if (user == null)
             {
-                ViewBag.Error = "Không tìm thấy tài khoản.";
+                ViewBag.Error = "Account not found.";
                 return View();
             }
             user.PasswordHash = newpassword;
@@ -240,7 +240,7 @@ namespace PorjectManagement.Controllers
 
             if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(email))
             {
-                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
+                ViewBag.Error = "Please enter all the field.";
                 return View(user);
             }
 
@@ -261,7 +261,7 @@ namespace PorjectManagement.Controllers
 
             _userService.UpdateProfile(user);
 
-            ViewBag.Message = "Cập nhật thông tin thành công!";
+            ViewBag.Message = "Update profile successfully!";
             return View(user);
         }
 

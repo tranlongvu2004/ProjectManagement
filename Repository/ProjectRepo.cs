@@ -134,6 +134,7 @@ namespace PorjectManagement.Repository
                 Project = project,
                 Members = members,
                 Tasks = tasks,
+                Reports = report,
                 OverallProgress = overallProgress
             };
         }

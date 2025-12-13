@@ -21,7 +21,10 @@ namespace PorjectManagement.Service
             _repo = repo;
             _context = context;
         }
-
+        public bool IsleaderOfProject(int userId, int projectId)
+        {
+            return _repo.IsleaderOfProject(userId, projectId);
+        }
         public async Task<List<User>> GetAllUsersAsync()
         {
             return await _context.Users

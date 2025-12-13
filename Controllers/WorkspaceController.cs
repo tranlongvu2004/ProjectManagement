@@ -27,17 +27,10 @@ namespace PorjectManagement.Controllers
                 return BadRequest("Project id không hợp lệ.");
             }
 
-            // ✅ Kiểm tra role Mentor
             var userEmail = HttpContext.Session.GetString("UserEmail");
-            var currentUser = _userServices.GetUser(userEmail);
-            
-            // ✅ Lấy thông tin project để check quyền
-            var projectEntity = await _projectServices.GetProjectEntityByIdAsync(id);
-            
-            // ✅ Chỉ mentor TẠO project mới có quyền edit
+            var currentUser = _userServices.GetUser(userEmail);           
+            var projectEntity = await _projectServices.GetProjectEntityByIdAsync(id);          
             ViewBag.IsMentor = (currentUser?.RoleId == 1 && projectEntity?.CreatedBy == currentUser.UserId);
-
-            // Lấy workspace data
             var model = await _projectServices.GetWorkspaceAsync(id);
             if (model == null)
             {
