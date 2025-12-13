@@ -257,6 +257,18 @@ namespace PorjectManagement.Controllers
             return View(user);
         }
 
+        [HttpGet]
+        public IActionResult ViewProfile(int userid)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login");
+            }
+            var user = _userService.GetUserById(userid);
+            return View(user);
+        }
+
         // Logout
         public IActionResult Logout()
         {
