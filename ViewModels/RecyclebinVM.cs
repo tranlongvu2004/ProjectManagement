@@ -9,5 +9,7 @@
         public DateTime DeletedAt { get; set; }
         public string Owner { get; set; }
         public string Status { get; set; }
+
+        public int ProjectId { get; set; }
     }
 }

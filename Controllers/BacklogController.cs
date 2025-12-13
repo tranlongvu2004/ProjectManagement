@@ -23,15 +23,21 @@ namespace PorjectManagement.Controllers
             if (redirect != null) return redirect;
 
             // Theo dev/Vu
+
+            var deletedTasks = _context.RecycleBins
+                .Where(rb => rb.EntityType == "Task")
+                .Select(rb => rb.EntityId).ToHashSet();
+
             var tasks = _context.Tasks
-                .Include(t => t.TaskAssignments)
-                .ThenInclude(ta => ta.User)
-                .Include(t => t.TaskAttachments)
-                .Include(t => t.Comments)
-                .Where(t => t.ProjectId == projectId)
-                .ToList();
+            .Where(t => t.ProjectId == projectId
+                && !_context.RecycleBins.Any(r =>
+                r.EntityType == "Task"
+                && r.EntityId == t.TaskId) && !deletedTasks.Contains(t.TaskId))
+            .ToList();
+
+
             var parentTasks = tasks.Where(t => t.ParentId == null && t.IsParent == true).ToList();
-            var subTasks = tasks.Where(t => t.ParentId != null && t.IsParent == false).ToList();
+            var subTasks = tasks.Where(t => t.ParentId != null  && t.IsParent == false).ToList();
 
             ViewBag.ParentTasks = parentTasks;
             ViewBag.SubTasks = subTasks;
@@ -45,6 +51,7 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public IActionResult DeleteTask([FromBody] DeleteTaskRequest request)
         {
+            
             var task = _context.Tasks
                 .Include(t => t.TaskAssignments)
                 .ThenInclude(ta => ta.User)
@@ -53,9 +60,7 @@ namespace PorjectManagement.Controllers
                 .FirstOrDefault(t => t.TaskId == request.TaskId);
 
             if (task == null) return NotFound();
-            bool hasChildren = _context.Tasks.Any(t => t.ParentId == task.TaskId);
-            if (hasChildren)
-                return BadRequest("Task has subtasks");
+            
 
             var snapshot = new DTOTaskSnapshot
             {
@@ -78,21 +83,23 @@ namespace PorjectManagement.Controllers
             };
 
             _context.RecycleBins.Add(recycle);
-            _context.TaskAssignments.RemoveRange(task.TaskAssignments);
-            _context.Comments.RemoveRange(task.Comments);
-            _context.TaskAttachments.RemoveRange(task.TaskAttachments);
-
-            _context.Tasks.Remove(task);
+            
 
             _context.SaveChanges();
 
             return Ok();
         }
+
+        
+
     }
 
     public class DeleteTaskRequest
     {
         public int TaskId { get; set; }
     }
+
+    
+
 
 }
