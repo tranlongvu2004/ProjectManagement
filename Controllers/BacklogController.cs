@@ -49,7 +49,7 @@ namespace PorjectManagement.Controllers
             ViewBag.ParentTasks = parentTasks;
             ViewBag.SubTasks = subTasks;
             ViewBag.ProjectId = projectId;
-
+            ViewBag.IsLeader = isLeader;
             // ViewBag.Projects tự động load từ BaseController.OnActionExecuting
 
             return View();

@@ -29,8 +29,10 @@ namespace PorjectManagement.Controllers
                 .ToList();
 
             ViewBag.ProjectId = projectId;
+            ViewBag.IsLeader = isLeader;
             return View(reports);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Upload(int projectId, string reportType, IFormFile reportFile)
