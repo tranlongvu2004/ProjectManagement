@@ -19,6 +19,7 @@ namespace PorjectManagement.Tests.Controllers
     {
         private readonly Mock<ITaskService> _taskServiceMock;
         private readonly Mock<IUserProjectService> _userProjectServiceMock;
+        private readonly LabProjectManagementContext _context; 
 
         private readonly TaskController _controller;
 
@@ -29,7 +30,8 @@ namespace PorjectManagement.Tests.Controllers
 
             _controller = new TaskController(
                 _taskServiceMock.Object,
-                _userProjectServiceMock.Object
+                _userProjectServiceMock.Object,
+                _context
             );
 
             var httpContext = new DefaultHttpContext();

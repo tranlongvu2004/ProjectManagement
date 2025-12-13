@@ -103,6 +103,7 @@
                 <th>Status</th>
                 <th>Due Date</th>
                 <th>Priority</th>
+                <th>Actions</th> 
             </tr>
         </thead>
 
@@ -160,6 +161,15 @@
                             };
                         }
                         <span class="badge @priorityClass p-2">@t.Priority</span>
+                    </td>
+
+                    <td>
+                        <a asp-controller="Task" 
+                           asp-action="Edit" 
+                           asp-route-id="@t.TaskId" 
+                           class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
                     </td>
                 </tr>
             }

@@ -37,7 +37,7 @@ namespace PorjectManagement.Repository
                 .AnyAsync(up => up.UserId == userId && up.ProjectId == projectId);
         }
 
-        public async Task AddUsersToProjectAsync(List<UserProject> userProjects)
+        public async System.Threading.Tasks.Task AddUsersToProjectAsync(List<UserProject> userProjects)
         {
             await _context.UserProjects.AddRangeAsync(userProjects);
             await _context.SaveChangesAsync();
@@ -59,7 +59,7 @@ namespace PorjectManagement.Repository
         }
 
         // ✅ Method từ HEAD - GIỮ LẠI (dùng cho Create/Update Project)
-        public async Task AddMembersToProjectAsync(
+        public async System.Threading.Tasks.Task AddMembersToProjectAsync(
             int projectId, 
             List<int> selectedUserIds, 
             int? leaderId)
@@ -77,7 +77,7 @@ namespace PorjectManagement.Repository
         }
 
         // ✅ Method từ HEAD - GIỮ LẠI (dùng cho Update Project)
-        public async Task RemoveAllMembersFromProjectAsync(int projectId)
+        public async System.Threading.Tasks.Task RemoveAllMembersFromProjectAsync(int projectId)
         {
             var userProjects = await _context.UserProjects
                 .Where(up => up.ProjectId == projectId)

@@ -10,5 +10,9 @@ namespace PorjectManagement.Service.Interface
         
         Task<bool> AssignTaskAsync(int taskId, int userId);
         Task<TaskAssignViewModel> GetAssignTaskDataAsync(int taskId);
+
+        // ✅ Methods mới cho Edit Task
+        Task<TaskEditViewModel?> GetTaskForEditAsync(int taskId, int currentUserId);
+        Task<bool> UpdateTaskAsync(TaskEditViewModel model, int updatedByUserId);
     }
 }

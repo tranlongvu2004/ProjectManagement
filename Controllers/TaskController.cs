@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using PorjectManagement.Models;
 using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
 
@@ -9,13 +11,16 @@ namespace PorjectManagement.Controllers
     {
         private readonly ITaskService _taskService;
         private readonly IUserProjectService _userProjectService;
+        private readonly LabProjectManagementContext _context; 
 
         public TaskController(
             ITaskService taskService,
-            IUserProjectService userProjectService)
+            IUserProjectService userProjectService,
+            LabProjectManagementContext context)
         {
             _taskService = taskService;
             _userProjectService = userProjectService;
+            _context = context;
         }
 
         [HttpGet]
@@ -87,13 +92,13 @@ namespace PorjectManagement.Controllers
                 return View(model);
             }
 
-            var task = new PorjectManagement.Models.Task
+            var task = new Models.Task
             {
                 ProjectId = model.ProjectId,
                 Title = model.Title,
                 Description = model.Description,
                 Priority = model.Priority,
-                Status = PorjectManagement.Models.TaskStatus.ToDo,
+                Status = Models.TaskStatus.ToDo,
                 Deadline = model.Deadline,
                 CreatedBy = 1,
                 CreatedAt = DateTime.Now
@@ -140,6 +145,92 @@ namespace PorjectManagement.Controllers
             }
         }
 
+        // GET: /Task/Edit/5
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
+
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            
+            if (currentUser == null)
+            {
+                TempData["Error"] = "Không tìm thấy thông tin đăng nhập.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var model = await _taskService.GetTaskForEditAsync(id, currentUser.UserId);
+            
+            if (model == null)
+            {
+                TempData["Error"] = "Không tìm thấy task hoặc bạn không có quyền chỉnh sửa.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(model);
+        }
+
+        // POST: /Task/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, TaskEditViewModel model)
+        {
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
+
+            if (id != model.TaskId)
+            {
+                TempData["Error"] = "Dữ liệu không hợp lệ.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
+            {
+                ModelState.AddModelError("Deadline", "Deadline không được ở quá khứ");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Reload data
+                var reloadedModel = await _taskService.GetTaskForEditAsync(id, 1);
+                if (reloadedModel != null)
+                {
+                    model.ProjectMembers = reloadedModel.ProjectMembers;
+                    model.CurrentAssignees = reloadedModel.CurrentAssignees;
+                }
+                return View(model);
+            }
+
+            try
+            {
+                var userEmail = HttpContext.Session.GetString("UserEmail");
+                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+                
+                bool success = await _taskService.UpdateTaskAsync(model, currentUser.UserId);
+                
+                if (!success)
+                {
+                    TempData["Error"] = "Không thể cập nhật task.";
+                    return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
+                }
+
+                TempData["Success"] = "Cập nhật task thành công!";
+                return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Lỗi: {ex.Message}");
+                var reloadedModel = await _taskService.GetTaskForEditAsync(id, 1);
+                if (reloadedModel != null)
+                {
+                    model.ProjectMembers = reloadedModel.ProjectMembers;
+                    model.CurrentAssignees = reloadedModel.CurrentAssignees;
+                }
+                return View(model);
+            }
+        }
     }
 }
     

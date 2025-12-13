@@ -171,7 +171,7 @@ namespace PorjectManagement.Repository
                 .FirstOrDefaultAsync(p => p.ProjectId == projectId);
         }
 
-        public async Task UpdateProjectAsync(Project project)
+        public async System.Threading.Tasks.Task UpdateProjectAsync(Project project)
         {
             _context.Projects.Update(project);
             await _context.SaveChangesAsync();

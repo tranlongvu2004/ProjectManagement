@@ -7,6 +7,7 @@ namespace PorjectManagement.Repository.Interface
     public interface IUserProjectRepo
     {
         bool IsleaderOfProject(int userId, int projectId);
+        
         Task<List<User>> GetAllUsersAsync();
         Task<Project?> GetProjectByIdAsync(int projectId);
         Task<bool> IsUserInProjectAsync(int userId, int projectId);
@@ -15,6 +16,7 @@ namespace PorjectManagement.Repository.Interface
         
         System.Threading.Tasks.Task AddUsersToProjectAsync(List<UserProject> userProjects);
         System.Threading.Tasks.Task AddMembersToProjectAsync(int projectId, List<int> selectedUserIds, int? leaderId);
+        
         System.Threading.Tasks.Task RemoveAllMembersFromProjectAsync(int projectId);
     }
 }
