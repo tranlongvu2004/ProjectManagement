@@ -5,6 +5,7 @@ namespace PorjectManagement.ViewModels
     public class ProjectReportItem
     {
         public int ReportId { get; set; }
+
         public int ProjectId { get; set; }
 
         public string Leader { get; set; }

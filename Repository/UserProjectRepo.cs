@@ -77,14 +77,5 @@ namespace PorjectManagement.Repository
             await _context.UserProjects.AddRangeAsync(userProjects);
             await _context.SaveChangesAsync();
         }
-
-        public bool IsleaderOfProject(int userId, int projectId)
-        {
-            return _context.UserProjects.Any(up =>
-                up.UserId == userId &&
-                up.ProjectId == projectId &&
-                up.IsLeader == true
-            );
-        }
     }
 }

@@ -9,25 +9,19 @@ namespace PorjectManagement.Controllers
     {
         private readonly LabProjectManagementContext _context;
         private readonly IProjectServices _projectServices;
-        private readonly IUserProjectService _up;
 
         public BacklogController(
             LabProjectManagementContext context,
-            IProjectServices projectServices,
-            IUserProjectService up)
+            IProjectServices projectServices)
         {
             _context = context;
             _projectServices = projectServices;
-            _up = up;
         }
         public IActionResult BacklogUI(int projectId)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-            {
-                return RedirectToAction("Login");
-            }
-            bool isLeader = _up.IsleaderOfProject(userId.Value, projectId);
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
+
             // Theo dev/Vu
             var tasks = _context.Tasks
                 .Include(t => t.TaskAssignments)
@@ -36,7 +30,9 @@ namespace PorjectManagement.Controllers
                 .ToList();
 
             ViewBag.ProjectId = projectId;
-            ViewBag.IsLeader = isLeader;
+
+            // ViewBag.Projects tự động load từ BaseController.OnActionExecuting
+
             return View(tasks);
         }
     }

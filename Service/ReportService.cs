@@ -14,21 +14,6 @@ namespace PorjectManagement.Service
             _context = context;
             _env = env;
         }
-        public bool IsLeaderOfProject(int userId, int projectId)
-        {
-            return _context.UserProjects.Any(up =>
-                up.UserId == userId &&
-                up.ProjectId == projectId &&
-                up.IsLeader == true
-            );
-        }
-
-        public IQueryable<Report> GetReportsByProjectId(int projectId)
-        {
-            return _context.Reports.Include(r => r.Leader)
-                .Where(r => r.ProjectId == projectId)
-                .OrderByDescending(r => r.CreatedAt);
-        }
 
         public async Task<bool> UploadReportAsync(int projectId, string reportType, IFormFile file, int leaderId)
         {

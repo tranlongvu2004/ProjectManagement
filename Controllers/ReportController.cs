@@ -12,43 +12,16 @@ namespace PorjectManagement.Controllers
             _reportService = reportService;
         }
 
-        [HttpGet]
-        public IActionResult ViewReport(int id)
-        {
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-                return Unauthorized();
-
-            bool isLeader = _reportService.IsLeaderOfProject(userId.Value, id);
-
-            if (!isLeader)
-                return Forbid();
-
-            var reports = _reportService
-                .GetReportsByProjectId(id)
-                .ToList();
-
-            ViewBag.ProjectId = id;
-            return View(reports);
-        }
-
-
         [HttpPost]
         public async Task<IActionResult> Upload(int projectId, string reportType, IFormFile reportFile)
         {
-            int? leaderId = HttpContext.Session.GetInt32("UserId");
-            if (leaderId == null)
-                return Unauthorized();
-
-            if (!_reportService.IsLeaderOfProject(leaderId.Value, projectId))
-                return Forbid();
-
-
             if (reportFile == null)
             {
                 TempData["error"] = "Please select a file!";
                 return RedirectToAction("Details", "Workspace", new { id = projectId });
             }
+
+            int? leaderId = HttpContext.Session.GetInt32("UserId");
             if (leaderId == null)
             {
                 TempData["error"] = "Not logged in!";
