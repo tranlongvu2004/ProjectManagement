@@ -1,0 +1,130 @@
+﻿<style>
+
+    .trash-page {
+        background: #0f172a;
+        color: #e5e7eb;
+        padding: 30px;
+        min-height: 100vh;
+        font-family: Inter, sans-serif;
+    }
+
+    .subtitle {
+        color: #94a3b8;
+        margin-bottom: 20px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .search-box {
+        background: #020617;
+        border: 1px solid #1e293b;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        width: 240px;
+    }
+
+    .filter-btn {
+        background: #020617;
+        border: 1px solid #1e293b;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .trash-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #020617;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .trash-table th,
+        .trash-table td {
+            padding: 14px;
+            border-bottom: 1px solid #1e293b;
+            text-align: left;
+        }
+
+        .trash-table th {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .trash-table tr:hover {
+            background: #020617aa;
+        }
+
+    .action-btn {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+
+</style>
+
+<div class="trash-page">
+
+    <h2>Trash</h2>
+    <p class="subtitle">
+        This is your account trash. Items will be permanently deleted after 30 days.
+    </p>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <input type="text" placeholder="Search..." class="search-box" />
+        <button class="filter-btn">Filters</button>
+    </div>
+
+    <!-- Table -->
+    <table class="trash-table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" /></th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Deleted from</th>
+                <th>Deleted by</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <!-- Row -->
+            <tr>
+                <td><input type="checkbox" /></td>
+                <td>Task 3</td>
+                <td>Item</td>
+                <td>Main workspace / SWP</td>
+                <td>Nghiem Minh Duc</td>
+                <td>9 days ago</td>
+                <td>
+                    <button class="action-btn">⋯</button>
+                </td>
+            </tr>
+
+            <tr>
+                <td><input type="checkbox" /></td>
+                <td>Dashboard and reporting</td>
+                <td>Dashboard</td>
+                <td>Main workspace</td>
+                <td>Nghiem Minh Duc</td>
+                <td>9 days ago</td>
+                <td>
+                    <button class="action-btn">⋯</button>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
