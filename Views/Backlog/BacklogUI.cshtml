@@ -71,7 +71,7 @@
         </div>
 
         <!-- ⭐ Nút Add Member -->
-        @if (roleId == 2 || roleId == 3)
+        @if (roleId == 1)
         {
             <!-- Có quyền -->
             <a class="btn btn-primary"
@@ -93,6 +93,13 @@
         <a href="/Dashboard/Dashboard?projectId=@projectId&userId=@userId" class="dashboard-btn">
             <i class="fa fa-chart-line"></i> Dashboard
         </a>
+        @if(ViewBag.isLeader == true)
+        {
+            <a href="/Report/ViewReport?projectId=@projectId" class="dashboard-btn">
+                <i class="fa fa-chart-line"></i> View Report
+            </a>
+        }
+       
     </div>
 
     <table class="table align-middle shadow-sm">
@@ -209,6 +216,6 @@
         });
     });
     function showNoPermission() {
-        alert("Bạn không có quyền làm điều này!");
+        alert("You can't do this action!");
     }
 </script>
