@@ -72,7 +72,7 @@ namespace PorjectManagement.Repository
                        {
                            ReportId = r.ReportId,
                            ProjectId = r.ProjectId,
-                           LeaderId = r.LeaderId,
+                           Leader = r.Leader.FullName,
                            ReportType = r.ReportType,
                            FilePath = r.FilePath
                        };

@@ -1,10 +1,10 @@
 ﻿@model PorjectManagement.Models.User;
 @{
-    ViewData["Title"] = "Thông tin cá nhân";
+    ViewData["Title"] = "User profile";
 }
 
 <div class="container mt-4" style="max-width: 700px;">
-    <h2 class="mb-4 text-primary">Thông tin cá nhân</h2>
+    <h2 class="mb-4 text-primary">User profile</h2>
 
     @* Thông báo lỗi *@
     @if (ViewBag.Error != null)
@@ -27,12 +27,12 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-bold">Ảnh đại diện</label>
+            <label class="form-label fw-bold">Avatar</label>
             <input type="file" name="avatarFile" class="form-control" onchange="previewAvatar(this)">
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-bold">Họ và tên</label>
+            <label class="form-label fw-bold">Full name</label>
             <input name="fullName" class="form-control" value="@Model.FullName" />
         </div>
 
@@ -42,18 +42,18 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-bold">Trạng thái</label>
+            <label class="form-label fw-bold">Status</label>
             <input class="form-control" value="@Model.Status" readonly />
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-bold">Tham gia từ</label>
+            <label class="form-label fw-bold">Created at:</label>
             <input class="form-control"
                    value="@Model.CreatedAt?.ToString("yyyy/MM/dd")" readonly />
         </div>
 
-        <button class="btn btn-primary w-100 mt-3">Cập nhật thông tin</button>
-        <a href="/User/ResetPassword" class="btn btn-secondary w-100 mt-2">Đổi mật khẩu</a>
+        <button class="btn btn-primary w-100 mt-3">Update information</button>
+        <a href="/User/ResetPassword" class="btn btn-secondary w-100 mt-2">Change password</a>
     </form>
 </div>
 

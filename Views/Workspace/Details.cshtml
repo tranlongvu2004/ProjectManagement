@@ -113,7 +113,7 @@
     <!-- Reports Section -->
     <div class="card border-0 shadow-sm mt-4">
         <div class="card-body">
-            <h5 class="fw-bold mb-4">Báo Cáo (@Model.Reports.Count)</h5>
+            <h5 class="fw-bold mb-4">Report (@Model.Reports.Count)</h5>
 
             @if (Model.Reports != null && Model.Reports.Any())
             {
@@ -136,11 +136,11 @@
                                 <div>
                                     <div class="fw-semibold">@r.ReportType</div>
                                     <small class="text-muted">
-                                        Tập tin: @fileName
+                                        File: @fileName
                                     </small>
                                     <br />
                                     <small class="text-muted">
-                                        Leader ID: @r.LeaderId
+                                        Leader ID: @r.Leader
                                     </small>
                                 </div>
                             </div>
@@ -148,7 +148,7 @@
                             <a href="@Url.Content(r.FilePath)"
                                target="_blank"
                                class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-download"></i> Tải xuống
+                                <i class="bi bi-download"></i> Download
                             </a>
                         </div>
                     }
@@ -156,7 +156,7 @@
             }
             else
             {
-                <p class="text-muted text-center py-4">Chưa có báo cáo nào</p>
+                <p class="text-muted text-center py-4">Have no report</p>
             }
         </div>
     </div>

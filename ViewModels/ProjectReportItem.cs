@@ -1,4 +1,6 @@
-﻿namespace PorjectManagement.ViewModels
+﻿using PorjectManagement.Models;
+
+namespace PorjectManagement.ViewModels
 {
     public class ProjectReportItem
     {
@@ -6,7 +8,7 @@
 
         public int ProjectId { get; set; }
 
-        public int LeaderId { get; set; }
+        public string Leader { get; set; }
 
         public string? ReportType { get; set; }
 
