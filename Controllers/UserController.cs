@@ -27,6 +27,7 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public IActionResult Login(string email, string password)
         {
+            ViewBag.Email = email;
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
                 ViewBag.Error = "Please enter email and password";
@@ -87,6 +88,8 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public IActionResult Register(string fullName, string email, string password, string confirmpassword)
         {
+            ViewBag.FullName = fullName;
+            ViewBag.Email = email;
             if (!IsValidEmail(email))
             {
                 ViewBag.Error = "Email is invalid format.";
