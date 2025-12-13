@@ -26,7 +26,6 @@ namespace PorjectManagement.Controllers
 
             var vm = new TaskCreateViewModel();
 
-            // Nếu projectId = null → lấy từ URL referrer
             if (!projectId.HasValue)
             {
                 var referer = Request.Headers["Referer"].ToString();
@@ -43,23 +42,19 @@ namespace PorjectManagement.Controllers
                 }
             }
 
-            // Nếu sau khi detect vẫn null → fallback
             if (!projectId.HasValue)
             {
-                // vẫn load dropdown nếu không tìm được projectId
                 var projectList = await _userProjectService.GetAllProjectsAsync();
                 ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
                 vm.ProjectMembers = new List<PorjectManagement.Models.User>();
                 return View(vm);
             }
 
-            // Đến đây chắc chắn có projectId
+
             vm.ProjectId = projectId.Value;
 
-            // Load thành viên trong project
             vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
 
-            // Ẩn dropdown project trong view
             ViewBag.HideProjectDropdown = true;
 
             return View(vm);
@@ -74,7 +69,7 @@ namespace PorjectManagement.Controllers
             if (redirect != null) return redirect;
             if (model.Deadline < DateTime.Now)
             {
-                ModelState.AddModelError("Deadline", "Deadline không được là thời gian trong quá khứ");
+                ModelState.AddModelError("Deadline", "Deadline cannot be the past");
             }
 
             if (!ModelState.IsValid)
@@ -100,7 +95,7 @@ namespace PorjectManagement.Controllers
                 Priority = model.Priority,
                 Status = PorjectManagement.Models.TaskStatus.ToDo,
                 Deadline = model.Deadline,
-                CreatedBy = 1, // TODO: thay bằng user đang login
+                CreatedBy = 1,
                 CreatedAt = DateTime.Now
             };
 
@@ -109,18 +104,43 @@ namespace PorjectManagement.Controllers
             // 3️⃣ Sau đó mới assign user vào task
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
+            TempData["SuccessMessage"] = "Create task successfully!";
 
-            ViewBag.SuccessMessage = "Tạo task thành công!";
-
-            // Load lại member list
-            model.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(model.ProjectId);
-
-            // Xóa nội dung form sau khi tạo
-            ModelState.Clear();
-            model.Title = "";
-            model.Description = "";
-
-            return View(model);
+            return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
+        public async Task<IActionResult> Assign(int id)
+        {
+            var vm = await _taskService.GetAssignTaskDataAsync(id);
+            if (vm == null) return NotFound();
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Assign(TaskAssignViewModel model)
+        {
+            if (model.SelectedUserId <= 0)
+            {
+                ModelState.AddModelError("", "You must choose at least 1 member");
+                model = await _taskService.GetAssignTaskDataAsync(model.TaskId);
+                return View(model);
+            }
+
+            try
+            {
+                await _taskService.AssignTaskAsync(model.TaskId, model.SelectedUserId);
+                TempData["Success"] = "Task assigned successfully!";
+                return RedirectToAction("Assign", new { id = model.TaskId });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                model = await _taskService.GetAssignTaskDataAsync(model.TaskId);
+                return View(model);
+            }
+        }
+
     }
 }
+    
+

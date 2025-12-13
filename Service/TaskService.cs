@@ -2,6 +2,7 @@
 using PorjectManagement.Models;
 using PorjectManagement.Repository.Interface;
 using PorjectManagement.Service.Interface;
+using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Service
 {
@@ -39,5 +40,56 @@ namespace PorjectManagement.Service
             }
             await _context.SaveChangesAsync();
         }
+        public async Task<TaskAssignViewModel> GetAssignTaskDataAsync(int taskId)
+        {
+            var task = await _context.Tasks
+                .Include(x => x.Project)
+                .ThenInclude(p => p.UserProjects)
+                .ThenInclude(up => up.User)
+                .FirstOrDefaultAsync(x => x.TaskId == taskId);
+
+            if (task == null) return null;
+
+            var users = task.Project.UserProjects
+                .Select(up => new UserListItemVM
+                {
+                    UserId = up.User.UserId,
+                    FullName = up.User.FullName,
+                    Email = up.User.Email,
+                    AvatarUrl = up.User.AvatarUrl,
+                    RoleName = up.User.Role?.RoleName ?? "",
+                }).ToList();
+
+            return new TaskAssignViewModel
+            {
+                TaskId = taskId,
+                ProjectId = task.ProjectId,
+                Users = users
+            };
+        }
+
+        public async Task<bool> AssignTaskAsync(int taskId, int userId)
+        {
+        
+            bool exists = await _context.TaskAssignments
+                .AnyAsync(x => x.TaskId == taskId && x.UserId == userId);
+
+            if (exists)
+                throw new Exception("This intern already assigned for another task");
+
+            
+            var newAssignment = new TaskAssignment
+            {
+                TaskId = taskId,
+                UserId = userId,
+                AssignedAt = DateTime.Now
+            };
+
+            _context.TaskAssignments.Add(newAssignment);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

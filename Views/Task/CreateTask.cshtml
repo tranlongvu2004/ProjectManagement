@@ -1,15 +1,8 @@
 ﻿@model PorjectManagement.ViewModels.TaskCreateViewModel
 
 @{
-    ViewData["Title"] = "Tạo Task mới";
+    ViewData["Title"] = "CREATE NEW TASK";
 }
-@if (ViewBag.SuccessMessage != null)
-{
-    <div class="alert alert-success">
-        @ViewBag.SuccessMessage
-    </div>
-}
-
 
 <style>
     .page-title {
@@ -117,18 +110,18 @@
 </style>
 
 
-<h2 class="page-title">Tạo Task mới</h2>
+<h2 class="page-title">Create New Task</h2>
 
 <div class="card">
 
     <form asp-action="CreateTask" method="post">
 
-        <!-- CHỌN PROJECT -->
+        <!-- SELECT PROJECT -->
        <input type="hidden" asp-for="ProjectId" />
        @if (Model.ProjectId == 0)
 {
     <div class="alert alert-danger">
-        Không xác định được dự án. Vui lòng truy cập từ trang Backlog.
+        Cannot determine the project. Please access from the Backlog page.
     </div>
     return;
 }
@@ -138,18 +131,18 @@
         @if (Model.ProjectId > 0)
         {
             <div class="mb-4">
-                <label class="form-label">Tên Task</label>
+                <label class="form-label">Task Name</label>
                 <input asp-for="Title" class="form-control input-custom" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="mb-4">
-                <label class="form-label">Mô tả</label>
+                <label class="form-label">Description</label>
                 <textarea asp-for="Description" class="form-control input-custom" rows="3"></textarea>
             </div>
 
             <div class="row mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Mức ưu tiên</label>
+                    <label class="form-label">Priority</label>
                     <select asp-for="Priority" class="form-select input-custom">
                         <option value="1">Low</option>
                         <option value="2">Medium</option>
@@ -168,7 +161,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="form-label">Giao cho thành viên</label>
+                <label class="form-label">Assign for intern</label>
 
                 @if (Model.ProjectMembers != null && Model.ProjectMembers.Any())
                 {
@@ -194,14 +187,14 @@
                 }
                 else
                 {
-                    <p class="text-muted">Dự án này chưa có thành viên.</p>
+                    <p class="text-muted">This project has no member yet.</p>
                 }
             </div>
 
             <div class="text-end">
-                <a href="/Backlog/BacklogUI?ProjectId=@Model.ProjectId" class="btn btn-outline-secondary me-2">Hủy</a>
-                <a href="/Backlog/BacklogUI?ProjectId=@Model.ProjectId" class="btn btn-outline-secondary me-2">Quay lại</a>
-                <button class="btn btn-primary-custom">Tạo Task</button>
+                <a href="/Backlog/BacklogUI?ProjectId=@Model.ProjectId" class="btn btn-outline-secondary me-2">Cancel</a>
+                <a href="/Backlog/BacklogUI?ProjectId=@Model.ProjectId" class="btn btn-outline-secondary me-2">Back</a>
+                <button class="btn btn-primary-custom">Create New Task</button>
             </div>
         }
 

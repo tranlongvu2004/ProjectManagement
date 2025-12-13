@@ -1,6 +1,13 @@
 ﻿@using PorjectManagement.Models
 @model List<PorjectManagement.Models.Task>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
 @{
     ViewData["Title"] = "Main Table";
     var projectId = ViewBag.ProjectId;
@@ -64,28 +71,28 @@
         </div>
 
         <!-- ⭐ Nút Add Member -->
-        @if (roleId == 2 || roleId == 3)
+        @if (roleId == 2)
         {
             <!-- Có quyền -->
             <a class="btn btn-primary"
                href="@Url.Action("AddMembers", "UserProject", new { id = ViewBag.ProjectId })">
                 <i class="fa fa-user-plus"></i> Add Member
             </a>
+        }      
+        <a href="/Dashboard/Dashboard?projectId=@projectId&userId=@userId" class="dashboard-btn">
+            <i class="fa fa-chart-line"></i> Dashboard
+        </a>
+        @if(ViewBag.isLeader == true)
+        {
             <a class="btn btn-success"
                href="@Url.Action("CreateTask", "Task", new { id = ViewBag.ProjectId })">
                 <i class="bi bi-plus-circle"></i> Create Task
             </a>
+            <a href="/Report/ViewReport?projectId=@projectId" class="dashboard-btn">
+                <i class="fa fa-chart-line"></i> View Report
+            </a>
         }
-        else
-        {
-            <!-- Không có quyền -->
-            <button class="btn btn-primary" onclick="showNoPermission()">
-                <i class="fa fa-user-plus"></i> Add Member
-            </button>
-        }       
-        <a href="/Dashboard/Dashboard?projectId=@projectId&userId=@userId" class="dashboard-btn">
-            <i class="fa fa-chart-line"></i> Dashboard
-        </a>
+       
     </div>
 
     <table class="table align-middle shadow-sm">
@@ -202,6 +209,6 @@
         });
     });
     function showNoPermission() {
-        alert("Bạn không có quyền làm điều này!");
+        alert("You can't do this action!");
     }
 </script>

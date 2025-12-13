@@ -37,7 +37,7 @@ namespace PorjectManagement.Repository
                 .AnyAsync(up => up.UserId == userId && up.ProjectId == projectId);
         }
 
-        public async System.Threading.Tasks.Task AddUsersToProjectAsync(List<UserProject> userProjects)
+        public async Task AddUsersToProjectAsync(List<UserProject> userProjects)
         {
             await _context.UserProjects.AddRangeAsync(userProjects);
             await _context.SaveChangesAsync();
@@ -58,27 +58,26 @@ namespace PorjectManagement.Repository
                 .ToListAsync();
         }
 
-        // ✅ THÊM METHOD MỚI
-        public async System.Threading.Tasks.Task AddMembersToProjectAsync(
+        // ✅ Method từ HEAD - GIỮ LẠI (dùng cho Create/Update Project)
+        public async Task AddMembersToProjectAsync(
             int projectId, 
             List<int> selectedUserIds, 
             int? leaderId)
         {
-            // Tạo danh sách UserProject
             var userProjects = selectedUserIds.Select(userId => new UserProject
             {
                 ProjectId = projectId,
                 UserId = userId,
-                IsLeader = (leaderId.HasValue && userId == leaderId.Value), // Set leader nếu match
+                IsLeader = (leaderId.HasValue && userId == leaderId.Value),
                 JoinedAt = DateTime.Now
             }).ToList();
 
-            // Thêm vào database
             await _context.UserProjects.AddRangeAsync(userProjects);
             await _context.SaveChangesAsync();
         }
 
-        public async System.Threading.Tasks.Task RemoveAllMembersFromProjectAsync(int projectId)
+        // ✅ Method từ HEAD - GIỮ LẠI (dùng cho Update Project)
+        public async Task RemoveAllMembersFromProjectAsync(int projectId)
         {
             var userProjects = await _context.UserProjects
                 .Where(up => up.ProjectId == projectId)
@@ -86,6 +85,16 @@ namespace PorjectManagement.Repository
             
             _context.UserProjects.RemoveRange(userProjects);
             await _context.SaveChangesAsync();
+        }
+
+        // ✅ Method từ dev/Vu - GIỮ LẠI (dùng trong UserProjectService)
+        public bool IsleaderOfProject(int userId, int projectId)
+        {
+            return _context.UserProjects.Any(up =>
+                up.UserId == userId &&
+                up.ProjectId == projectId &&
+                up.IsLeader == true
+            );
         }
     }
 }
