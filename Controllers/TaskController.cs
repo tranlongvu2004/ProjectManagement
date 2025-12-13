@@ -69,7 +69,7 @@ namespace PorjectManagement.Controllers
             if (redirect != null) return redirect;
             if (model.Deadline < DateTime.Now)
             {
-                ModelState.AddModelError("Deadline", "Deadline không được là thời gian trong quá khứ");
+                ModelState.AddModelError("Deadline", "Deadline cannot be the past");
             }
 
             if (!ModelState.IsValid)
@@ -104,7 +104,7 @@ namespace PorjectManagement.Controllers
             // 3️⃣ Sau đó mới assign user vào task
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
-            TempData["SuccessMessage"] = "Tạo task thành công!";
+            TempData["SuccessMessage"] = "Create task successfully!";
 
             return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
@@ -121,7 +121,7 @@ namespace PorjectManagement.Controllers
         {
             if (model.SelectedUserId <= 0)
             {
-                ModelState.AddModelError("", "Bạn phải chọn 1 thành viên.");
+                ModelState.AddModelError("", "You must choose at least 1 member");
                 model = await _taskService.GetAssignTaskDataAsync(model.TaskId);
                 return View(model);
             }
@@ -129,7 +129,7 @@ namespace PorjectManagement.Controllers
             try
             {
                 await _taskService.AssignTaskAsync(model.TaskId, model.SelectedUserId);
-                TempData["Success"] = "Giao công việc thành công!";
+                TempData["Success"] = "Task assigned successfully!";
                 return RedirectToAction("Assign", new { id = model.TaskId });
             }
             catch (Exception ex)

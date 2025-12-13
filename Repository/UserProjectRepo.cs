@@ -59,22 +59,21 @@ namespace PorjectManagement.Repository
                 .ToListAsync();
         }
 
-        // ✅ THÊM METHOD MỚI
         public async System.Threading.Tasks.Task AddMembersToProjectAsync(
             int projectId, 
             List<int> selectedUserIds, 
             int? leaderId)
         {
-            // Tạo danh sách UserProject
+           
             var userProjects = selectedUserIds.Select(userId => new UserProject
             {
                 ProjectId = projectId,
                 UserId = userId,
-                IsLeader = (leaderId.HasValue && userId == leaderId.Value), // Set leader nếu match
+                IsLeader = (leaderId.HasValue && userId == leaderId.Value),
                 JoinedAt = DateTime.Now
             }).ToList();
 
-            // Thêm vào database
+       
             await _context.UserProjects.AddRangeAsync(userProjects);
             await _context.SaveChangesAsync();
         }

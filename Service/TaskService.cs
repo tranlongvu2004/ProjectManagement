@@ -75,7 +75,7 @@ namespace PorjectManagement.Service
                 .AnyAsync(x => x.TaskId == taskId && x.UserId == userId);
 
             if (exists)
-                throw new Exception("Thành viên này đã được giao công việc này rồi.");
+                throw new Exception("This intern already assigned for another task");
 
             
             var newAssignment = new TaskAssignment

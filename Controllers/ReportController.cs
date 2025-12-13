@@ -17,14 +17,14 @@ namespace PorjectManagement.Controllers
         {
             if (reportFile == null)
             {
-                TempData["error"] = "Vui lòng chọn file!";
+                TempData["error"] = "Please select a file!";
                 return RedirectToAction("Details", "Workspace", new { id = projectId });
             }
 
             int? leaderId = HttpContext.Session.GetInt32("UserId");
             if (leaderId == null)
             {
-                TempData["error"] = "Chưa đăng nhập!";
+                TempData["error"] = "Not logged in!";
                 return RedirectToAction("Details", "Workspace", new { id = projectId });
             }
 
@@ -35,7 +35,7 @@ namespace PorjectManagement.Controllers
                 leaderId.Value
             );
 
-            TempData[ok ? "success" : "error"] = ok ? "Upload thành công!" : "Upload thất bại!";
+            TempData[ok ? "success" : "error"] = ok ? "Upload successful!" : "Upload failed!";
             return RedirectToAction("Details", "Workspace", new { id = projectId });
         }
     }

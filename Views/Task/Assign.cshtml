@@ -87,7 +87,7 @@
 <div class="assign-card">
 
     <div class="assign-header">
-        Giao công việc
+        Assign Task
     </div>
 
     <div class="assign-body">
@@ -98,15 +98,22 @@
                 @TempData["Success"]
             </div>
         }
+        
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["Error"]
+            </div>
+        }
 
         <form method="post">
 
             <input type="hidden" asp-for="TaskId" />
 
-            <label class="form-label fw-semibold mb-2">Chọn thành viên</label>
+            <label class="form-label fw-semibold mb-2">Select Member</label>
 
             <select asp-for="SelectedUserId" class="form-select form-select-custom mb-4">
-                <option value="">-- Chọn thành viên --</option>
+                <option value="">-- Select Member --</option>
                 @foreach (var u in Model.Users)
                 {
                     <option value="@u.UserId">@u.FullName (@u.Email)</option>
@@ -123,7 +130,7 @@
                 </a>
 
                 <button class="btn-assign">
-                    Giao công việc
+                    Assign Task
                 </button>
             </div>
 
