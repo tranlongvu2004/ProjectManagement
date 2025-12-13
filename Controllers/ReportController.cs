@@ -13,22 +13,22 @@ namespace PorjectManagement.Controllers
         }
 
         [HttpGet]
-        public IActionResult ViewReport(int projectId)
+        public IActionResult ViewReport(int id)
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
                 return Unauthorized();
 
-            bool isLeader = _reportService.IsLeaderOfProject(userId.Value, projectId);
+            bool isLeader = _reportService.IsLeaderOfProject(userId.Value, id);
 
             if (!isLeader)
                 return Forbid();
 
             var reports = _reportService
-                .GetReportsByProjectId(projectId)
+                .GetReportsByProjectId(id)
                 .ToList();
 
-            ViewBag.ProjectId = projectId;
+            ViewBag.ProjectId = id;
             return View(reports);
         }
 
