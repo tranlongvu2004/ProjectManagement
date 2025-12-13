@@ -9,35 +9,97 @@ namespace PorjectManagement.Controllers
     {
         private readonly LabProjectManagementContext _context;
         private readonly IProjectServices _projectServices;
-        private readonly IUserProjectService _up;
 
         public BacklogController(
             LabProjectManagementContext context,
-            IProjectServices projectServices,
-            IUserProjectService up)
+            IProjectServices projectServices)
         {
             _context = context;
             _projectServices = projectServices;
-            _up = up;
         }
         public IActionResult BacklogUI(int projectId)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-            {
-                return RedirectToAction("Login");
-            }
-            bool isLeader = _up.IsleaderOfProject(userId.Value, projectId);
+            var redirect = RedirectIfNotLoggedIn();
+            if (redirect != null) return redirect;
+
             // Theo dev/Vu
+
+            var deletedTasks = _context.RecycleBins
+                .Where(rb => rb.EntityType == "Task")
+                .Select(rb => rb.EntityId).ToHashSet();
+
             var tasks = _context.Tasks
+            .Where(t => t.ProjectId == projectId
+                && !_context.RecycleBins.Any(r =>
+                r.EntityType == "Task"
+                && r.EntityId == t.TaskId) && !deletedTasks.Contains(t.TaskId))
+            .ToList();
+
+
+            var parentTasks = tasks.Where(t => t.ParentId == null && t.IsParent == true).ToList();
+            var subTasks = tasks.Where(t => t.ParentId != null  && t.IsParent == false).ToList();
+
+            ViewBag.ParentTasks = parentTasks;
+            ViewBag.SubTasks = subTasks;
+            ViewBag.ProjectId = projectId;
+
+            // ViewBag.Projects tự động load từ BaseController.OnActionExecuting
+
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult DeleteTask([FromBody] DeleteTaskRequest request)
+        {
+            
+            var task = _context.Tasks
                 .Include(t => t.TaskAssignments)
                 .ThenInclude(ta => ta.User)
-                .Where(t => t.ProjectId == projectId)
-                .ToList();
+                .Include(t => t.TaskAttachments)
+                .Include(t => t.Comments)
+                .FirstOrDefault(t => t.TaskId == request.TaskId);
 
-            ViewBag.ProjectId = projectId;
-            ViewBag.IsLeader = isLeader;
-            return View(tasks);
+            if (task == null) return NotFound();
+            
+
+            var snapshot = new DTOTaskSnapshot
+            {
+                TaskId = task.TaskId,
+                TaskName = task.Title,
+                CreatedAt = task.CreatedAt,
+                Deadline = task.Deadline,
+                Owner = task.TaskAssignments.FirstOrDefault()?.User.FullName ?? "Unassigned",
+                Status = task.Status.ToString(),
+                ProjectId = task.ProjectId
+            };
+
+            var recycle = new RecycleBin
+            {
+                EntityType = "Task",
+                EntityId = task.TaskId,
+                DataSnapshot = System.Text.Json.JsonSerializer.Serialize(snapshot),
+                DeletedBy = HttpContext.Session.GetInt32("UserId") ?? 0,
+                DeletedAt = DateTime.Now
+            };
+
+            _context.RecycleBins.Add(recycle);
+            
+
+            _context.SaveChanges();
+
+            return Ok();
         }
+
+        
+
     }
+
+    public class DeleteTaskRequest
+    {
+        public int TaskId { get; set; }
+    }
+
+    
+
+
 }

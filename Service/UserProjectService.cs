@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// Service/UserProjectService.cs
+using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
 using PorjectManagement.Repository;
 using PorjectManagement.Repository.Interface;
@@ -99,9 +100,5 @@ namespace PorjectManagement.Service
             return await _repo.GetUsersByProjectIdAsync(projectId);
         }
 
-        public bool IsleaderOfProject(int userId, int projectId)
-        {
-            return _repo.IsleaderOfProject(userId,projectId);
-        }
     }
 }

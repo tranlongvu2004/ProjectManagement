@@ -1,0 +1,297 @@
+﻿@model List<PorjectManagement.ViewModels.RecyclebinVM>
+<style>
+
+    .trash-page {
+        background: #ffffff;
+        color: #172b4d;
+        padding: 30px;
+        min-height: 100vh;
+        font-family: Inter, sans-serif;
+    }
+
+    .subtitle {
+        color: #6b778c;
+        margin-bottom: 20px;
+    }
+
+    /* Toolbar */
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .search-box {
+        background: #ffffff;
+        border: 1px solid #dfe1e6;
+        color: #172b4d;
+        padding: 8px 12px;
+        border-radius: 6px;
+        width: 240px;
+    }
+
+        .search-box::placeholder {
+            color: #97a0af;
+        }
+
+    .filter-btn {
+        background: #ffffff;
+        border: 1px solid #dfe1e6;
+        color: #172b4d;
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+        .filter-btn:hover {
+            background: #f4f5f7;
+        }
+
+    /* Table */
+    .trash-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border-radius: 8px;
+        overflow: visible;
+        border: 1px solid #dfe1e6;
+    }
+
+        .trash-table th,
+        .trash-table td {
+            padding: 14px;
+            border-bottom: 1px solid #f0f1f3;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .trash-table th {
+            color: #6b778c;
+            font-weight: 500;
+            background: #fafbfc;
+        }
+
+        .trash-table tr:hover {
+            background: #f7f8fa;
+        }
+
+    /* Action */
+    .action-btn {
+        background: transparent;
+        border: none;
+        color: #6b778c;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+        .action-btn:hover {
+            color: #172b4d;
+        }
+
+
+    /* Action cell */
+    .action-cell {
+        position: relative;
+    }
+
+    /* Nút 3 chấm */
+    .btn-ellipsis {
+        background: #ffffff;
+        border: 1px solid #dfe1e6;
+        color: #42526e;
+        font-size: 20px;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+        .btn-ellipsis:hover {
+            background: #f4f5f7;
+        }
+
+    /* Dropdown */
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        top: 38px;
+        background: #ffffff;
+        border-radius: 8px;
+        width: 200px;
+        display: none;
+        box-shadow: 0 8px 24px rgba(9, 30, 66, 0.15);
+        border: 1px solid #dfe1e6;
+        z-index: 999;
+        padding: 6px 0;
+    }
+
+    /* Item */
+    .dropdown-item {
+        width: 100%;
+        padding: 10px 14px;
+        background: none;
+        border: none;
+        color: #172b4d;
+        text-align: left;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .dropdown-item:hover {
+            background: #f4f5f7;
+        }
+
+        /* Danger */
+        .dropdown-item.text-danger {
+            color: #de350b;
+        }
+
+            .dropdown-item.text-danger:hover {
+                background: #ffebe6;
+            }
+
+
+
+
+
+</style>
+
+<div class="trash-page">
+    @{
+        var projectId = Model.FirstOrDefault()?.ProjectId;
+    }
+
+    <h2>Trash</h2>
+    <p class="subtitle">
+        This is your account trash. Items will be permanently deleted after 30 days.
+    </p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Main Table</h3>
+        <a asp-controller="Backlog"
+           asp-action="BacklogUI"
+           asp-route-projectId="@projectId"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Backlog
+        </a>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <input type="text" placeholder="Search..." class="search-box" />
+        <button class="filter-btn">Filters</button>
+    </div>
+
+    <!-- Table -->
+    <table class="trash-table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" /></th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Deleted by</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var item in Model)
+            {
+                
+                <tr>
+                    <td><input type="checkbox" /></td>
+                    <td>@item.Name</td>
+                    <td>@item.EntityType</td>
+                    <td>@item.DeletedBy</td>
+                    <td>@(DateTime.Now.Day - item.DeletedAt.Day) day(s) ago</td>
+                    <td class="action-cell">
+                        <div class="dropdown">
+                            <button class="btn btn-ellipsis" type="button">
+                                ⋯
+                            </button>
+
+                            <div class="dropdown-menu">
+
+                                <button class="dropdown-item restore-btn"
+                                        data-recycle-id="@item.RecycleId">
+                                    ♻ Restore
+                                </button>
+
+                                <button class="dropdown-item delete-permanent-btn text-danger"
+                                        data-recycle-id="@item.RecycleId">
+                                    🗑 Delete permanently
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Toggle dropdown
+        document.querySelectorAll('.btn-ellipsis').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
+                this.nextElementSibling.style.display = 'block';
+            });
+        });
+
+        document.addEventListener('click', function () {
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
+        });
+
+        // Restore
+        document.querySelectorAll('.restore-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const selectedRecycleId = this.dataset.recycleId;
+                fetch('/RecycleBin/Restore', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ recycleId: selectedRecycleId })
+        })
+        .then(res => {
+            if (res.ok) {
+                location.reload();
+            } else {
+                alert('Restore failed');
+            }
+        });
+            });
+        });
+        // Delete permanently
+        document.querySelectorAll('.delete-permanent-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const selectedRecycleId = this.dataset.recycleId;
+                fetch('/RecycleBin/DeletePermanent', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ recycleId: selectedRecycleId })
+        })
+        .then(res => {
+            if (res.ok) {
+                location.reload();
+            } else {
+                alert('Delete failed');
+            }
+        });
+            });
+        });
+
+    });
+</script>

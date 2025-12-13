@@ -28,45 +28,27 @@ namespace PorjectManagement.Controllers
         {
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
-
             var vm = new TaskCreateViewModel();
 
-            if (!projectId.HasValue)
+            // Load toàn bộ project cho dropdown
+            var projectList = await _userProjectService.GetAllProjectsAsync();
+            ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
+
+            // Nếu có projectId → load thành viên
+            if (projectId.HasValue)
             {
-                var referer = Request.Headers["Referer"].ToString();
-
-                if (!string.IsNullOrEmpty(referer))
-                {
-                    var uri = new Uri(referer);
-                    var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-
-                    if (query.TryGetValue("projectId", out var value))
-                    {
-                        projectId = int.Parse(value);
-                    }
-                }
+                vm.ProjectId = projectId.Value;
+                vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
             }
-
-            if (!projectId.HasValue)
+            else
             {
-                var projectList = await _userProjectService.GetAllProjectsAsync();
-                ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
                 vm.ProjectMembers = new List<PorjectManagement.Models.User>();
-                return View(vm);
             }
-
-
-            vm.ProjectId = projectId.Value;
-
-            vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
-
-            ViewBag.HideProjectDropdown = true;
 
             return View(vm);
         }
 
-
-
+    
         [HttpPost]
         public async Task<IActionResult> CreateTask(TaskCreateViewModel model)
         {
@@ -74,7 +56,7 @@ namespace PorjectManagement.Controllers
             if (redirect != null) return redirect;
             if (model.Deadline < DateTime.Now)
             {
-                ModelState.AddModelError("Deadline", "Deadline cannot be the past");
+                ModelState.AddModelError("Deadline", "Deadline không được là thời gian trong quá khứ");
             }
 
             if (!ModelState.IsValid)
@@ -100,7 +82,7 @@ namespace PorjectManagement.Controllers
                 Priority = model.Priority,
                 Status = Models.TaskStatus.ToDo,
                 Deadline = model.Deadline,
-                CreatedBy = 1,
+                CreatedBy = 1, // TODO: thay bằng user đang login
                 CreatedAt = DateTime.Now
             };
 
@@ -109,9 +91,18 @@ namespace PorjectManagement.Controllers
             // 3️⃣ Sau đó mới assign user vào task
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
-            TempData["SuccessMessage"] = "Create task successfully!";
 
-            return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
+            ViewBag.SuccessMessage = "Tạo task thành công!";
+
+            // Load lại member list
+            model.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(model.ProjectId);
+
+            // Xóa nội dung form sau khi tạo
+            ModelState.Clear();
+            model.Title = "";
+            model.Description = "";
+
+            return View(model);
         }
         public async Task<IActionResult> Assign(int id)
         {
@@ -233,5 +224,3 @@ namespace PorjectManagement.Controllers
         }
     }
 }
-    
-
