@@ -100,6 +100,7 @@ namespace PorjectManagement.Repository
                         : null,
                     ProgressPercent = t.ProgressPercent,
                     Deadline = t.Deadline,
+                    IsParent = t.IsParent, // check field IsParent
                     Assignees = string.Join(", ",
                                       from ta in _context.TaskAssignments
                                       join u in _context.Users on ta.UserId equals u.UserId
@@ -123,11 +124,24 @@ namespace PorjectManagement.Repository
             var tasks = await GetProjectTasksAsync(projectId);
             var report = await GetProjectReportAsync(projectId);
             
+            // Tính progress dựa trên số task Completed
             var overallProgress = 0;
             if (tasks.Any())
             {
-                var avg = tasks.Average(t => t.ProgressPercent ?? 0);
-                overallProgress = (int)Math.Round(avg);
+                var parentTasks = tasks.Where(t => t.IsParent != false).ToList();
+                
+                if (parentTasks.Any())
+                {
+                    var completedCount = parentTasks.Count(t => 
+                        t.Status != null && 
+                        t.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase)
+                    );
+                    
+                    var totalCount = parentTasks.Count;
+                    
+                    // Progress = (Completed / Total) * 100
+                    overallProgress = (int)Math.Round((double)completedCount / totalCount * 100);
+                }
             }
 
             return new ProjectWorkspaceViewModel
@@ -147,7 +161,7 @@ namespace PorjectManagement.Repository
             return project.ProjectId;
         }
 
-        // ===== Methods từ dev/Vu - GIỮ NGUYÊN =====
+        // ===== Methods từ dev/Vu - GIỬ NGUYÊN =====
         public async Task<List<Project>> GetProjectsOfUserAsync(int userId)
         {
             return await _context.Projects
