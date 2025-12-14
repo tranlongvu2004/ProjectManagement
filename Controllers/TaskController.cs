@@ -28,27 +28,49 @@ namespace PorjectManagement.Controllers
         {
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
+
             var vm = new TaskCreateViewModel();
 
-            // Load toàn bộ project cho dropdown
-            var projectList = await _userProjectService.GetAllProjectsAsync();
-            ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
+            // Nếu projectId = null → lấy từ URL referrer
+            if (!projectId.HasValue)
+            {
+                var referer = Request.Headers["Referer"].ToString();
 
-            // Nếu có projectId → load thành viên
-            if (projectId.HasValue)
-            {
-                vm.ProjectId = projectId.Value;
-                vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
+                if (!string.IsNullOrEmpty(referer))
+                {
+                    var uri = new Uri(referer);
+                    var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+                    if (query.TryGetValue("projectId", out var value))
+                    {
+                        projectId = int.Parse(value);
+                    }
+                }
             }
-            else
+
+            // Nếu sau khi detect vẫn null → fallback
+            if (!projectId.HasValue)
             {
+                // vẫn load dropdown nếu không tìm được projectId
+                var projectList = await _userProjectService.GetAllProjectsAsync();
+                ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
                 vm.ProjectMembers = new List<PorjectManagement.Models.User>();
+                return View(vm);
             }
+
+            // Đến đây chắc chắn có projectId
+            vm.ProjectId = projectId.Value;
+
+            // Load thành viên trong project
+            vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
+
+            // Ẩn dropdown project trong view
+            ViewBag.HideProjectDropdown = true;
 
             return View(vm);
         }
 
-    
+
         [HttpPost]
         public async Task<IActionResult> CreateTask(TaskCreateViewModel model)
         {
@@ -74,13 +96,13 @@ namespace PorjectManagement.Controllers
                 return View(model);
             }
 
-            var task = new Models.Task
+            var task = new PorjectManagement.Models.Task
             {
                 ProjectId = model.ProjectId,
                 Title = model.Title,
                 Description = model.Description,
                 Priority = model.Priority,
-                Status = Models.TaskStatus.ToDo,
+                Status = PorjectManagement.Models.TaskStatus.ToDo,
                 Deadline = model.Deadline,
                 CreatedBy = 1, // TODO: thay bằng user đang login
                 CreatedAt = DateTime.Now
@@ -91,18 +113,8 @@ namespace PorjectManagement.Controllers
             // 3️⃣ Sau đó mới assign user vào task
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
-
-            ViewBag.SuccessMessage = "Tạo task thành công!";
-
-            // Load lại member list
-            model.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(model.ProjectId);
-
-            // Xóa nội dung form sau khi tạo
-            ModelState.Clear();
-            model.Title = "";
-            model.Description = "";
-
-            return View(model);
+            TempData["SuccessMessage"] = "Tạo task thành công!";
+            return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
         public async Task<IActionResult> Assign(int id)
         {

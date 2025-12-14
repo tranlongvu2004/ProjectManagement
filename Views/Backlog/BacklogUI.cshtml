@@ -1,7 +1,12 @@
 ﻿@using PorjectManagement.Models
 @model List<PorjectManagement.Models.Task>
 
-
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
 
 @{
     ViewData["Title"] = "Main Table";
