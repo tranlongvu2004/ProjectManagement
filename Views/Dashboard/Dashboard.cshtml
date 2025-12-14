@@ -44,11 +44,11 @@
 
     .charts-row {
         display: flex;
-        gap: 20px; /* khoảng cách giữa 2 chart */
+        gap: 20px; 
     }
 
         .charts-row canvas {
-            width: 48% !important; /* mỗi chart chiếm 1 nửa */
+            width: 48% !important; 
             max-height: 400px;
         }
 </style>
@@ -324,7 +324,7 @@
 
         function updateStats(tasks) {
         const cards = document.querySelectorAll(".stat-card .stat-number");
-        if (cards.length < 4) return; // Không crash
+        if (cards.length < 4) return;
 
         cards[0].textContent = tasks.length;
         cards[1].textContent = tasks.filter(t => t.Status === "Doing").length;

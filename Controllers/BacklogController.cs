@@ -36,6 +36,8 @@ namespace PorjectManagement.Controllers
                 .Select(rb => rb.EntityId).ToHashSet();
 
             var tasks = _context.Tasks
+                .Include(t => t.TaskAssignments)
+                .ThenInclude(ta => ta.User)
             .Where(t => t.ProjectId == projectId
                 && !_context.RecycleBins.Any(r =>
                 r.EntityType == "Task"

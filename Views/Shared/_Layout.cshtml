@@ -312,18 +312,18 @@
     <div class="sidebar">
 
         <a asp-controller="Home" asp-action="Index" class="menu-item">
-            Tổng quan
+            Overview
         </a>
 
         <a asp-controller="Project" asp-action="Index" class="menu-item">
-            Dự án của tôi
+            My projects
         </a>
 
         @* MENTOR *@
         @if (roleId == 1)
         {
             <a asp-controller="ProjectManagement" asp-action="Create" class="menu-item">
-                <i class="bi bi-plus-circle"></i> Tạo dự án mới
+                <i class="bi bi-plus-circle"></i> New project
             </a>
         }
 
@@ -351,7 +351,7 @@
         }
         else
         {
-            <small class="text-muted px-2">Chưa có project</small>
+            <small class="text-muted px-2"></small>
         }
     </div>
 
