@@ -124,7 +124,7 @@ namespace PorjectManagement.Controllers
                 FullName = fullName,
                 Email = email,
                 PasswordHash = password,   
-                RoleId = 3,                
+                RoleId = 2,                
                 Status = UserStatus.Active,
                 CreatedAt = DateTime.Now
             };

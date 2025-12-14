@@ -1,5 +1,6 @@
 using NuGet.Packaging;
 using OfficeOpenXml;
+using PorjectManagement.Controllers;
 using PorjectManagement.Models;
 using PorjectManagement.Repository;
 using PorjectManagement.Repository.Interface;
@@ -36,6 +37,9 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IInternRepo, InternRepo>();
 builder.Services.AddScoped<IInternService, InternService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+
+builder.Services.AddScoped<EmailSender>();
+builder.Services.AddHostedService<DeadlineEmailBackgroundService>();
 
 builder.Services.AddSignalR();
 
