@@ -183,6 +183,7 @@ namespace PorjectManagement.Service
            
 return await _context.Tasks
         .Where(t =>
+            t.ProjectId == projectId &&
             t.IsParent.HasValue && t.IsParent.Value == true
         )
        .ToListAsync();
