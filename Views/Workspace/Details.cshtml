@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = Model.Project.ProjectName;
+    var currentUserId = Context.Session.GetInt32("UserId");
+    var isLeader = Model.Members.Any(x => x.UserId == currentUserId && x.IsLeader);
 }
 
 <div class="p-4">
@@ -28,6 +30,16 @@
             </p>
         </div>
         <div class="d-flex gap-2">
+            @if (ViewBag.IsMentor == true)
+            {
+                <a asp-controller="ProjectManagement" 
+                   asp-action="Edit" 
+                   asp-route-id="@Model.Project.ProjectId" 
+                   class="btn btn-warning">
+                    <i class="bi bi-pencil-square"></i> Cập nhật
+                </a>
+            }
+            
             <a asp-controller="Backlog" 
                asp-action="BacklogUI" 
                asp-route-projectId="@Model.Project.ProjectId" 
@@ -65,7 +77,46 @@
         </div>
     </div>
 
-    <!-- Members Section - FULL WIDTH -->
+    <!-- REPORTS SECTION -->
+    @if (Model.Reports != null && Model.Reports.Any())
+    {
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="fw-bold mb-4">Báo Cáo (@Model.Reports.Count)</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Loại báo cáo</th>
+                                <th>Leader</th>
+                                <th>File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var report in Model.Reports)
+                            {
+                                <tr>
+                                    <td>@report.ReportId</td>
+                                    <td>
+                                        <span class="badge bg-info">@report.ReportType</span>
+                                    </td>
+                                    <td>@report.Leader</td>
+                                    <td>
+                                        <a href="@report.FilePath" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-download"></i> Tải về
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Members Section -->
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <h5 class="fw-bold mb-4">Thành Viên (@Model.Members.Count)</h5>
@@ -107,6 +158,38 @@
             }
         </div>
     </div>
+    @if (isLeader)
+    {
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Tải lên báo cáo mới</h5>
+
+                <form asp-controller="Report"
+                      asp-action="Upload"
+                      enctype="multipart/form-data"
+                      method="post">
+
+                    <input type="hidden" name="ProjectId" value="@Model.Project.ProjectId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Loại báo cáo</label>
+                        <select class="form-select" name="ReportType">
+                            <option value="Daily">Báo cáo ngày</option>
+                            <option value="Weekly">Báo cáo tuần</option>
+                            <option value="Final">Báo cáo cuối kỳ</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">File báo cáo</label>
+                        <input class="form-control" type="file" name="ReportFile" required />
+                    </div>
+
+                    <button class="btn btn-primary">Tải lên</button>
+                </form>
+            </div>
+        </div>
+    }
 </div>
 
 <style>

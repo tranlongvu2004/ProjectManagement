@@ -15,9 +15,13 @@ namespace PorjectManagement.Service.Interface
         Task<int> CreateProjectWithTeamAsync(ProjectCreateViewModel model, int createdByUserId);
         Task<List<AvailableUserItem>> GetAvailableUsersAsync();
         
-        // Các methods khác nếu cần
         Task<ProjectDetailDto> GetProjectByIdAsync(int projectId);
         Task<List<ProjectMemberItem>> GetProjectMembersAsync(int projectId);
         Task<List<ProjectTaskItem>> GetProjectTasksAsync(int projectId);
+
+        Task<Project?> GetProjectEntityByIdAsync(int projectId);
+        
+        Task<ProjectUpdateViewModel?> GetProjectForUpdateAsync(int projectId, int mentorId);
+        Task<bool> UpdateProjectWithTeamAsync(ProjectUpdateViewModel model, int updatedByUserId);
     }
 }

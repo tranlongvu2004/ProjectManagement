@@ -94,13 +94,13 @@
 </style>
 
 <div class="login-container">
-    <h2>Đăng nhập</h2>
+    <h2>Login</h2>
 
     <form method="post" action="/User/Login">
 
         <div class="form-group">
             <label>Email</label>
-            <input type="text" name="email" />
+            <input type="text" name="email" value="@ViewBag.Email"/>
         </div>
 
         <div class="form-group">
@@ -116,8 +116,8 @@
         <button type="submit" class="btn-login">Login</button>
 
         <div class="links">
-            <a href="/User/Register">Chưa có tài khoản? Đăng ký ngay</a>
-            <a href="/User/ResetPassword">Quên mật khẩu?</a>
+            <a href="/User/Register">Don't have account? Register now</a>
+            <a href="/User/ResetPassword">Forgot password?</a>
         </div>
     </form>
 </div>

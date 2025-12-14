@@ -1,5 +1,4 @@
-﻿// Repository/UserProjectRepo.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -59,13 +58,12 @@ namespace PorjectManagement.Repository
                 .ToListAsync();
         }
 
-        // ✅ THÊM METHOD MỚI
+        // ✅ Method từ HEAD - GIỮ LẠI (dùng cho Create/Update Project)
         public async System.Threading.Tasks.Task AddMembersToProjectAsync(
             int projectId, 
             List<int> selectedUserIds, 
             int? leaderId)
         {
-            // Tạo danh sách UserProject
             var userProjects = selectedUserIds.Select(userId => new UserProject
             {
                 ProjectId = projectId,
@@ -74,9 +72,29 @@ namespace PorjectManagement.Repository
                 JoinedAt = DateTime.Now
             }).ToList();
 
-            // Thêm vào database
             await _context.UserProjects.AddRangeAsync(userProjects);
             await _context.SaveChangesAsync();
+        }
+
+        // ✅ Method từ HEAD - GIỮ LẠI (dùng cho Update Project)
+        public async System.Threading.Tasks.Task RemoveAllMembersFromProjectAsync(int projectId)
+        {
+            var userProjects = await _context.UserProjects
+                .Where(up => up.ProjectId == projectId)
+                .ToListAsync();
+            
+            _context.UserProjects.RemoveRange(userProjects);
+            await _context.SaveChangesAsync();
+        }
+
+        // ✅ Method từ dev/Vu - GIỮ LẠI (dùng trong UserProjectService)
+        public bool IsleaderOfProject(int userId, int projectId)
+        {
+            return _context.UserProjects.Any(up =>
+                up.UserId == userId &&
+                up.ProjectId == projectId &&
+                up.IsLeader == true
+            );
         }
     }
 }

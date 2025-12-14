@@ -1,0 +1,52 @@
+﻿@model List<PorjectManagement.Models.Report>
+@{
+    ViewData["Title"] = "Project Reports";
+}
+
+<div class="container mt-4">
+    <h3 class="mb-3">📄 Report List</h3>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Have no report.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>ReportType</th>
+                    <th>Upload by</th>
+                    <th>Created at</th>
+                    <th>File</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@Model[i].ReportType</td>
+                        <td>@Model[i].Leader.FullName</td>
+                        <td>@Model[i].CreatedAt?.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <a href="@Model[i].FilePath"
+                               target="_blank"
+                               class="btn btn-sm btn-primary">
+                                Download
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <a href="/Backlog/BacklogUI?projectId=@ViewBag.ProjectId"
+       class="btn btn-secondary mt-3">
+        ⬅ Back to project
+    </a>
+</div>

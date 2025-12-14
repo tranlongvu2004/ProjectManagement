@@ -65,6 +65,22 @@ namespace PorjectManagement.Repository
             return await query.ToListAsync();
         }
 
+        // Method dev/Vu
+        public Task<List<ProjectReportItem>> GetProjectReportAsync(int projectId)
+        {
+            var query = from r in _context.Reports
+                        where r.ProjectId == projectId
+                        select new ProjectReportItem
+                        {
+                            ReportId = r.ReportId,
+                            ProjectId = r.ProjectId,
+                            Leader = r.Leader.FullName,
+                            ReportType = r.ReportType,
+                            FilePath = r.FilePath
+                        };
+            return query.ToListAsync();
+        }
+
         public async Task<List<ProjectTaskItem>> GetProjectTasksAsync(int projectId)
         {
             var tasksQuery =
@@ -93,6 +109,7 @@ namespace PorjectManagement.Repository
             return await tasksQuery.ToListAsync();
         }
 
+        // ✅ Method từ dev/Vu - GIỮ NGUYÊN (có thêm Reports)
         public async Task<ProjectWorkspaceViewModel?> GetWorkspaceAsync(int projectId)
         {
             var project = await GetProjectByIdAsync(projectId);
@@ -103,7 +120,8 @@ namespace PorjectManagement.Repository
 
             var members = await GetProjectMembersAsync(projectId);
             var tasks = await GetProjectTasksAsync(projectId);
-
+            var report = await GetProjectReportAsync(projectId);
+            
             var overallProgress = 0;
             if (tasks.Any())
             {
@@ -116,6 +134,7 @@ namespace PorjectManagement.Repository
                 Project = project,
                 Members = members,
                 Tasks = tasks,
+                Reports = report,
                 OverallProgress = overallProgress
             };
         }
@@ -127,7 +146,7 @@ namespace PorjectManagement.Repository
             return project.ProjectId;
         }
 
-        // ===== Methods từ origin/dev/Vu =====
+        // ===== Methods từ dev/Vu - GIỮ NGUYÊN =====
         public async Task<List<Project>> GetProjectsOfUserAsync(int userId)
         {
             return await _context.Projects
@@ -137,13 +156,25 @@ namespace PorjectManagement.Repository
                 .ToListAsync();
         }
 
-
         public async Task<Project?> GetByIdAsync(int projectId)
         {
             return await _context.Projects
                 .Include(p => p.UserProjects)
                     .ThenInclude(up => up.User)
                 .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+        }
+
+        public async Task<Project?> GetProjectEntityByIdAsync(int projectId)
+        {
+            return await _context.Projects
+                .Include(p => p.UserProjects)
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+        }
+
+        public async System.Threading.Tasks.Task UpdateProjectAsync(Project project)
+        {
+            _context.Projects.Update(project);
+            await _context.SaveChangesAsync();
         }
     }
 }

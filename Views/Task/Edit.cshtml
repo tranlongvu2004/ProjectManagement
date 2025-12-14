@@ -1,0 +1,234 @@
+﻿@model PorjectManagement.ViewModels.TaskEditViewModel
+
+@{
+    ViewData["Title"] = "Update Task";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">
+                    <i class="bi bi-pencil-square"></i> Update Task
+                </h2>
+                <a asp-action="BacklogUI" asp-controller="Backlog" asp-route-projectId="@Model.ProjectId" 
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+
+            <!-- Messages -->
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Form Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post" id="editTaskForm">
+                        <input type="hidden" asp-for="TaskId" />
+                        <input type="hidden" asp-for="ProjectId" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label fw-semibold">
+                                <i class="bi bi-pencil-square text-primary"></i> Task Name <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Title" class="form-control form-control-lg" 
+                                   placeholder="Ex: Design database schema" />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-semibold">
+                                <i class="bi bi-card-text text-info"></i> Descreption
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="4" 
+                                      placeholder="Descreption task..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row mb-4">
+                            <!-- Priority -->
+                            <div class="col-md-4">
+                                <label asp-for="Priority" class="form-label fw-semibold">
+                                    <i class="bi bi-flag-fill text-warning"></i> Priority level
+                                </label>
+                                <select asp-for="Priority" class="form-select" asp-items="Html.GetEnumSelectList<PorjectManagement.Models.TaskPriority>()">
+                                </select>
+                                <span asp-validation-for="Priority" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="col-md-4">
+                                <label asp-for="Status" class="form-label fw-semibold">
+                                    <i class="bi bi-check-circle text-success"></i> Status
+                                </label>
+                                <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<PorjectManagement.Models.TaskStatus>()">
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Deadline -->
+                            <div class="col-md-4">
+                                <label asp-for="Deadline" class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-event text-danger"></i> Deadline
+                                </label>
+                                <input asp-for="Deadline" type="datetime-local" class="form-control" />
+                                <span asp-validation-for="Deadline" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Current Assignees -->
+                        @if (Model.CurrentAssignees != null && Model.CurrentAssignees.Any())
+                        {
+                            <div class="mb-3">
+                                <h5 class="fw-semibold">
+                                    <i class="bi bi-person-check text-primary"></i> Current assigned person
+                                </h5>
+                                <div class="card border-0 bg-light p-3">
+                                    @foreach (var assignee in Model.CurrentAssignees)
+                                    {
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="avatar-circle bg-secondary text-white me-2" 
+                                                 style="width: 32px; height: 32px; border-radius: 50%; 
+                                                        display: flex; align-items: center; justify-content: center; 
+                                                        font-weight: bold;">
+                                                @assignee.FullName.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">@assignee.FullName</div>
+                                                <small class="text-muted">@assignee.Email - @assignee.RoleName</small>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Select Assignees -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-people-fill text-success"></i> Update assigned person
+                            </label>
+                            <div class="card border-0 bg-light p-3" style="max-height: 300px; overflow-y: auto;">
+                                @if (Model.ProjectMembers != null && Model.ProjectMembers.Any())
+                                {
+                                    @foreach (var member in Model.ProjectMembers)
+                                    {
+                                        var isChecked = Model.SelectedUserIds != null && Model.SelectedUserIds.Contains(member.UserId);
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input user-checkbox" 
+                                                   type="checkbox" 
+                                                   name="SelectedUserIds" 
+                                                   value="@member.UserId" 
+                                                   id="user_@member.UserId"
+                                                   @(isChecked ? "checked" : "") />
+                                            <label class="form-check-label d-flex align-items-center" for="user_@member.UserId">
+                                                <div class="avatar-circle bg-primary text-white me-2" 
+                                                     style="width: 32px; height: 32px; border-radius: 50%; 
+                                                            display: flex; align-items: center; justify-content: center; 
+                                                            font-weight: bold;">
+                                                    @member.FullName.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold">@member.FullName</div>
+                                                    <small class="text-muted">@member.Email</small>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No member in project.</p>
+                                }
+                            </div>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle"></i> Choose: <span id="selected-count">0</span> Person
+                            </small>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="BacklogUI" asp-controller="Backlog" asp-route-projectId="@Model.ProjectId" 
+                               class="btn btn-secondary px-4">
+                                <i class="bi bi-x-circle"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle"></i> Update
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function () {
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            $('.user-checkbox').on('change', function () {
+                updateSelectedCount();
+            });
+
+            function updateSelectedCount() {
+                const count = $('.user-checkbox:checked').length;
+                $('#selected-count').text(count);
+            }
+
+            // Initialize
+            updateSelectedCount();
+        });
+    </script>
+}
+
+<style>
+    .avatar-circle {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5568d3 0%, #65408b 100%);
+    }
+</style>

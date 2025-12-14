@@ -29,11 +29,11 @@ public partial class LabProjectManagementContext : DbContext
 
     public virtual DbSet<TaskAssignment> TaskAssignments { get; set; }
 
-    public virtual DbSet<TaskAttachment> TaskAttachments { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserProject> UserProjects { get; set; }
+
+    public virtual DbSet<TaskAttachment> TaskAttachments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -163,6 +163,7 @@ public partial class LabProjectManagementContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.IsParent).HasDefaultValue(false);
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Tasks)
                 .HasForeignKey(d => d.CreatedBy)
@@ -272,8 +273,6 @@ public partial class LabProjectManagementContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserProje__UserI__46E78A0C");
         });
-
-        OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

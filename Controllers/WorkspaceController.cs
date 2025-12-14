@@ -6,10 +6,14 @@ namespace PorjectManagement.Controllers
     public class WorkspaceController : BaseController
     {
         private readonly IProjectServices _projectServices;
+        private readonly IUserServices _userServices;
 
-        public WorkspaceController(IProjectServices projectServices)
+        public WorkspaceController(
+            IProjectServices projectServices,
+            IUserServices userServices)
         {
             _projectServices = projectServices;
+            _userServices = userServices;
         }
 
         // GET: /Workspace/Details/5
@@ -22,12 +26,17 @@ namespace PorjectManagement.Controllers
             {
                 return BadRequest("Project id không hợp lệ.");
             }
-            // Lấy workspace data
+
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            var currentUser = _userServices.GetUser(userEmail);           
+            var projectEntity = await _projectServices.GetProjectEntityByIdAsync(id);          
+            ViewBag.IsMentor = (currentUser?.RoleId == 1 && projectEntity?.CreatedBy == currentUser.UserId);
             var model = await _projectServices.GetWorkspaceAsync(id);
             if (model == null)
             {
                 return NotFound();
             }
+
             return View(model);
         }
     }

@@ -7,6 +7,7 @@ namespace PorjectManagement.Service.Interface
 {
     public interface IUserProjectService
     {
+        bool IsleaderOfProject(int userId, int projectId);
         Task<List<User>> GetAllUsersAsync();
         Task<Project?> GetProjectByIdAsync(int projectId);
         Task<Dictionary<int, string>> AddUsersToProjectAsync(int projectId, List<int> userIds);

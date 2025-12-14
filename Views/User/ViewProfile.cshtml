@@ -1,0 +1,39 @@
+﻿@model PorjectManagement.Models.User
+
+<div class="container mt-4" style="max-width: 700px;">
+    <h2 class="mb-4 text-primary">User profile</h2>
+
+    <div class="border p-4 rounded shadow-sm">
+        <div class="text-center mb-4">
+            <img src="@(string.IsNullOrEmpty(Model.AvatarUrl)
+                     ? Url.Content("~/images/default-avatar.png")
+                     : Model.AvatarUrl)"
+                 alt="Avatar"
+                 class="rounded-circle border"
+                 style="width: 140px; height: 140px; object-fit: cover;">
+
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Full name</label>
+            <input class="form-control" value="@Model.FullName" readonly />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Email</label>
+            <input class="form-control" value="@Model.Email" readonly />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Status</label>
+            <input class="form-control" value="@Model.Status" readonly />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Created at</label>
+            <input class="form-control"
+                   value="@Model.CreatedAt?.ToString("yyyy/MM/dd")"
+                   readonly />
+        </div>
+    </div>
+</div>
