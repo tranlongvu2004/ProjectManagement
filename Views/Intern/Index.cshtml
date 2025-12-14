@@ -1,16 +1,16 @@
 ﻿@model IEnumerable<PorjectManagement.Models.User>
 
-<h2 class="fw-bold">Danh sách thực tập sinh</h2>
+<h2 class="fw-bold">List of Interns</h2>
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead class="bg-light">
                     <tr>
-                        <th class="py-3">Họ tên</th>
+                        <th class="py-3">Name</th>
                         <th class="py-3">Email</th>
-                        <th class="py-3">Trạng thái</th>
-                        <th class="py-3">Ngày tạo</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Created at</th>
                     </tr>
                 </thead>
 
@@ -39,19 +39,19 @@
                                 @switch (u.Status)
                                 {
                                     case UserStatus.Active:
-                                        <span class="badge bg-success">Đang hoạt động</span>
+                                        <span class="badge bg-success">Active</span>
                                         break;
 
                                     case UserStatus.Inactive:
-                                        <span class="badge bg-secondary">Không hoạt động</span>
+                                        <span class="badge bg-secondary">Inactive</span>
                                         break;
 
                                     case UserStatus.Dropped:
-                                        <span class="badge bg-danger">Dừng thực tập</span>
+                                        <span class="badge bg-danger">Dropped</span>
                                         break;
 
                                     default:
-                                        <span class="badge bg-light text-dark">Không rõ</span>
+                                        <span class="badge bg-light text-dark">Unknown</span>
                                         break;
                                 }
                             </td>
