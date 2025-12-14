@@ -17,13 +17,13 @@
                     @switch (Model.Project.Status)
                     {
                         case "InProgress":
-                            <span class="badge bg-primary">Đang tiến hành</span>
+                            <span class="badge bg-primary">Inprogress</span>
                             break;
                         case "Completed":
-                            <span class="badge bg-success">Hoàn thành</span>
+                            <span class="badge bg-success">Completed</span>
                             break;
                         case "Dropped":
-                            <span class="badge bg-danger">Đã hủy</span>
+                            <span class="badge bg-danger">Dropped</span>
                             break;
                     }
                 </span>
@@ -36,7 +36,7 @@
                    asp-action="Edit" 
                    asp-route-id="@Model.Project.ProjectId" 
                    class="btn btn-warning">
-                    <i class="bi bi-pencil-square"></i> Cập nhật
+                    <i class="bi bi-pencil-square"></i> Update
                 </a>
             }
             
@@ -44,10 +44,10 @@
                asp-action="BacklogUI" 
                asp-route-projectId="@Model.Project.ProjectId" 
                class="btn btn-primary">
-                <i class="bi bi-list-task"></i> Xem Backlog
+                <i class="bi bi-list-task"></i> View Backlog
             </a>
             <a asp-controller="Project" asp-action="Index" class="btn btn-outline-secondary">
-                Quay lại
+                Back
             </a>
         </div>
     </div>
@@ -57,7 +57,7 @@
     {
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
-                <h6 class="fw-bold mb-2">Mô tả</h6>
+                <h6 class="fw-bold mb-2">Description</h6>
                 <p class="text-muted mb-0">@Model.Project.Description</p>
             </div>
         </div>
@@ -66,7 +66,7 @@
     <!-- Overall Progress -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
-            <h6 class="fw-bold mb-3">Tiến Độ Tổng Thể</h6>
+            <h6 class="fw-bold mb-3">Overall Progress</h6>
             <div class="progress" style="height: 30px;">
                 <div class="progress-bar bg-success" 
                      role="progressbar" 
@@ -82,13 +82,13 @@
     {
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
-                <h5 class="fw-bold mb-4">Báo Cáo (@Model.Reports.Count)</h5>
+                <h5 class="fw-bold mb-4">Report (@Model.Reports.Count)</h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Loại báo cáo</th>
+                                <th>Report type</th>
                                 <th>Leader</th>
                                 <th>File</th>
                             </tr>
@@ -104,7 +104,7 @@
                                     <td>@report.Leader</td>
                                     <td>
                                         <a href="@report.FilePath" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-download"></i> Tải về
+                                            <i class="bi bi-download"></i> Download
                                         </a>
                                     </td>
                                 </tr>
@@ -119,7 +119,7 @@
     <!-- Members Section -->
     <div class="card border-0 shadow-sm">
         <div class="card-body">
-            <h5 class="fw-bold mb-4">Thành Viên (@Model.Members.Count)</h5>
+            <h5 class="fw-bold mb-4">Member (@Model.Members.Count)</h5>
             
             @if (Model.Members != null && Model.Members.Any())
             {
@@ -154,7 +154,7 @@
             }
             else
             {
-                <p class="text-muted text-center py-4">Chưa có thành viên</p>
+                <p class="text-muted text-center py-4">No member yet</p>
             }
         </div>
     </div>
@@ -162,7 +162,7 @@
     {
         <div class="card border-0 shadow-sm mt-4">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">Tải lên báo cáo mới</h5>
+                <h5 class="fw-bold mb-3">Upload new report</h5>
 
                 <form asp-controller="Report"
                       asp-action="Upload"
@@ -172,20 +172,20 @@
                     <input type="hidden" name="ProjectId" value="@Model.Project.ProjectId" />
 
                     <div class="mb-3">
-                        <label class="form-label">Loại báo cáo</label>
+                        <label class="form-label">Report type</label>
                         <select class="form-select" name="ReportType">
-                            <option value="Daily">Báo cáo ngày</option>
-                            <option value="Weekly">Báo cáo tuần</option>
-                            <option value="Final">Báo cáo cuối kỳ</option>
+                            <option value="Daily">Daily Report</option>
+                            <option value="Weekly">Weekly Report</option>
+                            <option value="Final">Final report</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">File báo cáo</label>
+                        <label class="form-label">File report</label>
                         <input class="form-control" type="file" name="ReportFile" required />
                     </div>
 
-                    <button class="btn btn-primary">Tải lên</button>
+                    <button class="btn btn-primary">Upload</button>
                 </form>
             </div>
         </div>
