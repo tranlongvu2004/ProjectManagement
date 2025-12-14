@@ -147,25 +147,13 @@ namespace PorjectManagement.Repository
         }
 
         // ===== Methods từ dev/Vu - GIỮ NGUYÊN =====
-        public async Task<List<ProjectListVM>> GetProjectsOfUserAsync(int userId)
+        public async Task<List<Project>> GetProjectsOfUserAsync(int userId)
         {
-            var projects = await _context.Projects
+            return await _context.Projects
                 .Include(p => p.UserProjects)
                     .ThenInclude(up => up.User)
                 .Where(p => p.UserProjects.Any(up => up.UserId == userId))
                 .ToListAsync();
-            return projects.Select(p => new ProjectListVM
-            {
-                ProjectId = p.ProjectId,
-                ProjectName = p.ProjectName,
-                Deadline = p.Deadline,
-                Status = p.Status,
-                LeaderName = p.UserProjects
-                    .Where(x => x.IsLeader == true)
-                    .Select(x => x.User.FullName)
-                    .FirstOrDefault() ?? "Không xác định",
-                MemberCount = p.UserProjects.Count
-            }).ToList();
         }
 
         public async Task<Project?> GetByIdAsync(int projectId)

@@ -26,7 +26,7 @@ namespace PorjectManagement.Service
         }
 
         // Danh sách project của user
-        public async Task<List<ProjectListVM>> GetProjectsOfUserAsync(int userId)
+        public async Task<List<Project>> GetProjectsOfUserAsync(int userId)
         {
             return await _projectRepo.GetProjectsOfUserAsync(userId);
         }

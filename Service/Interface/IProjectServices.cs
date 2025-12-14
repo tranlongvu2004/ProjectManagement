@@ -6,7 +6,7 @@ namespace PorjectManagement.Service.Interface
     public interface IProjectServices
     {
         // Danh sách project của user
-        Task<List<ProjectListVM>> GetProjectsOfUserAsync(int userId);
+        Task<List<Project>> GetProjectsOfUserAsync(int userId);
         
         // Workspace chi tiết
         Task<ProjectWorkspaceViewModel?> GetWorkspaceAsync(int projectId);
