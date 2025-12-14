@@ -162,7 +162,7 @@
     {
         <div class="card border-0 shadow-sm mt-4">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">Upload new report</h5>
+                <h5 class="fw-bold mb-3">Upload New Report</h5>
 
                 <form asp-controller="Report"
                       asp-action="Upload"
@@ -172,16 +172,19 @@
                     <input type="hidden" name="ProjectId" value="@Model.Project.ProjectId" />
 
                     <div class="mb-3">
-                        <label class="form-label">Report type</label>
+                        <label class="form-label">Report Type</label>
                         <select class="form-select" name="ReportType">
-                            <option value="Daily">Daily Report</option>
-                            <option value="Weekly">Weekly Report</option>
-                            <option value="Final">Final report</option>
+                            <option value="Daily">Daily</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Final">Final</option>
+
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">File report</label>
+
+                        <label class="form-label">Report File</label>
+
                         <input class="form-control" type="file" name="ReportFile" required />
                     </div>
 

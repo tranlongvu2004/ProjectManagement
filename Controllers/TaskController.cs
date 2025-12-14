@@ -48,6 +48,7 @@ namespace PorjectManagement.Controllers
                 }
             }
 
+
             // Nếu sau khi detect vẫn null → fallback
             if (!projectId.HasValue)
             {
@@ -66,6 +67,14 @@ namespace PorjectManagement.Controllers
 
             // Ẩn dropdown project trong view
             ViewBag.HideProjectDropdown = true;
+            var parentTasks = await _taskService.GetParentTasksByProjectAsync(projectId.Value);
+
+            vm.ParentTasks = parentTasks.Select(t => new SelectListItem
+            {
+                Value = t.TaskId.ToString(),
+                Text = t.Title
+            }).ToList();
+
 
             return View(vm);
         }
@@ -78,7 +87,7 @@ namespace PorjectManagement.Controllers
             if (redirect != null) return redirect;
             if (model.Deadline < DateTime.Now)
             {
-                ModelState.AddModelError("Deadline", "Deadline không được là thời gian trong quá khứ");
+                ModelState.AddModelError("Deadline", "Deadline cannot be the past");
             }
 
             if (!ModelState.IsValid)
@@ -96,6 +105,7 @@ namespace PorjectManagement.Controllers
                 return View(model);
             }
 
+
             var task = new PorjectManagement.Models.Task
             {
                 ProjectId = model.ProjectId,
@@ -105,7 +115,9 @@ namespace PorjectManagement.Controllers
                 Status = PorjectManagement.Models.TaskStatus.ToDo,
                 Deadline = model.Deadline,
                 CreatedBy = 1, // TODO: thay bằng user đang login
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                 IsParent = !model.IsSubTask,
+                ParentId = model.IsSubTask ? model.ParentTaskId : null
             };
 
             var newTaskId = await _taskService.CreateTaskAsync(task);
@@ -113,7 +125,7 @@ namespace PorjectManagement.Controllers
             // 3️⃣ Sau đó mới assign user vào task
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
-            TempData["SuccessMessage"] = "Tạo task thành công!";
+            TempData["SuccessMessage"] = "Create Task successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
         public async Task<IActionResult> Assign(int id)

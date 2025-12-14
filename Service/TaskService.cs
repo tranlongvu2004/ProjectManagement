@@ -178,5 +178,15 @@ namespace PorjectManagement.Service
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<List<Models.Task>> GetParentTasksByProjectAsync(int projectId)
+        {
+           
+return await _context.Tasks
+        .Where(t =>
+            t.IsParent.HasValue && t.IsParent.Value == true
+        )
+       .ToListAsync();
+        }
+
     }
 }
