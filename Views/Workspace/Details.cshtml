@@ -91,6 +91,7 @@
                                 <th>Report type</th>
                                 <th>Leader</th>
                                 <th>File</th>
+                                <th>Create At</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,6 +103,7 @@
                                         <span class="badge bg-info">@report.ReportType</span>
                                     </td>
                                     <td>@report.Leader</td>
+                                    <td>@report.CreatedAt?.ToString("yyyy/MM/dd HH:mm:ss")</td>
                                     <td>
                                         <a href="@report.FilePath" target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-download"></i> Download
