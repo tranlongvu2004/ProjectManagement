@@ -91,14 +91,28 @@ namespace PorjectManagement.Tests.Controllers
         {
             // Arrange
             int projectId = 1;
+
             var users = new List<User>
-            {
-                new User { UserId = 1, FullName = "Test User" }
-            };
+    {
+        new User { UserId = 1, FullName = "Test User" }
+    };
+
+            var parentTasks = new List<PorjectManagement.Models.Task>
+    {
+        new PorjectManagement.Models.Task
+        {
+            TaskId = 10,
+            Title = "Parent Task 1"
+        }
+    };
 
             _userProjectServiceMock
                 .Setup(x => x.GetUsersByProjectIdAsync(projectId))
                 .ReturnsAsync(users);
+
+            _taskServiceMock
+                .Setup(x => x.GetParentTasksByProjectAsync(projectId))
+                .ReturnsAsync(parentTasks);
 
             // Act
             var result = await _controller.CreateTask(projectId);
@@ -109,7 +123,9 @@ namespace PorjectManagement.Tests.Controllers
 
             Assert.Equal(projectId, model.ProjectId);
             Assert.Single(model.ProjectMembers);
+            Assert.Single(model.ParentTasks);
         }
+
 
 
         [Fact]
@@ -247,5 +263,76 @@ namespace PorjectManagement.Tests.Controllers
             var view = Assert.IsType<ViewResult>(result);
             Assert.False(_controller.ModelState.IsValid);
         }
+        [Fact]
+        public async System.Threading.Tasks.Task CreateTask_Get_ProjectIdFromReferer_ReturnsView()
+        {
+            // Arrange
+            var users = new List<User>
+    {
+        new User { UserId = 1, FullName = "User A" }
+    };
+
+            _userProjectServiceMock
+                .Setup(x => x.GetUsersByProjectIdAsync(1))
+                .ReturnsAsync(users);
+
+            _taskServiceMock
+                .Setup(x => x.GetParentTasksByProjectAsync(1))
+                .ReturnsAsync(new List<Models.Task>());
+
+            var httpContext = _controller.ControllerContext.HttpContext;
+            httpContext.Request.Headers["Referer"] =
+                "http://localhost/Task/CreateTask?projectId=1";
+
+            // Act
+            var result = await _controller.CreateTask((int?)null);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<TaskCreateViewModel>(view.Model);
+            Assert.Equal(1, model.ProjectId);
+        }
+        [Fact]
+        public async System.Threading.Tasks.Task CreateTask_Get_NoProjectId_NoReferer_ReturnsViewWithDropdown()
+        {
+            // Arrange
+            _userProjectServiceMock
+                .Setup(x => x.GetAllProjectsAsync())
+                .ReturnsAsync(new List<Project>
+                {
+            new Project { ProjectId = 1, ProjectName = "P1" }
+                });
+
+            // Act
+            var result = await _controller.CreateTask((int?)null);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<TaskCreateViewModel>(view.Model);
+            Assert.NotNull(view.ViewData["ProjectList"]);
+        }
+        [Fact]
+        public async System.Threading.Tasks.Task Assign_Post_NoUserSelected_ReturnsViewWithError()
+        {
+            // Arrange
+            var model = new TaskAssignViewModel
+            {
+                TaskId = 1,
+                SelectedUserId = 0
+            };
+
+            _taskServiceMock
+                .Setup(x => x.GetAssignTaskDataAsync(1))
+                .ReturnsAsync(new TaskAssignViewModel());
+
+            // Act
+            var result = await _controller.Assign(model);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.False(_controller.ModelState.IsValid);
+        }
+
+
     }
 }
