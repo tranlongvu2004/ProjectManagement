@@ -12,7 +12,7 @@ namespace PorjectManagement.Repository.Interface
         Task<ProjectWorkspaceViewModel?> GetWorkspaceAsync(int projectId);
         Task<int> CreateProjectAsync(Project project);
         Task<List<ProjectReportItem>> GetProjectReportAsync(int projectId);
-        Task<List<Project>> GetProjectsOfUserAsync(int userId);
+        Task<List<ProjectListVM>> GetProjectsOfUserAsync(int userId);
         Task<Project?> GetByIdAsync(int projectId);
       
         Task<Project?> GetProjectEntityByIdAsync(int projectId);
