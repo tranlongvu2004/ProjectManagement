@@ -48,6 +48,9 @@ namespace PorjectManagement.Controllers
         public IActionResult DeletePermanent([FromBody] RestoreRequest request)
         {
             var item = _context.RecycleBins.FirstOrDefault(x => x.RecycleId == request.RecycleId);
+            if (item == null) return NotFound();
+
+
             var task = _context.Tasks
                 .Include(t => t.TaskAssignments)
                 .Include(t => t.Comments)
@@ -55,7 +58,7 @@ namespace PorjectManagement.Controllers
                 .FirstOrDefault(t => t.TaskId == item.EntityId);
 
             if(task == null) return NotFound();
-            if (item == null) return NotFound();
+            
 
             _context.TaskAssignments.RemoveRange(task.TaskAssignments);
             _context.Comments.RemoveRange(task.Comments);
