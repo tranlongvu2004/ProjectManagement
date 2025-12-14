@@ -148,10 +148,12 @@
                 <div class="col-md-6">
                     <label class="form-label">Priority</label>
                     <select asp-for="Priority" class="form-select input-custom">
-                        <option value="1">Low</option>
-                        <option value="2">Medium</option>
-                        <option value="3">High</option>
-                    </select>
+    <option value="0">Low</option>
+    <option value="1">Medium</option>
+    <option value="2">High</option>
+    <option value="3">Necessary</option>
+</select>
+
                 </div>
 
                 <div class="col-md-6">
@@ -163,6 +165,30 @@
 
                 </div>
             </div>
+            <div class="form-check">
+    <input class="form-check-input"
+           type="checkbox"
+           id="IsSubTask"
+           name="IsSubTask"
+           value="true" />
+    <label class="form-check-label" for="IsSubTask">
+        This is a subtask
+    </label>
+</div>
+<div id="parentTaskWrapper" style="display:none;" class="mb-3">
+    <label class="form-label">Parent Task</label>
+  <select class="form-control" name="ParentTaskId" id="ParentTaskId">
+    <option value="">-- Select parent task --</option>
+
+    @foreach (var t in Model.ParentTasks)
+    {
+        <option value="@t.Value">@t.Text</option>
+    }
+</select>
+
+</div>
+
+
 
             <div class="mb-4">
                 <label class="form-label">Assign for intern</label>
@@ -207,4 +233,24 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const isSubTaskCheckbox = document.getElementById("IsSubTask");
+            const parentTaskWrapper = document.getElementById("parentTaskWrapper");
+
+            if (!isSubTaskCheckbox || !parentTaskWrapper) {
+                console.log("❌ Cannot find checkbox and dropdown");
+                return;
+            }
+
+            isSubTaskCheckbox.addEventListener("change", function () {
+                if (this.checked) {
+                    parentTaskWrapper.style.display = "block";
+                } else {
+                    parentTaskWrapper.style.display = "none";
+                }
+            });
+        });
+    </script>
 }

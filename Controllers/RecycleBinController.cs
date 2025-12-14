@@ -52,7 +52,9 @@ namespace PorjectManagement.Controllers
                 .Include(t => t.TaskAssignments)
                 .Include(t => t.Comments)
                 .Include(t => t.TaskAttachments)
-                .FirstOrDefault(t => t.TaskId == request.RecycleId);
+                .FirstOrDefault(t => t.TaskId == item.EntityId);
+
+            if(task == null) return NotFound();
             if (item == null) return NotFound();
 
             _context.TaskAssignments.RemoveRange(task.TaskAssignments);
