@@ -14,5 +14,7 @@ namespace PorjectManagement.Service.Interface
         // ✅ Methods mới cho Edit Task
         Task<TaskEditViewModel?> GetTaskForEditAsync(int taskId, int currentUserId);
         Task<bool> UpdateTaskAsync(TaskEditViewModel model, int updatedByUserId);
+        Task<List<Models.Task>> GetParentTasksByProjectAsync(int projectId);
+
     }
 }
