@@ -4,20 +4,17 @@ using PorjectManagement.Models;
 
 public class InternController : Controller
 {
-    private readonly LabProjectManagementContext _context;
+    private readonly IInternService _internService;
 
-    public InternController(LabProjectManagementContext context)
+    public InternController(IInternService internService)
     {
-        _context = context;
+        _internService = internService;
     }
 
     // GET: Intern
     public async Task<IActionResult> Index()
     {
-        var interns = await _context.Users
-                          .Where(u => u.RoleId == 2)   
-                          .ToListAsync();
-
+        var interns = await _internService.GetInternsAsync();
         return View(interns);
     }
 }
