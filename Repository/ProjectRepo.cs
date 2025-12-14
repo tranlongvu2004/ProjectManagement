@@ -76,6 +76,7 @@ namespace PorjectManagement.Repository
                             ProjectId = r.ProjectId,
                             Leader = r.Leader.FullName,
                             ReportType = r.ReportType,
+                            CreatedAt = r.CreatedAt,
                             FilePath = r.FilePath
                         };
             return query.ToListAsync();
