@@ -48,15 +48,35 @@
     .search-hidden {
         display: none !important;
     }
+
+    .btn-edit {
+        background-color: white;
+        color: black;
+        border: 2px solid black;
+        border-radius: 6px;
+        font-weight: 500;
+        padding: 4px 12px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-edit:hover {
+        background-color: black;
+        color: white;
+        border-color: black;
+    }
+
+    .btn-edit i {
+        font-size: 13px;
+    }
 </style>
 
 <div class="container mt-4">
-    
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Main Table</h3>
-        <a asp-controller="Workspace" 
-           asp-action="Details" 
-           asp-route-id="@projectId" 
+        <a asp-controller="Workspace"
+           asp-action="Details"
+           asp-route-id="@projectId"
            class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Workspace
         </a>
@@ -73,23 +93,22 @@
         </div>
 
         <!-- ⭐ Nút Add Member -->
-
-            <!-- Có quyền -->
-            <a class="btn btn-primary"
-               href="@Url.Action("AddMembers", "UserProject", new { id = ViewBag.ProjectId })">
-                <i class="fa fa-user-plus"></i> Add Member
-            </a>
+        <!-- Có quyền -->
+        <a class="btn btn-primary"
+           href="@Url.Action("AddMembers", "UserProject", new { id = ViewBag.ProjectId })">
+            <i class="fa fa-user-plus"></i> Add Member
+        </a>
         @if (ViewBag.isLeader == true)
         {
-                <a class="btn btn-success"
-                   href="@Url.Action("CreateTask", "Task", new { id = ViewBag.ProjectId })">
-                    <i class="bi bi-plus-circle"></i> Create Task
-                </a>
-                <a href="/Report/ViewReport?projectId=@projectId" class="dashboard-btn">
-                    <i class="fa fa-chart-line"></i> View Report
-                </a>
-            
-        }     
+            <a class="btn btn-success"
+               href="@Url.Action("CreateTask", "Task", new { id = ViewBag.ProjectId })">
+                <i class="bi bi-plus-circle"></i> Create Task
+            </a>
+            <a href="/Report/ViewReport?projectId=@projectId" class="dashboard-btn">
+                <i class="fa fa-chart-line"></i> View Report
+            </a>
+
+        }
         <a href="/Dashboard/Dashboard?projectId=@projectId&userId=@userId" class="dashboard-btn">
             <i class="fa fa-chart-line"></i> Dashboard
         </a>
@@ -119,83 +138,92 @@
                 var subTasks = ViewBag.SubTasks as List<PorjectManagement.Models.Task>;
             }
 
-@foreach (var parent in ViewBag.ParentTasks as List<PorjectManagement.Models.Task>)
-{
-    var hasSubTasks = subTasks.Any(c => c.ParentId == parent.TaskId);
-    <tr class="parent-row" data-id="@parent.TaskId">
-        <td>
-            <span class="toggle-btn" data-target="@parent.TaskId" style="cursor:pointer;">
-                ▶
-            </span>
-            <strong>@parent.Title</strong>
-        </td>
-
-        <td>
-            @foreach (var o in parent.TaskAssignments)
+            @foreach (var parent in ViewBag.ParentTasks as List<PorjectManagement.Models.Task>)
             {
-                <img src="@o.User.AvatarUrl"
-                     style="width:32px;height:32px;object-fit:cover;border-radius:50%;margin-right:4px;"
-                     title="@o.User.FullName" />
-            }
-        </td>
+                var hasSubTasks = subTasks.Any(c => c.ParentId == parent.TaskId);
+                <tr class="parent-row" data-id="@parent.TaskId">
+                    <td>
+                        <span class="toggle-btn" data-target="@parent.TaskId" style="cursor:pointer;">
+                            ▶
+                        </span>
+                        <strong>@parent.Title</strong>
+                    </td>
 
-        <td>
-            <span class="badge bg-info">@parent.Status</span>
-        </td>
+                    <td>
+                        @foreach (var o in parent.TaskAssignments)
+                        {
+                            <img src="@o.User.AvatarUrl"
+                                 style="width:32px;height:32px;object-fit:cover;border-radius:50%;margin-right:4px;"
+                                 title="@o.User.FullName" />
+                        }
+                    </td>
 
-        <td>@parent.Deadline?.ToString("MMM d")</td>
-        <td><span class="badge bg-warning">@parent.Priority</span></td>
-        <td>
+                    <td>
+                        <span class="badge bg-info">@parent.Status</span>
+                    </td>
+
+                    <td>@parent.Deadline?.ToString("MMM d")</td>
+                    <td><span class="badge bg-warning">@parent.Priority</span></td>
+                    <td>
+                        <a asp-controller="Task"
+                           asp-action="Edit"
+                           asp-route-id="@parent.TaskId"
+                           class="btn btn-sm btn-edit">
+                            <i class="bi bi-pencil-fill"></i> Edit
+                        </a>
                         @if (!hasSubTasks)
                         {
                             <button class="btn btn-sm btn-warning delete-btn"
-        data-task-id="@parent.TaskId"
-        data-task-name="@parent.Title">
-    <i class="bi bi-trash"></i> Delete
-</button>
+                                    data-task-id="@parent.TaskId"
+                                    data-task-name="@parent.Title">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
                         }
-                        
-</td>
-    </tr>
+                    </td>
+                </tr>
 
-    <!-- SUBTASKS -->
-    
-
-    @foreach (var child in (ViewBag.SubTasks as List<PorjectManagement.Models.Task>)
-        .Where(c => c.ParentId == parent.TaskId))
-    {
-        <tr class="subtask-row subtask-of-@parent.TaskId" style="display:none; background:#fafafa;">
-            <td style="padding-left:40px;">
-                 <span>@child.Title</span>
-            </td>
-
-            <td>
-                @foreach (var o in child.TaskAssignments)
+                <!-- SUBTASKS -->
+                @foreach (var child in (ViewBag.SubTasks as List<PorjectManagement.Models.Task>)
+                            .Where(c => c.ParentId == parent.TaskId))
                 {
-                    <img src="@o.User.AvatarUrl"
-                         style="width:26px;height:26px;object-fit:cover;border-radius:50%;margin-right:2px;"
-                         title="@o.User.FullName" />
+                    <tr class="subtask-row subtask-of-@parent.TaskId" style="display:none; background:#fafafa;">
+                        <td style="padding-left:40px;">
+                            <span>@child.Title</span>
+                        </td>
+
+                        <td>
+                            @foreach (var o in child.TaskAssignments)
+                            {
+                                <img src="@o.User.AvatarUrl"
+                                     style="width:26px;height:26px;object-fit:cover;border-radius:50%;margin-right:2px;"
+                                     title="@o.User.FullName" />
+                            }
+                        </td>
+
+                        <td>
+                            <span class="badge bg-secondary">@child.Status</span>
+                        </td>
+
+                        <td>@child.Deadline?.ToString("MMM d")</td>
+                        <td><span class="badge bg-dark">@child.Priority</span></td>
+                        <td>
+
+                            <a asp-controller="Task"
+                               asp-action="Edit"
+                               asp-route-id="@child.TaskId"
+                               class="btn btn-sm btn-edit">
+                                <i class="bi bi-pencil-fill"></i> Edit
+                            </a>
+                            <button class="btn btn-sm btn-warning delete-btn"
+                                    data-task-id="@child.TaskId"
+                                    data-task-name="@child.Title">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
                 }
-            </td>
-
-            <td>
-                <span class="badge bg-secondary">@child.Status</span>
-            </td>
-
-            <td>@child.Deadline?.ToString("MMM d")</td>
-            <td><span class="badge bg-dark">@child.Priority</span></td>
-            <td>
-    <button class="btn btn-sm btn-warning delete-btn"
-        data-task-id="@child.TaskId"
-        data-task-name="@child.Title">
-    <i class="bi bi-trash"></i> Delete
-</button>
-
-</td>
-        </tr>
-    }
-}
-</tbody>
+            }
+        </tbody>
 
     </table>
 </div>
@@ -263,7 +291,7 @@
         rows.forEach(row => {
             let matched = false;
             const cells = row.querySelectorAll("td");
-            
+
             cells.forEach(cell => {
                 if (cell.textContent.toLowerCase().includes(keyword)) {
                     matched = true;
@@ -279,20 +307,20 @@
 </script>
 
 <script>
-document.querySelectorAll(".toggle-btn").forEach(btn => {
-    btn.addEventListener("click", function () {
-        let id = this.getAttribute("data-target");
-        let rows = document.querySelectorAll(`.subtask-of-${id}`);
+    document.querySelectorAll(".toggle-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            let id = this.getAttribute("data-target");
+            let rows = document.querySelectorAll(`.subtask-of-${id}`);
 
-        rows.forEach(r => {
-            r.style.display = (r.style.display === "none" || r.style.display === "") 
-                ? "table-row" 
-                : "none";
+            rows.forEach(r => {
+                r.style.display = (r.style.display === "none" || r.style.display === "")
+                    ? "table-row"
+                    : "none";
+            });
+
+            this.textContent = (this.textContent.trim() === "▶") ? "▼" : "▶";
         });
-
-        this.textContent = (this.textContent.trim() === "▶") ? "▼" : "▶";
     });
-});
 </script>
 
 <script>
@@ -322,7 +350,7 @@ document.querySelectorAll(".toggle-btn").forEach(btn => {
         })
         .then(res => {
             if (res.ok) {
-                location.reload(); // hoặc remove row mượt hơn
+                location.reload();
             } else {
                 alert('Delete failed');
             }
