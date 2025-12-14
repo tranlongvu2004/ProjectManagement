@@ -20,14 +20,16 @@ namespace PorjectManagement.Controllers
         { 
             
             var tasks = _context.Tasks
+                .Include(t => t.TaskAssignments)
+                .Include(t => t.CreatedByNavigation)
                 .Where(t => t.ProjectId == projectId
-                && t.TaskAssignments.Any(ta => ta.UserId == userId)
-                && !_context.RecycleBins.Any(rb => rb.EntityType == "Task" && rb.EntityId == t.TaskId))
+                    && !_context.RecycleBins.Any(rb =>
+                    rb.EntityType == "Task" && rb.EntityId == t.TaskId))
                 .Select(t => new
                 {
                     t.ProjectId,
                     t.Title,
-                    Status = t.Status.ToString() ?? "Not_Started",
+                    Status = t.Status.ToString(),
                     Owner = t.CreatedByNavigation.FullName ?? "Unknown"
                 })
                 .ToList();
