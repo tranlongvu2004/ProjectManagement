@@ -20,7 +20,7 @@ namespace PorjectManagement.Tests.Controllers
     {
         private readonly Mock<ITaskService> _taskServiceMock;
         private readonly Mock<IUserProjectService> _userProjectServiceMock;
-        private readonly Mock<LabProjectManagementContext> _contextMock;
+        private readonly LabProjectManagementContext _context;
         private readonly TaskController _controller;
 
         public TaskControllerTests()
@@ -28,14 +28,14 @@ namespace PorjectManagement.Tests.Controllers
             _taskServiceMock = new Mock<ITaskService>();
             _userProjectServiceMock = new Mock<IUserProjectService>();
 
-            // ✅ Mock DbContext
+            // ✅ Setup InMemory Database
             var options = new DbContextOptionsBuilder<LabProjectManagementContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            var context = new LabProjectManagementContext(options);
+            _context = new LabProjectManagementContext(options);
 
             // Seed test user
-            context.Users.Add(new User
+            _context.Users.Add(new User
             {
                 UserId = 1,
                 FullName = "Test User",
@@ -43,12 +43,12 @@ namespace PorjectManagement.Tests.Controllers
                 PasswordHash = "hash",
                 RoleId = 2
             });
-            context.SaveChanges();
+            _context.SaveChanges();
 
             _controller = new TaskController(
                 _taskServiceMock.Object,
                 _userProjectServiceMock.Object,
-                context // ✅ Pass real context with InMemory DB
+                _context
             );
 
             var httpContext = new DefaultHttpContext();
@@ -94,9 +94,102 @@ namespace PorjectManagement.Tests.Controllers
             );
         }
 
-        #region Create Task Tests
+        #region Create Task - GET Tests
 
-        
+        [Fact]
+        public async System.Threading.Tasks.Task CreateTask_Get_WithProjectId_ReturnsViewWithMembers()
+        {
+            // Arrange
+            int projectId = 1;
+
+            var users = new List<User>
+            {
+                new User { UserId = 1, FullName = "Test User" }
+            };
+
+            var parentTasks = new List<PorjectManagement.Models.Task>
+            {
+                new PorjectManagement.Models.Task
+                {
+                    TaskId = 10,
+                    Title = "Parent Task 1"
+                }
+            };
+
+            _userProjectServiceMock
+                .Setup(x => x.GetUsersByProjectIdAsync(projectId))
+                .ReturnsAsync(users);
+
+            _taskServiceMock
+                .Setup(x => x.GetParentTasksByProjectAsync(projectId))
+                .ReturnsAsync(parentTasks);
+
+            // Act
+            var result = await _controller.CreateTask(projectId);
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<TaskCreateViewModel>(viewResult.Model);
+
+            Assert.Equal(projectId, model.ProjectId);
+            Assert.Single(model.ProjectMembers);
+            Assert.Single(model.ParentTasks);
+        }
+
+        [Fact]
+        public async System.Threading.Tasks.Task CreateTask_Get_ProjectIdFromReferer_ReturnsView()
+        {
+            // Arrange
+            var users = new List<User>
+            {
+                new User { UserId = 1, FullName = "User A" }
+            };
+
+            _userProjectServiceMock
+                .Setup(x => x.GetUsersByProjectIdAsync(1))
+                .ReturnsAsync(users);
+
+            _taskServiceMock
+                .Setup(x => x.GetParentTasksByProjectAsync(1))
+                .ReturnsAsync(new List<Models.Task>());
+
+            var httpContext = _controller.ControllerContext.HttpContext;
+            httpContext.Request.Headers["Referer"] =
+                "http://localhost/Task/CreateTask?projectId=1";
+
+            // Act
+            var result = await _controller.CreateTask((int?)null);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<TaskCreateViewModel>(view.Model);
+            Assert.Equal(1, model.ProjectId);
+        }
+
+        [Fact]
+        public async System.Threading.Tasks.Task CreateTask_Get_NoProjectId_NoReferer_ReturnsViewWithDropdown()
+        {
+            // Arrange
+            _userProjectServiceMock
+                .Setup(x => x.GetAllProjectsAsync())
+                .ReturnsAsync(new List<Project>
+                {
+                    new Project { ProjectId = 1, ProjectName = "P1" }
+                });
+
+            // Act
+            var result = await _controller.CreateTask((int?)null);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<TaskCreateViewModel>(view.Model);
+            Assert.NotNull(view.ViewData["ProjectList"]);
+        }
+
+        #endregion
+
+        #region Create Task - POST Tests
+
         [Fact]
         public async System.Threading.Tasks.Task CreateTask_Post_ValidModel_RedirectsToBacklog()
         {
@@ -236,6 +329,28 @@ namespace PorjectManagement.Tests.Controllers
             Assert.False(_controller.ModelState.IsValid);
         }
 
+        [Fact]
+        public async System.Threading.Tasks.Task Assign_Post_NoUserSelected_ReturnsViewWithError()
+        {
+            // Arrange
+            var model = new TaskAssignViewModel
+            {
+                TaskId = 1,
+                SelectedUserId = 0
+            };
+
+            _taskServiceMock
+                .Setup(x => x.GetAssignTaskDataAsync(1))
+                .ReturnsAsync(new TaskAssignViewModel());
+
+            // Act
+            var result = await _controller.Assign(model);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.False(_controller.ModelState.IsValid);
+        }
+
         #endregion
 
         #region Edit Task - GET Tests
@@ -315,9 +430,14 @@ namespace PorjectManagement.Tests.Controllers
                 TaskId = 1,
                 ProjectId = 1,
                 Title = "Test Task",
+                Description = "Test Description",
                 Priority = TaskPriority.High,
                 Status = Models.TaskStatus.ToDo,
-                Deadline = DateTime.Now.AddDays(5)
+                Deadline = DateTime.Now.AddDays(5),
+                ProjectMembers = new List<User>
+                {
+                    new User { UserId = 2, FullName = "Member 1" }
+                }
             };
 
             _taskServiceMock
@@ -487,7 +607,8 @@ namespace PorjectManagement.Tests.Controllers
                 Description = "Updated Description",
                 Priority = TaskPriority.High,
                 Status = Models.TaskStatus.Doing,
-                Deadline = DateTime.Now.AddDays(10)
+                Deadline = DateTime.Now.AddDays(10),
+                SelectedUserIds = new List<int> { 2, 3 }
             };
 
             _taskServiceMock
@@ -501,7 +622,13 @@ namespace PorjectManagement.Tests.Controllers
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("BacklogUI", redirect.ActionName);
             Assert.Equal("Backlog", redirect.ControllerName);
+            Assert.Equal(1, redirect.RouteValues["projectId"]);
             Assert.Equal("Cập nhật task thành công!", _controller.TempData["Success"]);
+
+            _taskServiceMock.Verify(
+                x => x.UpdateTaskAsync(model, 1),
+                Times.Once
+            );
         }
 
         [Fact]

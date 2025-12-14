@@ -68,6 +68,21 @@
     .btn-edit i {
         font-size: 13px;
     }
+    .btn-assign-task {
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-weight: 500;
+    border: none;
+    transition: 0.2s;
+}
+
+.btn-assign-task:hover {
+    background-color: #0b5ed7;
+    color: white;
+}
+
 </style>
 
 <div class="container mt-4">
@@ -171,6 +186,14 @@
                            class="btn btn-sm btn-edit">
                             <i class="bi bi-pencil-fill"></i> Edit
                         </a>
+                        
+                            <!-- ASSIGN -->
+                            <a asp-controller="Task"
+                               asp-action="Assign"
+                               asp-route-id="@parent.TaskId"
+                               class="btn btn-sm btn-assign-task">
+                                <i class="bi bi-person-plus"></i> Assign
+                            </a>
                         @if (!hasSubTasks)
                         {
                             <button class="btn btn-sm btn-warning delete-btn"
@@ -214,6 +237,13 @@
                                class="btn btn-sm btn-edit">
                                 <i class="bi bi-pencil-fill"></i> Edit
                             </a>
+                              <!-- ASSIGN (SUBTASK) -->
+    <a asp-controller="Task"
+       asp-action="Assign"
+       asp-route-id="@child.TaskId"
+       class="btn btn-sm btn-assign-task">
+        <i class="bi bi-person-plus"></i> Assign
+    </a>
                             <button class="btn btn-sm btn-warning delete-btn"
                                     data-task-id="@child.TaskId"
                                     data-task-name="@child.Title">

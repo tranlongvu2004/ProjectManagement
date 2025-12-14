@@ -1,5 +1,21 @@
 ﻿@model PorjectManagement.ViewModels.ProjectWorkspaceViewModel
 
+@if (TempData["success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 @{
     ViewData["Title"] = Model.Project.ProjectName;
     var currentUserId = Context.Session.GetInt32("UserId");
@@ -91,6 +107,7 @@
                                 <th>Report type</th>
                                 <th>Leader</th>
                                 <th>File</th>
+                                <th>Create At</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,6 +119,7 @@
                                         <span class="badge bg-info">@report.ReportType</span>
                                     </td>
                                     <td>@report.Leader</td>
+                                    <td>@report.CreatedAt?.ToString("yyyy/MM/dd HH:mm:ss")</td>
                                     <td>
                                         <a href="@report.FilePath" target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-download"></i> Download
@@ -185,7 +203,15 @@
 
                         <label class="form-label">Report File</label>
 
-                        <input class="form-control" type="file" name="ReportFile" required />
+                        <input class="form-control"
+                               type="file"
+                               name="ReportFile"
+                               accept=".docx,.pdf,.xlsx"
+                               required />
+                        <small class="text-muted">
+                            Allowed: .docx, .pdf, .xlsx (Max 20MB)
+                        </small>
+
                     </div>
 
                     <button class="btn btn-primary">Upload</button>
