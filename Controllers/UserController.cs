@@ -108,9 +108,9 @@ namespace PorjectManagement.Controllers
                 ViewBag.Error = "Please enter all the field.";
                 return View();
             }
-            if (password.Length <= 4 && confirmpassword.Length <= 4)
+            if (password.Length <= 4 || confirmpassword.Length <= 4)
             {
-                ViewBag.Error = "Password must have at least 4 character.";
+                ViewBag.Error = "Password must have at least 5 character.";
                 return View();
             }
             var existUser = _userService.GetUser(email);
@@ -124,7 +124,7 @@ namespace PorjectManagement.Controllers
                 FullName = fullName,
                 Email = email,
                 PasswordHash = password,   
-                RoleId = 3,                
+                RoleId = 2,                
                 Status = UserStatus.Active,
                 CreatedAt = DateTime.Now
             };
@@ -181,9 +181,9 @@ namespace PorjectManagement.Controllers
                 ViewBag.Email = email;
                 return View();
             }
-            if (newpassword.Length <= 4 && confirmpassword.Length <= 4)
+            if (newpassword.Length <= 4 || confirmpassword.Length <= 4)
             {
-                ViewBag.Error = "Password must have at least 4 character.";
+                ViewBag.Error = "Password must have at least 5 character.";
                 return View();
             }
             var user = _userService.GetUser(email);
