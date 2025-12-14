@@ -62,3 +62,4 @@ app.MapControllerRoute(
     pattern: "{controller=User}/{action=Login}/{id?}");
 
 app.Run();
+public partial class Program { }
