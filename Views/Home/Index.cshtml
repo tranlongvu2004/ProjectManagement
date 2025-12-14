@@ -8,13 +8,13 @@
 }
 
 <div class="p-4">
-    <h2 class="fw-bold mb-4">Chào mừng đến với ProjectManagement</h2>
+    <h2 class="fw-bold mb-4">Welcome to TaskLab</h2>
 
     <div class="d-flex gap-3 flex-wrap">
         <a asp-controller="Project" asp-action="Index"
            class="btn btn-primary px-4 py-2"
            style="border-radius:10px; font-size:18px;">
-            <i class="bi bi-folder"></i> Danh sách dự án
+            <i class="bi bi-folder"></i> Projects
         </a>
         
         @* MENTOR *@
@@ -23,7 +23,7 @@
             <a asp-controller="ProjectManagement" asp-action="Create"
                class="btn btn-success px-4 py-2"
                style="border-radius:10px; font-size:18px;">
-                <i class="bi bi-plus-circle"></i> Tạo dự án
+                <i class="bi bi-plus-circle"></i> New project
             </a>
         }
     </div>
@@ -32,7 +32,7 @@
         <a asp-controller="Intern" asp-action="Index"
            class="btn btn-info px-4 py-2"
            style="border-radius:10px; font-size:18px; color:white;">
-            <i class="bi bi-people"></i> Danh sách thực tập sinh
+            <i class="bi bi-people"></i> Interns
         </a>
     </div>
 
@@ -41,16 +41,12 @@
             @switch (roleId)
             {
                 case 1:
-                    <text>Bạn đang đăng nhập với quyền <strong>Mentor</strong></text>
+                    <text>Logged in as <strong>Mentor</strong></text>
                     break;
                 case 2:
-                    <text>Bạn đang đăng nhập với quyền <strong>InternLead</strong></text>
-                    break;
-                case 3:
-                    <text>Bạn đang đăng nhập với quyền <strong>Intern</strong></text>
+                    <text>Logged in as <strong>Intern</strong></text>
                     break;
                 default:
-                    <text>Chào mừng bạn đến với hệ thống quản lý dự án</text>
                     break;
             }
         </p>
