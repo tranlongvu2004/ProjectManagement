@@ -36,7 +36,7 @@ namespace PorjectManagement.Controllers
             {
                 return NotFound();
             }
-
+            ViewBag.ProjectId = id;
             return View(model);
         }
     }
