@@ -38,6 +38,9 @@ builder.Services.AddScoped<IInternRepo, InternRepo>();
 builder.Services.AddScoped<IInternService, InternService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 
+builder.Services.AddScoped<IEmailRepo, EmailRepo>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 builder.Services.AddScoped<EmailSender>();
 builder.Services.AddHostedService<DeadlineEmailBackgroundService>();
 

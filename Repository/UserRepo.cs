@@ -75,5 +75,15 @@ namespace PorjectManagement.Repository
             }
             _context.SaveChanges();
         }
+
+        public void DeleteUser(string email)
+        {
+            var exist = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (exist != null)
+            {
+                _context.Users.Remove(exist);
+                _context.SaveChanges();
+            }
+        }
     }
 }

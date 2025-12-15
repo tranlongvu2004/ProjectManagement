@@ -18,6 +18,11 @@ namespace PorjectManagement.Service
             return _userRepo.CreateAccount(user);
         }
 
+        public void DeleteUser(string email)
+        {
+             _userRepo.DeleteUser(email);
+        }
+
         public User? GetUser(string email)
         {
             return _userRepo.GetUserByEmail(email);
