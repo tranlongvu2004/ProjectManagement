@@ -1,6 +1,6 @@
 ﻿@model PorjectManagement.ViewModels.ProjectWorkspaceViewModel
 
-@if (TempData["success"] != null)
+@* @if (TempData["success"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         @TempData["success"]
@@ -14,7 +14,7 @@
         @TempData["error"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-}
+} *@
 
 @{
     ViewData["Title"] = Model.Project.ProjectName;
