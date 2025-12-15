@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PorjectManagement.Models;
 using PorjectManagement.Service.Interface;
+using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Controllers
 {
@@ -33,53 +36,43 @@ namespace PorjectManagement.Controllers
             return View(reports);
         }
 
-
-        [HttpPost]
-        public async Task<IActionResult> Upload(int projectId, string reportType, IFormFile reportFile)
+        [HttpGet]
+        public IActionResult Daily(int projectId)
         {
             int? leaderId = HttpContext.Session.GetInt32("UserId");
-            if (leaderId == null)
-                return Unauthorized();
+            if (leaderId == null) return Unauthorized();
 
             if (!_reportService.IsLeaderOfProject(leaderId.Value, projectId))
                 return Forbid();
 
+            var vm = _reportService.BuildDailyReportForm(projectId);
+            vm.ReportType = "Daily";
 
-            if (reportFile == null)
-            {
-                TempData["error"] = "Please select a file!";
-                return RedirectToAction("Details", "Workspace", new { id = projectId });
-            }
-            if (leaderId == null)
-            {
-                TempData["error"] = "Not logged in!";
-                return RedirectToAction("Details", "Workspace", new { id = projectId });
-            }
-            var allowedExtensions = new[] { ".docx", ".pdf", ".xlsx" };
-            var fileExtension = Path.GetExtension(reportFile.FileName).ToLower();
-
-            if (!allowedExtensions.Contains(fileExtension))
-            {
-                TempData["error"] = "Only .docx, .pdf, .xlsx files are allowed!";
-                return RedirectToAction("Details", "Workspace", new { id = projectId });
-            }
-            const long maxFileSize = 20 * 1024 * 1024; // 20MB
-
-            if (reportFile.Length > maxFileSize)
-            {
-                TempData["error"] = "File size must not exceed 20MB!";
-                return RedirectToAction("Details", "Workspace", new { id = projectId });
-            }
-
-            var ok = await _reportService.UploadReportAsync(
-                projectId,
-                reportType,
-                reportFile,
-                leaderId.Value
-            );
-
-            TempData[ok ? "success" : "error"] = ok ? "Upload successful!" : "Upload failed!";
-            return RedirectToAction("Details", "Workspace", new { id = projectId });
+            return View(vm);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadDaily(CreateReportViewModel model)
+        {
+            int? leaderId = HttpContext.Session.GetInt32("UserId");
+            if (leaderId == null) return Unauthorized();
+
+            if (!_reportService.IsLeaderOfProject(leaderId.Value, model.ProjectId))
+                return Forbid();
+
+            var report = await _reportService.CreateDailyReportAsync(model, leaderId.Value);
+
+            // trả message để show trên màn
+            return Json(new
+            {
+                success = true,
+                message = "Daily report uploaded successfully!",
+                reportId = report.ReportId
+            });
+        }
+
+
+
+
     }
 }
