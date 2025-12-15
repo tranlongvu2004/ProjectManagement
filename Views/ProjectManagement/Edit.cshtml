@@ -1,7 +1,7 @@
 ﻿@model PorjectManagement.ViewModels.ProjectUpdateViewModel
 
 @{
-    ViewData["Title"] = "Cập Nhật Project";
+    ViewData["Title"] = "Update Project";
 }
 
 <div class="container-fluid">
@@ -10,10 +10,10 @@
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="fw-bold">
-                    <i class="bi bi-pencil-square"></i> Cập Nhật Project
+                    <i class="bi bi-pencil-square"></i> Update Project
                 </h2>
                 <a asp-action="Details" asp-controller="Workspace" asp-route-id="@Model.ProjectId" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Quay lại
+                    <i class="bi bi-arrow-left"></i> Back
                 </a>
             </div>
 
@@ -43,20 +43,20 @@
                         <!-- Project Name -->
                         <div class="mb-4">
                             <label asp-for="ProjectName" class="form-label fw-semibold">
-                                <i class="bi bi-pencil-square text-primary"></i> Tên Project <span class="text-danger">*</span>
+                                <i class="bi bi-pencil-square text-primary"></i> Project Name <span class="text-danger">*</span>
                             </label>
                             <input asp-for="ProjectName" class="form-control form-control-lg" 
-                                   placeholder="Ví dụ: Lab Management System" />
+                                   placeholder="Ex: Lab Management System" />
                             <span asp-validation-for="ProjectName" class="text-danger small"></span>
                         </div>
 
                         <!-- Description -->
                         <div class="mb-4">
                             <label asp-for="Description" class="form-label fw-semibold">
-                                <i class="bi bi-card-text text-info"></i> Mô tả
+                                <i class="bi bi-card-text text-info"></i> Description
                             </label>
                             <textarea asp-for="Description" class="form-control" rows="4" 
-                                      placeholder="Mô tả ngắn gọn về project..."></textarea>
+                                      placeholder="Description about project..."></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
@@ -75,7 +75,7 @@
                         <!-- Status -->
                         <div class="mb-4">
                             <label asp-for="Status" class="form-label fw-semibold">
-                                <i class="bi bi-flag-fill text-success"></i> Trạng thái <span class="text-danger">*</span>
+                                <i class="bi bi-flag-fill text-success"></i> Status <span class="text-danger">*</span>
                             </label>
                             <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<PorjectManagement.Models.ProjectStatus>()">
                             </select>
@@ -87,7 +87,7 @@
                         <!-- Current Members Info -->
                         <div class="mb-3">
                             <h5 class="fw-semibold">
-                                <i class="bi bi-people-fill text-primary"></i> Thành viên hiện tại
+                                <i class="bi bi-people-fill text-primary"></i> Current members
                             </h5>
                             <div class="card border-0 bg-light p-3">
                                 @if (Model.CurrentMembers != null && Model.CurrentMembers.Any())
@@ -119,7 +119,7 @@
                         <!-- Select Members -->
                         <div class="mb-4">
                             <label class="form-label fw-semibold">
-                                <i class="bi bi-people-fill text-success"></i> Cập nhật Thành Viên <span class="text-danger">*</span>
+                                <i class="bi bi-people-fill text-success"></i> Update member <span class="text-danger">*</span>
                             </label>
                             <div class="card border-0 bg-light p-3" style="max-height: 300px; overflow-y: auto;">
                                 @if (Model.AvailableUsers != null && Model.AvailableUsers.Any())
@@ -148,11 +148,11 @@
                                 }
                                 else
                                 {
-                                    <p class="text-muted">Không có user nào khả dụng.</p>
+                                    <p class="text-muted">No user available.</p>
                                 }
                             </div>
                             <small class="text-muted">
-                                <i class="bi bi-info-circle"></i> Đã chọn: <span id="selected-count">0</span> thành viên
+                                <i class="bi bi-info-circle"></i> Selected: <span id="selected-count">0</span> Member
                             </small>
                             <div>
                                 <span asp-validation-for="SelectedUserIds" class="text-danger small"></span>
@@ -162,13 +162,13 @@
                         <!-- Select Leader -->
                         <div class="mb-4">
                             <label asp-for="LeaderId" class="form-label fw-semibold">
-                                <i class="bi bi-star-fill text-warning"></i> Chọn Leader <span class="text-danger">*</span>
+                                <i class="bi bi-star-fill text-warning"></i> Choose Leader <span class="text-danger">*</span>
                             </label>
                             <select asp-for="LeaderId" class="form-select" id="leader-select" required>
-                                <option value="">-- Vui lòng chọn Leader --</option>
+                                <option value="">-- Pls choose Leader --</option>
                             </select>
                             <small class="text-muted">
-                                <i class="bi bi-info-circle"></i> Leader phải là thành viên đã chọn ở trên
+                                <i class="bi bi-info-circle"></i> The leader must be the member chosen above.
                             </small>
                             <span asp-validation-for="LeaderId" class="text-danger small d-block"></span>
                         </div>
@@ -178,10 +178,10 @@
                         <!-- Buttons -->
                         <div class="d-flex justify-content-end gap-2">
                             <a asp-action="Details" asp-controller="Workspace" asp-route-id="@Model.ProjectId" class="btn btn-secondary px-4">
-                                <i class="bi bi-x-circle"></i> Hủy
+                                <i class="bi bi-x-circle"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary px-4">
-                                <i class="bi bi-check-circle"></i> Cập nhật
+                                <i class="bi bi-check-circle"></i> Update
                             </button>
                         </div>
                     </form>

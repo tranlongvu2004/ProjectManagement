@@ -10,6 +10,7 @@ namespace PorjectManagement.ViewModels
         public string Leader { get; set; }
 
         public string? ReportType { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
         public string FilePath { get; set; } = null!;
     }
