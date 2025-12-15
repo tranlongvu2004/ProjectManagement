@@ -8,10 +8,12 @@ namespace PorjectManagement.Controllers
     public class UserController : Controller
     {
         private readonly IUserServices _userService;
+        private readonly IEmailService _emailService;
 
-        public UserController(IUserServices userService)
+        public UserController(IUserServices userService, IEmailService emailService)
         {
             _userService = userService;
+            _emailService = emailService;
         }
 
         // Login 
@@ -85,50 +87,96 @@ namespace PorjectManagement.Controllers
                 return false;
             }
         }
+
         [HttpPost]
-        public IActionResult Register(string fullName, string email, string password, string confirmpassword)
+        public IActionResult Register(string email)
         {
-            ViewBag.FullName = fullName;
-            ViewBag.Email = email;
-            if (!IsValidEmail(email))
+            if (string.IsNullOrEmpty(email))
             {
-                ViewBag.Error = "Email is invalid format.";
+                ViewBag.Error = "Email is required";
                 return View();
             }
 
-            if (password != confirmpassword)
+            if (_userService.GetUser(email) != null)
             {
-                ViewBag.Error = "Password missmatch.";
+                ViewBag.Error = "Email already exists";
                 return View();
             }
-            if (string.IsNullOrEmpty(fullName) ||
-                string.IsNullOrEmpty(email) ||
-                string.IsNullOrEmpty(password))
+
+            var user = new User
             {
-                ViewBag.Error = "Please enter all the field.";
-                return View();
+                Email = email,
+                FullName = "", // tạm
+                PasswordHash = "",
+                RoleId = 2,
+                Status = UserStatus.Inactive,
+                CreatedAt = DateTime.Now
+            };
+
+            _userService.CreateAccount(user);
+
+            var token = Convert.ToBase64String(
+                System.Text.Encoding.UTF8.GetBytes(email)
+            );
+
+            var link = Url.Action(
+                "CompleteRegister",
+                "User",
+                new { email = email, token = token },
+                Request.Scheme
+            );
+
+            _emailService.Send(email, "Confirm email", link);
+
+            return View("CheckEmail");
+        }
+
+        public IActionResult CompleteRegister(string email, string token)
+        {
+            var decode = System.Text.Encoding.UTF8.GetString(
+                Convert.FromBase64String(token)
+            );
+
+            if (decode != email)
+                return View("InvalidLink");
+
+            var user = _userService.GetUser(email);
+            if (user.Status == UserStatus.Inactive && user.CreatedAt.HasValue && user.CreatedAt.Value.AddMinutes(30) < DateTime.Now)
+            {
+                _userService.DeleteUser(email);
+                return View("InvalidLink");
             }
-            if (password.Length <= 4 || confirmpassword.Length <= 4)
+            if (user == null || user.Status != UserStatus.Inactive)
+                return View("InvalidLink");
+            ViewBag.Email = email;
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult CompleteRegister(string email,string fullName,string password,string confirmPassword)
+        {
+            ViewBag.fullName = fullName;
+            ViewBag.email = email;
+            var user = _userService.GetUser(email);
+            if (password.Length <= 4 || confirmPassword.Length <= 4)
             {
                 ViewBag.Error = "Password must have at least 5 character.";
                 return View();
             }
-            var existUser = _userService.GetUser(email);
-            if (existUser != null)
+            if (user == null)
+                return View("InvalidLink");
+
+            if (password != confirmPassword)
             {
-                ViewBag.Error = "Email existed.";
+                ViewBag.Error = "Password Mismatch";
                 return View();
             }
-            var newUser = new User
-            {
-                FullName = fullName,
-                Email = email,
-                PasswordHash = password,   
-                RoleId = 2,                
-                Status = UserStatus.Active,
-                CreatedAt = DateTime.Now
-            };
-            _userService.CreateAccount(newUser);
+
+            user.FullName = fullName;
+            user.PasswordHash = password;
+            user.Status = UserStatus.Active;
+
+            _userService.UpdateUser(user);
             return RedirectToAction("Login");
         }
 
@@ -155,48 +203,83 @@ namespace PorjectManagement.Controllers
                 return View();
             }
 
-            return RedirectToAction("ResetPasswordConfirm", new { email = email });
-        }
+            var token = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(email + "|" + DateTime.Now));        
 
+            var resetLink = Url.Action(
+                "ResetPasswordConfirm",
+                "User",
+                new { token = token },
+                Request.Scheme
+            );
 
-        public IActionResult ResetPasswordConfirm(string email)
-        {
-            ViewBag.Email = email;
+            _emailService.Send(
+                email,
+                "Reset your password",
+                $"Click here to reset password: {resetLink}"
+            );
+
+            ViewBag.Message = "Reset password link has been sent to your email.";
             return View();
         }
 
-        [HttpPost]
-        public IActionResult ResetPasswordConfirm(string email, string newpassword, string confirmpassword)
+
+
+        public IActionResult ResetPasswordConfirm(string token)
         {
-            if (string.IsNullOrEmpty(newpassword) || string.IsNullOrEmpty(confirmpassword))
+            try
             {
-                ViewBag.Error = "Please enter all the field.";
+                var decoded = System.Text.Encoding.UTF8.GetString(
+                    Convert.FromBase64String(token)
+                );
+                var parts = decoded.Split('|');
+                var email = parts[0];
+                var createdTime = DateTime.Parse(parts[1]);
+                if (createdTime.AddMinutes(2) < DateTime.Now)
+                    return View("InvalidLink");
+
+                var user = _userService.GetUser(email);
+                if (user == null)
+                    return View("InvalidLink");
+
                 ViewBag.Email = email;
+                ViewBag.Token = token;
+                return View();
+            }
+            catch
+            {
+                return View("InvalidLink");
+            }
+        }
+
+
+        [HttpPost]
+        public IActionResult ResetPasswordConfirm(string email, string token, string newpassword, string confirmpassword)
+        {
+            ViewBag.Email = email;
+            ViewBag.Token = token;
+
+            if (newpassword.Length <= 4)
+            {
+                ViewBag.Error = "Password must have at least 5 characters.";
                 return View();
             }
 
             if (newpassword != confirmpassword)
             {
-                ViewBag.Error = "Password missmatch.";
-                ViewBag.Email = email;
+                ViewBag.Error = "Password mismatch.";
                 return View();
             }
-            if (newpassword.Length <= 4 || confirmpassword.Length <= 4)
-            {
-                ViewBag.Error = "Password must have at least 5 character.";
-                return View();
-            }
+
             var user = _userService.GetUser(email);
             if (user == null)
-            {
-                ViewBag.Error = "Account not found.";
-                return View();
-            }
+                return View("InvalidLink");
+
             user.PasswordHash = newpassword;
             _userService.UpdateUser(user);
 
             return RedirectToAction("Login");
         }
+
 
         //Change Password
         [HttpGet]
