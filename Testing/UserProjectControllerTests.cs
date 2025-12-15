@@ -99,7 +99,7 @@ namespace PorjectManagement.Tests.Controllers
                 .ReturnsAsync(new List<Project>());
 
             // Act
-            var result = await _controller.AddMembers((int?)null);
+            var result = await _controller.AddMembers((null));
 
             // Assert
             var view = Assert.IsType<ViewResult>(result);

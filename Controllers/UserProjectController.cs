@@ -15,61 +15,54 @@ namespace PorjectManagement.Controllers
         {
             _userProjectService = userProjectService;
         }
-
         [HttpGet]
-        public async Task<IActionResult> AddMembers(int? id)
+        public async Task<IActionResult> AddMembers(int projectId)
         {
             var role = HttpContext.Session.GetInt32("RoleId");
-
-            
             if (role != 2)
             {
                 TempData["Error"] = "You are not allowed to do this action.";
                 return RedirectToAction("Index", "Home");
             }
+
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
-            var allProjects = await _userProjectService.GetAllProjectsAsync(); // NEW
 
-            if (id == null)
-            {
-                return View(new AddMembersViewModel
-                {
-                    ProjectId = 0,
-                    ProjectName = "Chưa chọn",
-                    Users = new List<UserListItemVM>(),
-                    AllProjects = allProjects
-                });
-            }
-
-            var project = await _userProjectService.GetProjectByIdAsync(id.Value);
+            var project = await _userProjectService.GetProjectByIdAsync(projectId);
             if (project == null) return NotFound();
 
-            var users = await _userProjectService.GetAllUsersAsync();
+            var usersInProject = await _userProjectService.GetUsersByProjectIdAsync(projectId);
+            var userIdsInProject = usersInProject.Select(u => u.UserId).ToHashSet();
+
+            var allUsers = await _userProjectService.GetAllUsersAsync();
+
+            var availableUsers = allUsers
+                .Where(u => !userIdsInProject.Contains(u.UserId))
+                .ToList();
 
             var vm = new AddMembersViewModel
             {
-                ProjectId = id.Value,
+                ProjectId = project.ProjectId,
                 ProjectName = project.ProjectName,
-                Users = users.Select(u => new UserListItemVM
+                Users = availableUsers.Select(u => new UserListItemVM
                 {
                     UserId = u.UserId,
                     FullName = u.FullName,
                     Email = u.Email,
+                    AvatarUrl = u.AvatarUrl,
                     RoleName = u.Role?.RoleName ?? "",
                     CreatedAt = u.CreatedAt,
-                    ProgressPercent = 0,
-                    Status = (u.Status?.ToString() ?? "unknown").ToLower()
-                }).ToList(),
-                AllProjects = allProjects
+                    Status = u.Status.ToString().ToLower()
+                }).ToList()
             };
 
             return View(vm);
         }
 
 
-       [HttpPost]
-       [ValidateAntiForgeryToken]
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMembers(AddMembersViewModel model)
         {
             var role = HttpContext.Session.GetInt32("RoleId");
@@ -78,18 +71,23 @@ namespace PorjectManagement.Controllers
                 TempData["Error"] = "You are not allowed to do this action.";
                 return RedirectToAction("Index", "Home");
             }
+
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
+
             if (model.ProjectId <= 0)
             {
-                ModelState.AddModelError("", "You must choose project before add member.");
+                ModelState.AddModelError("", "Invalid project.");
             }
 
             if (!ModelState.IsValid)
             {
-                model.AllProjects = await _userProjectService.GetAllProjectsAsync();
-                var users = await _userProjectService.GetAllUsersAsync();
-                model.Users = users
+                var usersInProject = await _userProjectService.GetUsersByProjectIdAsync(model.ProjectId);
+                var userIdsInProject = usersInProject.Select(u => u.UserId).ToHashSet();
+
+                var allUsers = await _userProjectService.GetAllUsersAsync();
+                model.Users = allUsers
+                    .Where(u => !userIdsInProject.Contains(u.UserId))
                     .Select(u => new UserListItemVM
                     {
                         UserId = u.UserId,
@@ -98,8 +96,7 @@ namespace PorjectManagement.Controllers
                         AvatarUrl = u.AvatarUrl,
                         RoleName = u.Role?.RoleName ?? "",
                         CreatedAt = u.CreatedAt,
-                        ProgressPercent = 0,
-                        Status = (u.Status?.ToString() ?? "unknown").ToLower()
+                        Status = u.Status.ToString().ToLower()
                     }).ToList();
 
                 return View(model);
@@ -107,20 +104,19 @@ namespace PorjectManagement.Controllers
 
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
             {
-                var result = await _userProjectService.AddUsersToProjectAsync(model.ProjectId, model.SelectedUserIds);
+                var result = await _userProjectService
+                    .AddUsersToProjectAsync(model.ProjectId, model.SelectedUserIds);
 
-                TempData["AddResults"] = System.Text.Json.JsonSerializer.Serialize(result);
-
+                TempData["AddResults"] =
+                    System.Text.Json.JsonSerializer.Serialize(result);
             }
             else
             {
                 TempData["Info"] = "No member is selected.";
             }
 
-            return RedirectToAction("AddMembers", new { id = model.ProjectId });
+            return RedirectToAction("AddMembers", new { projectId = model.ProjectId });
         }
-
-
 
     }
 }

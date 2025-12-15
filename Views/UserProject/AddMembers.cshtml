@@ -161,26 +161,14 @@
 
 <div class="container my-4">
 
-    <div class="mb-3">
-        <label class="form-label fw-bold">Choose project</label>
-        <select id="projectSelect" class="form-select" onchange="onProjectChange()">
-            <option value="">-- Choose project --</option>
-            @if (Model.AllProjects != null)
-            {
-                foreach (var p in Model.AllProjects)
-                {
-                    <option value="@p.ProjectId" selected="@(Model.ProjectId == p.ProjectId)">
-                        @p.ProjectName
-                    </option>
-                }
-            }
-        </select>
-    </div>
+    <h3 class="mb-3">
+        Add members to project:
+        <span class="text-primary">@Model.ProjectName</span>
+    </h3>
+
 
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Add members to project: @Model.ProjectName</h3>
-
 
         <form class="d-flex" method="get" action="">
             <input id="searchBox" class="form-control me-2" type="search" placeholder="Search by intern's name" aria-label="Search">
@@ -318,12 +306,6 @@
 </div>
 
 <script>
-    function onProjectChange() {
-            const id = document.getElementById("projectSelect").value;
-            if (id) {
-                window.location.href = "/UserProject/AddMembers?id=" + id;
-            }
-        }
     (function () {
         const selectAll = document.getElementById('selectAll');
         const checks = document.querySelectorAll('.user-check');
@@ -372,7 +354,6 @@
         updateCounts();
     })();
      document.getElementById("addForm").addEventListener("submit", function (e) {
-        const project = document.getElementById("projectSelect").value;
         const checked = document.querySelectorAll(".user-check:checked").length;
 
         if (!project) {
