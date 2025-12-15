@@ -85,11 +85,33 @@ namespace PorjectManagement.Controllers
         {
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
-            if (model.Deadline < DateTime.Now)
-            {
-                ModelState.AddModelError("Deadline", "Deadline cannot be the past");
-            }
+            var project = await _context.Projects
+         .FirstOrDefaultAsync(p => p.ProjectId == model.ProjectId);
 
+            if (project == null)
+            {
+                ModelState.AddModelError("", "Project does not exist");
+            }
+            else
+            {
+                // ❌ Deadline quá khứ
+                if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
+                {
+                    ModelState.AddModelError(
+                        "Deadline",
+                        "Deadline cannot be in the past"
+                    );
+                }
+
+                // ❌ Deadline vượt project deadline
+                if (model.Deadline.HasValue && model.Deadline.Value > project.Deadline)
+                {
+                    ModelState.AddModelError(
+                        "Deadline",
+                        $"Task deadline cannot exceed project deadline ({project.Deadline:dd/MM/yyyy})"
+                    );
+                }
+            }
             if (!ModelState.IsValid)
             {
                 // load lại project list
