@@ -3,12 +3,15 @@ using PorjectManagement.Models;
 using PorjectManagement.Service;
 using PorjectManagement.Service.Interface;
 using System.Net.Mail;
+using System.Text;
 namespace PorjectManagement.Controllers
 {
     public class UserController : Controller
     {
         private readonly IUserServices _userService;
         private readonly IEmailService _emailService;
+        private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".jfif" };
+        private const long MaxAvatarSize = 2 * 1024 * 1024; // 2MB
 
         public UserController(IUserServices userService, IEmailService emailService)
         {
@@ -285,23 +288,108 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public IActionResult ChangePassword()
         {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login");
+
             return View();
         }
 
+
         [HttpPost]
-        public IActionResult ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        public IActionResult ChangePassword(string currentPassword)
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
-            {
                 return RedirectToAction("Login");
+
+            var user = _userService.GetUserById(userId.Value);
+            if (user == null)
+                return RedirectToAction("Login");
+            if (user.PasswordHash != currentPassword)
+            {
+                ViewBag.Error = "Current password is incorrect.";
+                return View();
             }
-            return RedirectToAction("/User/ResetPassword");
+
+            var token = Convert.ToBase64String(
+                Encoding.UTF8.GetBytes($"{user.Email}|{DateTime.Now}")
+            );
+
+            var link = Url.Action(
+                "ChangePasswordConfirm",
+                "User",
+                new { token },
+                Request.Scheme
+            );
+
+            _emailService.Send(
+                user.Email,
+                "Confirm password change",
+                $"Click the link to confirm changing your password:\n{link}"
+            );
+
+            ViewBag.Message = "Confirmation email has been sent.";
+            return View();
+        }
+
+        public IActionResult ChangePasswordConfirm(string token)
+        {
+            try
+            {
+                var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(token));
+                var parts = decoded.Split('|');
+
+                var email = parts[0];
+                var time = DateTime.Parse(parts[1]);
+
+                if (time.AddMinutes(15) < DateTime.Now)
+                    return View("InvalidLink");
+
+                var user = _userService.GetUser(email);
+                if (user == null)
+                    return View("InvalidLink");
+
+                ViewBag.Email = email;
+                ViewBag.Token = token;
+                return View();
+            }
+            catch
+            {
+                return View("InvalidLink");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult ChangePasswordConfirm(string email, string token, string newPassword, string confirmPassword)
+        {
+            ViewBag.Email = email;
+            ViewBag.Token = token;
+
+            if (newPassword.Length <= 4)
+            {
+                ViewBag.Error = "Password must have at least 5 characters.";
+                return View();
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Error = "Password mismatch.";
+                return View();
+            }
+
+            var user = _userService.GetUser(email);
+            if (user == null)
+                return View("InvalidLink");
+
+            user.PasswordHash = newPassword;
+            _userService.UpdateUser(user);
+
+            return RedirectToAction("Profile");
         }
 
 
-
-        //Change Password
+        //Profile
         [HttpGet]
         public IActionResult Profile()
         {
@@ -330,20 +418,41 @@ namespace PorjectManagement.Controllers
             // Upload avatar
             if (avatarFile != null && avatarFile.Length > 0)
             {
-                var fileName = $"{Guid.NewGuid()}_{avatarFile.FileName}";
-                var savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/avatars", fileName);
+                var extension = Path.GetExtension(avatarFile.FileName).ToLower();
+
+                if (!_allowedExtensions.Contains(extension))
+                {
+                    ViewBag.Error = "Only image files (.jpg, .jpeg, .png, .gif) are allowed.";
+                    return View(user);
+                }
+
+                if (avatarFile.Length > MaxAvatarSize)
+                {
+                    ViewBag.Error = "Avatar size must be less than 2MB.";
+                    return View(user);
+                }
+
+                if (!avatarFile.ContentType.StartsWith("image/"))
+                {
+                    ViewBag.Error = "Invalid image file.";
+                    return View(user);
+                }
+
+                var fileName = $"{Guid.NewGuid()}{extension}";
+                var savePath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot/avatars",
+                    fileName
+                );
 
                 using var stream = new FileStream(savePath, FileMode.Create);
                 avatarFile.CopyTo(stream);
 
                 user.AvatarUrl = "/avatars/" + fileName;
             }
-
             user.FullName = fullName;
             user.Email = email;
-
             _userService.UpdateProfile(user);
-
             ViewBag.Message = "Update profile successfully!";
             return View(user);
         }
