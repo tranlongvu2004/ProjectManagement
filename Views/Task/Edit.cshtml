@@ -12,13 +12,13 @@
                 <h2 class="fw-bold">
                     <i class="bi bi-pencil-square"></i> Update Task
                 </h2>
-                <a asp-action="BacklogUI" asp-controller="Backlog" asp-route-projectId="@Model.ProjectId" 
+                <a asp-action="BacklogUI" asp-controller="Backlog" asp-route-projectId="@Model.ProjectId"
                    class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Back
                 </a>
             </div>
 
-            <!-- Messages -->
+            @* <!-- Messages -->
             @if (TempData["Error"] != null)
             {
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -32,7 +32,7 @@
                     <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-            }
+            } *@
 
             <!-- Form Card -->
             <div class="card shadow-sm border-0">
@@ -47,7 +47,7 @@
                             <label asp-for="Title" class="form-label fw-semibold">
                                 <i class="bi bi-pencil-square text-primary"></i> Task Name <span class="text-danger">*</span>
                             </label>
-                            <input asp-for="Title" class="form-control form-control-lg" 
+                            <input asp-for="Title" class="form-control form-control-lg"
                                    placeholder="Ex: Design database schema" />
                             <span asp-validation-for="Title" class="text-danger small"></span>
                         </div>
@@ -57,7 +57,7 @@
                             <label asp-for="Description" class="form-label fw-semibold">
                                 <i class="bi bi-card-text text-info"></i> Descreption
                             </label>
-                            <textarea asp-for="Description" class="form-control" rows="4" 
+                            <textarea asp-for="Description" class="form-control" rows="4"
                                       placeholder="Descreption task..."></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
@@ -88,7 +88,10 @@
                                 <label asp-for="Deadline" class="form-label fw-semibold">
                                     <i class="bi bi-calendar-event text-danger"></i> Deadline
                                 </label>
-                                <input asp-for="Deadline" type="datetime-local" class="form-control" />
+                                <input asp-for="Deadline"
+                                       type="date"
+                                       class="form-control"
+                                       min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                                 <span asp-validation-for="Deadline" class="text-danger small"></span>
                             </div>
                         </div>
@@ -106,10 +109,10 @@
                                     @foreach (var assignee in Model.CurrentAssignees)
                                     {
                                         <div class="d-flex align-items-center mb-2">
-                                            <div class="avatar-circle bg-secondary text-white me-2" 
-                                                 style="width: 32px; height: 32px; border-radius: 50%; 
-                                                        display: flex; align-items: center; justify-content: center; 
-                                                        font-weight: bold;">
+                                            <div class="avatar-circle bg-secondary text-white me-2"
+                                                 style="width: 32px; height: 32px; border-radius: 50%;
+                                                                display: flex; align-items: center; justify-content: center;
+                                                                font-weight: bold;">
                                                 @assignee.FullName.Substring(0, 1).ToUpper()
                                             </div>
                                             <div>
@@ -134,17 +137,17 @@
                                     {
                                         var isChecked = Model.SelectedUserIds != null && Model.SelectedUserIds.Contains(member.UserId);
                                         <div class="form-check mb-2">
-                                            <input class="form-check-input user-checkbox" 
-                                                   type="checkbox" 
-                                                   name="SelectedUserIds" 
-                                                   value="@member.UserId" 
+                                            <input class="form-check-input user-checkbox"
+                                                   type="checkbox"
+                                                   name="SelectedUserIds"
+                                                   value="@member.UserId"
                                                    id="user_@member.UserId"
                                                    @(isChecked ? "checked" : "") />
                                             <label class="form-check-label d-flex align-items-center" for="user_@member.UserId">
-                                                <div class="avatar-circle bg-primary text-white me-2" 
-                                                     style="width: 32px; height: 32px; border-radius: 50%; 
-                                                            display: flex; align-items: center; justify-content: center; 
-                                                            font-weight: bold;">
+                                                <div class="avatar-circle bg-primary text-white me-2"
+                                                     style="width: 32px; height: 32px; border-radius: 50%;
+                                                                    display: flex; align-items: center; justify-content: center;
+                                                                    font-weight: bold;">
                                                     @member.FullName.Substring(0, 1).ToUpper()
                                                 </div>
                                                 <div>
@@ -169,9 +172,9 @@
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-end gap-2">
-                            <a asp-action="BacklogUI" asp-controller="Backlog" asp-route-projectId="@Model.ProjectId" 
+                            <a asp-action="BacklogUI" asp-controller="Backlog" asp-route-projectId="@Model.ProjectId"
                                class="btn btn-secondary px-4">
-                                <i class="bi bi-x-circle"></i> Hủy
+                                <i class="bi bi-x-circle"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary px-4">
                                 <i class="bi bi-check-circle"></i> Update
@@ -186,7 +189,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    
+
     <script>
         $(document).ready(function () {
             setTimeout(function() {
@@ -228,7 +231,7 @@
         border: none;
     }
 
-    .btn-primary:hover {
-        background: linear-gradient(135deg, #5568d3 0%, #65408b 100%);
-    }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #65408b 100%);
+        }
 </style>
