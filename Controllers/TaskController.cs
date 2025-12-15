@@ -150,13 +150,15 @@ namespace PorjectManagement.Controllers
             TempData["SuccessMessage"] = "Create Task successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
-        public async Task<IActionResult> Assign(int id)
+        public async Task<IActionResult> Assign(int id, bool success = false)
         {
             var vm = await _taskService.GetAssignTaskDataAsync(id);
             if (vm == null) return NotFound();
 
+            ViewBag.Success = success;
             return View(vm);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Assign(TaskAssignViewModel model)
@@ -171,8 +173,8 @@ namespace PorjectManagement.Controllers
             try
             {
                 await _taskService.AssignTaskAsync(model.TaskId, model.SelectedUserId);
-                TempData["Success"] = "Task assigned successfully!";
-                return RedirectToAction("Assign", new { id = model.TaskId });
+                ViewBag.SuccessMessage = "Assign task successfully!";
+                return RedirectToAction("Assign", new { id = model.TaskId, success = true });
             }
             catch (Exception ex)
             {
