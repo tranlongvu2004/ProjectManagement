@@ -85,11 +85,33 @@ namespace PorjectManagement.Controllers
         {
             var redirect = RedirectIfNotLoggedIn();
             if (redirect != null) return redirect;
-            if (model.Deadline < DateTime.Now)
-            {
-                ModelState.AddModelError("Deadline", "Deadline cannot be the past");
-            }
+            var project = await _context.Projects
+         .FirstOrDefaultAsync(p => p.ProjectId == model.ProjectId);
 
+            if (project == null)
+            {
+                ModelState.AddModelError("", "Project does not exist");
+            }
+            else
+            {
+                // ❌ Deadline quá khứ
+                if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
+                {
+                    ModelState.AddModelError(
+                        "Deadline",
+                        "Deadline cannot be in the past"
+                    );
+                }
+
+                // ❌ Deadline vượt project deadline
+                if (model.Deadline.HasValue && model.Deadline.Value > project.Deadline)
+                {
+                    ModelState.AddModelError(
+                        "Deadline",
+                        $"Task deadline cannot exceed project deadline ({project.Deadline:dd/MM/yyyy})"
+                    );
+                }
+            }
             if (!ModelState.IsValid)
             {
                 // load lại project list
@@ -128,13 +150,15 @@ namespace PorjectManagement.Controllers
             TempData["SuccessMessage"] = "Create Task successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
-        public async Task<IActionResult> Assign(int id)
+        public async Task<IActionResult> Assign(int id, bool success = false)
         {
             var vm = await _taskService.GetAssignTaskDataAsync(id);
             if (vm == null) return NotFound();
 
+            ViewBag.Success = success;
             return View(vm);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Assign(TaskAssignViewModel model)
@@ -149,8 +173,8 @@ namespace PorjectManagement.Controllers
             try
             {
                 await _taskService.AssignTaskAsync(model.TaskId, model.SelectedUserId);
-                TempData["Success"] = "Task assigned successfully!";
-                return RedirectToAction("Assign", new { id = model.TaskId });
+                ViewBag.SuccessMessage = "Assign task successfully!";
+                return RedirectToAction("Assign", new { id = model.TaskId, success = true });
             }
             catch (Exception ex)
             {

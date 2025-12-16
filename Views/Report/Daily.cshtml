@@ -1,0 +1,173 @@
+﻿@model CreateReportViewModel
+
+@{
+    ViewData["Title"] = "Daily Report";
+    var members = Model.TeamMembers;
+}
+
+<!-- ALERT MESSAGE -->
+
+<div id="dailyAlert" class="alert d-none" role="alert"></div>
+
+<form id="dailyForm">
+    <input type="hidden" name="ProjectId" value="@Model.ProjectId" />
+    <input type="hidden" name="ReportType" value="Daily" />
+
+    ```
+    <table class="table table-bordered text-center align-middle">
+        <tr>
+            <th style="width:200px">Daily Report on</th>
+            <th colspan="@members.Count">
+                Day: @DateTime.Now.ToString("dd-MMMM")
+            </th>
+        </tr>
+
+        <!-- TEAM MEMBERS -->
+        <tr>
+            <th>Team members</th>
+            @for (int i = 0; i < members.Count; i++)
+            {
+                <th>
+                    @members[i].FullName
+                    <input type="hidden" name="TeamMembers[@i].UserId" value="@members[i].UserId" />
+                    <input type="hidden" name="TeamMembers[@i].FullName" value="@members[i].FullName" />
+                </th>
+            }
+        </tr>
+
+        <!-- PLAN -->
+        <tr>
+            <th>Plan</th>
+            @for (int i = 0; i < members.Count; i++)
+            {
+                <td>
+                    <textarea class="form-control" name="Tasks[@i].Plan"></textarea>
+                </td>
+            }
+        </tr>
+
+        <!-- ACTUAL -->
+        <tr>
+            <th>Actual</th>
+            @for (int i = 0; i < members.Count; i++)
+            {
+                <td>
+                    <textarea class="form-control" name="Tasks[@i].Actual"></textarea>
+                </td>
+            }
+        </tr>
+
+        <!-- STATUS MEMBER -->
+        <tr>
+            <th>Status and % execute / plan member</th>
+            @for (int i = 0; i < members.Count; i++)
+            {
+                <td>
+                    <input type="number" class="form-control" min="0" max="100" name="Tasks[@i].ProgressPercent" />
+                </td>
+            }
+        </tr>
+
+        <!-- OUTPUT -->
+        <tr>
+            <th>Output</th>
+            @for (int i = 0; i < members.Count; i++)
+            {
+                <td>
+                    <textarea class="form-control" name="Tasks[@i].Output"></textarea>
+                </td>
+            }
+        </tr>
+
+        <!-- ISSUE -->
+        <tr>
+            <th>Issue</th>
+            @for (int i = 0; i < members.Count; i++)
+            {
+                <td>
+                    <textarea class="form-control" name="Tasks[@i].Issue"></textarea>
+                </td>
+            }
+        </tr>
+
+        <!-- ACTION -->
+        <tr>
+            <th>Action</th>
+            @for (int i = 0; i < members.Count; i++)
+            {
+                <td>
+                    <textarea class="form-control" name="Tasks[@i].Action"></textarea>
+                </td>
+            }
+        </tr>
+
+        <!-- NEXT PLAN -->
+        <tr>
+            <th>Next Plan</th>
+            @for (int i = 0; i < members.Count; i++)
+            {
+                <td>
+                    <textarea class="form-control" name="Tasks[@i].NextPlan"></textarea>
+                </td>
+            }
+        </tr>
+
+        <!-- TEAM STATUS -->
+        <tr>
+            <th>Status and % execute / plan Team</th>
+            <td colspan="@members.Count">
+                <input type="number" class="form-control" min="0" max="100" name="TeamExecutePercent" />
+            </td>
+        </tr>
+
+        <!-- TEAM NEXT PLAN -->
+        <tr>
+            <th>Team Next Plan</th>
+            <td colspan="@members.Count">
+                <textarea class="form-control" name="TeamNextPlan"></textarea>
+            </td>
+        </tr>
+    </table>
+
+    <button type="button" class="btn btn-primary" onclick="submitDaily()">
+        Submit Daily Report
+    </button>
+    ```
+
+</form>
+
+<script>
+    function submitDaily() {
+        const form = document.getElementById("dailyForm");
+        const formData = new FormData(form);
+
+        fetch("/Report/UploadDaily", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => {
+            if (!res.ok) throw new Error();
+            return res.json();
+        })
+        .then(data => {
+            const alertBox = document.getElementById("dailyAlert");
+
+            alertBox.classList.remove("d-none", "alert-danger");
+            alertBox.classList.add("alert-success");
+
+            alertBox.innerHTML = `
+                <strong>✅ Upload daily report thành công!</strong><br/>
+                <small>ReportId: ${data.reportId} | CreatedAt: ${data.createdAt}</small>
+            `;
+
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        })
+        .catch(() => {
+            const alertBox = document.getElementById("dailyAlert");
+
+            alertBox.classList.remove("d-none", "alert-success");
+            alertBox.classList.add("alert-danger");
+            alertBox.innerText = "❌ Upload daily report thất bại";
+        });
+    }
+</script>

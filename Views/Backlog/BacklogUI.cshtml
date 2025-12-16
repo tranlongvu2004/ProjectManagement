@@ -109,10 +109,10 @@
 
         <!-- ⭐ Nút Add Member -->
         <!-- Có quyền -->
-        <a class="btn btn-primary"
-           href="@Url.Action("AddMembers", "UserProject", new { id = ViewBag.ProjectId })">
-            <i class="fa fa-user-plus"></i> Add Member
-        </a>
+      <a class="btn btn-primary"
+   href="@Url.Action("AddMembers", "UserProject", new { projectId = ViewBag.ProjectId })">
+    <i class="fa fa-user-plus"></i> Add Member
+</a>
         @if (ViewBag.isLeader == true)
         {
             <a class="btn btn-success"

@@ -1,0 +1,92 @@
+﻿@{
+    Layout = null;
+}
+
+<style>
+    body {
+        background: #f4f6f8;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .register-container {
+        width: 380px;
+        margin: 80px auto;
+        background: #fff;
+        padding: 28px;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+        .register-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .register-container .email {
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .register-container input {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+            .register-container input:focus {
+                outline: none;
+                border-color: #4a90e2;
+            }
+
+        .register-container button {
+            width: 100%;
+            padding: 11px;
+            background: #4a90e2;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            .register-container button:hover {
+                background: #357bd8;
+            }
+
+    .error {
+        margin-top: 12px;
+        color: #d93025;
+        text-align: center;
+        font-size: 14px;
+    }
+</style>
+
+<div class="register-container">
+    <h2>Complete Registration</h2>
+
+    <form method="post">
+        <input type="hidden" name="token" value="@ViewBag.Token" />
+
+        <div class="email">
+            Email: <b>@ViewBag.email</b>
+        </div>
+
+        <input name="fullName" placeholder="Full Name" value="@ViewBag.fullName"/>
+        <input type="password" name="password" placeholder="Password" />
+        <input type="password" name="confirmPassword" placeholder="Confirm Password" />
+
+        <button type="submit">Complete Registration</button>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="error">@ViewBag.Error</div>
+        }
+    </form>
+</div>

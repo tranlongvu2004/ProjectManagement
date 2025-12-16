@@ -43,30 +43,39 @@ namespace PorjectManagement.Service
         public async Task<TaskAssignViewModel> GetAssignTaskDataAsync(int taskId)
         {
             var task = await _context.Tasks
-                .Include(x => x.Project)
-                .ThenInclude(p => p.UserProjects)
-                .ThenInclude(up => up.User)
-                .FirstOrDefaultAsync(x => x.TaskId == taskId);
+                .Include(t => t.Project)
+                    .ThenInclude(p => p.UserProjects)
+                        .ThenInclude(up => up.User)
+                .Include(t => t.TaskAssignments) 
+                .FirstOrDefaultAsync(t => t.TaskId == taskId);
 
             if (task == null) return null;
 
+            var assignedUserIds = task.TaskAssignments
+                .Select(ta => ta.UserId)
+                .ToHashSet();
+
             var users = task.Project.UserProjects
+                .Where(up =>
+                 up.User.RoleId != 1 && !assignedUserIds.Contains(up.UserId)) 
                 .Select(up => new UserListItemVM
                 {
                     UserId = up.User.UserId,
                     FullName = up.User.FullName,
                     Email = up.User.Email,
                     AvatarUrl = up.User.AvatarUrl,
-                    RoleName = up.User.Role?.RoleName ?? "",
-                }).ToList();
+                    RoleName = up.User.Role?.RoleName ?? ""
+                })
+                .ToList();
 
             return new TaskAssignViewModel
             {
-                TaskId = taskId,
+                TaskId = task.TaskId,
                 ProjectId = task.ProjectId,
                 Users = users
             };
         }
+
 
         public async Task<bool> AssignTaskAsync(int taskId, int userId)
         {

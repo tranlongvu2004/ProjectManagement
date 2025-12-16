@@ -18,8 +18,7 @@ namespace PorjectManagement.ViewModels
         [DataType(DataType.Date)]
         public DateTime Deadline { get; set; }
 
-        [Required]
-        public ProjectStatus Status { get; set; }
+        // Removed Status field - auto-calculated
 
         // Danh sách thành viên hiện tại
         public List<int> CurrentMemberIds { get; set; } = new();
