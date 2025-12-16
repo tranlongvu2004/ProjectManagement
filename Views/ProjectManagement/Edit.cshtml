@@ -72,15 +72,7 @@
                             <span asp-validation-for="Deadline" class="text-danger small"></span>
                         </div>
 
-                        <!-- Status -->
-                        <div class="mb-4">
-                            <label asp-for="Status" class="form-label fw-semibold">
-                                <i class="bi bi-flag-fill text-success"></i> Status <span class="text-danger">*</span>
-                            </label>
-                            <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<PorjectManagement.Models.ProjectStatus>()">
-                            </select>
-                            <span asp-validation-for="Status" class="text-danger small"></span>
-                        </div>
+                        <!-- Status field removed - auto-calculated based on progress -->
 
                         <hr class="my-4" />
 
