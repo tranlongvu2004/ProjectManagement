@@ -1,52 +1,48 @@
-﻿@model List<PorjectManagement.Models.Report>
-@{
-    ViewData["Title"] = "Project Reports";
+﻿@model List<CreateReportViewModel>
+
+@foreach (var report in Model)
+{
+    <table class="table table-bordered mb-4 text-center">
+        <tr>
+            <th>Members</th>
+            @foreach (var m in report.TeamMembers)
+            {
+                <th>@m.FullName</th>
+            }
+        </tr>
+
+
+        <tr>
+            <th>Plan</th>
+            @foreach (var m in report.TeamMembers)
+            {
+                <td>@m.Plan</td>
+            }
+        </tr>
+
+
+        <tr>
+            <th>Actual</th>
+            @foreach (var m in report.TeamMembers)
+            {
+                <td>@m.Actual</td>
+            }
+        </tr>
+        <tr>
+            <th>Progress %</th>
+            @foreach (var m in report.TeamMembers)
+            {
+                <td>@m.ProgressPercent %</td>
+            }
+        </tr>
+
+
+        <tr class="table-warning">
+            <th>Team Execute %</th>
+            <td colspan="@report.TeamMembers.Count">
+                @report.TeamExecutePercent %
+            </td>
+        </tr>
+
+    </table>
 }
-
-<div class="container mt-4">
-    <h3 class="mb-3">📄 Report List</h3>
-
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info">
-            Have no report.
-        </div>
-    }
-    else
-    {
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>#</th>
-                    <th>ReportType</th>
-                    <th>Upload by</th>
-                    <th>Created at</th>
-                    <th>File</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (int i = 0; i < Model.Count; i++)
-                {
-                    <tr>
-                        <td>@(i + 1)</td>
-                        <td>@Model[i].ReportType</td>
-                        <td>@Model[i].Leader.FullName</td>
-                        <td>@Model[i].CreatedAt?.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>
-                            <a href="@Model[i].FilePath"
-                               target="_blank"
-                               class="btn btn-sm btn-primary">
-                                Download
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-
-    <a href="/Workspace/Details/@ViewBag.ProjectId"
-       class="btn btn-secondary mt-3">
-        ⬅ Back to project
-    </a>
-</div>

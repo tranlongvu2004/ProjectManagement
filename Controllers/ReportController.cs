@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
 using PorjectManagement.Service.Interface;
@@ -26,13 +27,8 @@ namespace PorjectManagement.Controllers
 
             if (!isLeader)
                 return Forbid();
-
-            var reports = _reportService
-                .GetReportsByProjectId(projectId)
-                .ToList();
-
+            var reports = _reportService.GetReportsByProjectId(projectId);
             ViewBag.ProjectId = projectId;
-            ViewBag.IsLeader = isLeader;
             return View(reports);
         }
 
@@ -67,7 +63,8 @@ namespace PorjectManagement.Controllers
             {
                 success = true,
                 message = "Daily report uploaded successfully!",
-                reportId = report.ReportId
+                reportId = report.ReportId,
+                projectId = model.ProjectId
             });
         }
 
