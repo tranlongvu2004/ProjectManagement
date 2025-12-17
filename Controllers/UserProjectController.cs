@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PorjectManagement.Controllers
 {
-    public class UserProjectController : BaseController
+    public class UserProjectController : Controller
     {
         private readonly IUserProjectService _userProjectService;
 
@@ -21,16 +21,10 @@ namespace PorjectManagement.Controllers
             var role = HttpContext.Session.GetInt32("RoleId");
             if (role != 2)
             {
-                TempData["Error"] = "You are not allowed to do this action.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("AccessDeny", "Error");
             }
-
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
-
             var project = await _userProjectService.GetProjectByIdAsync(projectId);
             if (project == null) return NotFound();
-
             var usersInProject = await _userProjectService.GetUsersByProjectIdAsync(projectId);
             var userIdsInProject = usersInProject.Select(u => u.UserId).ToHashSet();
 
@@ -68,13 +62,8 @@ namespace PorjectManagement.Controllers
             var role = HttpContext.Session.GetInt32("RoleId");
             if (role != 2)
             {
-                TempData["Error"] = "You are not allowed to do this action.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("AccessDeny", "User");
             }
-
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
-
             if (model.ProjectId <= 0)
             {
                 ModelState.AddModelError("", "Invalid project.");

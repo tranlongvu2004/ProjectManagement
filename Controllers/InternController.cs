@@ -14,6 +14,11 @@ public class InternController : Controller
     // GET: Intern
     public async Task<IActionResult> Index()
     {
+        int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+        if (roleId != 1) 
+        {
+            return RedirectToAction("AccessDeny", "Error");
+        }
         var interns = await _internService.GetInternsAsync();
         return View(interns);
     }

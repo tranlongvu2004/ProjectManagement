@@ -5,11 +5,10 @@ using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Controllers
 {
-    public class ProjectManagementController : BaseController
+    public class ProjectManagementController : Controller
     {
         private readonly IProjectServices _projectServices;
-        private readonly IUserServices _userServices;
-
+        private readonly IUserServices _userServices;        
         public ProjectManagementController(
             IProjectServices projectServices,
             IUserServices userServices)
@@ -22,9 +21,16 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
-
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if(userId == 0)
+            {
+                return RedirectToAction("Login", "User");
+            }
+            if (roleId != 1)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             var userEmail = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(userEmail))
             {
@@ -51,8 +57,6 @@ namespace PorjectManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProjectCreateViewModel model)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
 
             var userEmail = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(userEmail))
@@ -110,9 +114,11 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
-
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            if (roleId != 1)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             var userEmail = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(userEmail))
             {
@@ -140,8 +146,6 @@ namespace PorjectManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ProjectUpdateViewModel model)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
 
             if (id != model.ProjectId)
             {
