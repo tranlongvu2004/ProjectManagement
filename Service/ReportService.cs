@@ -27,18 +27,31 @@ namespace PorjectManagement.Service
 
         public List<CreateReportViewModel> GetReportsByProjectId(int projectId)
         {
-            return _context.Reports
-                .Where(r => r.ProjectId == projectId && r.ReportType == "daily" || r.ReportType == "weekly")
-                .OrderByDescending(r => r.CreatedAt)
-                .Select(r => JsonSerializer.Deserialize<CreateReportViewModel>(
-                    r.FilePath!,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    })!
+            var reports = _context.Reports
+                .Where(r =>
+                    r.ProjectId == projectId &&
+                    (r.ReportType == "daily" || r.ReportType == "weekly")
                 )
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList(); 
+
+            return reports
+                .Select(r =>
+                {
+                    var vm = JsonSerializer.Deserialize<CreateReportViewModel>(
+                        r.FilePath!,
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        })!;
+
+                    vm.CreatedAt = r.CreatedAt ?? DateTime.MinValue;
+                    return vm;
+                })
                 .ToList();
         }
+
+
 
         public async Task<bool> UploadReportAsync(int projectId, string reportType, IFormFile file, int leaderId)
         {
