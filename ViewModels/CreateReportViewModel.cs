@@ -10,4 +10,5 @@ public class CreateReportViewModel
 
     public string? TeamNextPlan { get; set; }
     public int? TeamExecutePercent { get; set; }
+    public DateTime? CreatedAt { get; set; }
 }

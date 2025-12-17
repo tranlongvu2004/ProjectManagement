@@ -1,5 +1,6 @@
 ﻿@model List<CreateReportViewModel>
 
+<h1 class="mb-4">Team Performance Report</h1>
 @foreach (var report in Model)
 {
     <table class="table table-bordered mb-4 text-center">
@@ -35,7 +36,10 @@
                 <td>@m.ProgressPercent %</td>
             }
         </tr>
-
+        <tr>
+            <th>Create At:</th>           
+                <td>@report.CreatedAt?.ToString("yyyy/MM/dd HH:mm:ss")</td>
+        </tr>
 
         <tr class="table-warning">
             <th>Team Execute %</th>
