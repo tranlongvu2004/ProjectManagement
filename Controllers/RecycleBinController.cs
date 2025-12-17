@@ -47,6 +47,11 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public IActionResult DeletePermanent([FromBody] RestoreRequest request)
         {
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            if (roleId != 2)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             var item = _context.RecycleBins.FirstOrDefault(x => x.RecycleId == request.RecycleId);
             if (item == null) return NotFound();
 
@@ -73,6 +78,11 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public IActionResult Restore([FromBody] RestoreRequest request)
         {
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            if (roleId != 2)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             var item = _context.RecycleBins.FirstOrDefault(x => x.RecycleId == request.RecycleId);
             if (item == null) return NotFound();
             _context.RecycleBins.Remove(item);

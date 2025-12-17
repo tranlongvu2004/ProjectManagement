@@ -1,52 +1,110 @@
-﻿@model List<PorjectManagement.Models.Report>
-@{
-    ViewData["Title"] = "Project Reports";
+﻿@model List<CreateReportViewModel>
+
+<h2 class="mb-4">📊 Team Performance Reports</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No reports available.
+    </div>
 }
+else
+{
+    <div class="accordion" id="reportAccordion">
 
-<div class="container mt-4">
-    <h3 class="mb-3">📄 Report List</h3>
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var report = Model[i];
+            var collapseId = $"collapse{i}";
+            var headingId = $"heading{i}";
+            <div class="accordion-item mb-2">
+                <h2 class="accordion-header" id="@headingId">
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#@collapseId"
+                            aria-expanded="false"
+                            aria-controls="@collapseId">
 
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info">
-            Have no report.
-        </div>
-    }
-    else
-    {
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>#</th>
-                    <th>ReportType</th>
-                    <th>Upload by</th>
-                    <th>Created at</th>
-                    <th>File</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (int i = 0; i < Model.Count; i++)
-                {
-                    <tr>
-                        <td>@(i + 1)</td>
-                        <td>@Model[i].ReportType</td>
-                        <td>@Model[i].Leader.FullName</td>
-                        <td>@Model[i].CreatedAt?.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>
-                            <a href="@Model[i].FilePath"
-                               target="_blank"
-                               class="btn btn-sm btn-primary">
-                                Download
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+                        <strong>Report @(i + 1)</strong>
+                        <span class="ms-3 text-muted">
+                            📅 @report.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                        </span>
+                    </button>
+                </h2>
 
-    <a href="/Workspace/Details/@ViewBag.ProjectId"
-       class="btn btn-secondary mt-3">
-        ⬅ Back to project
-    </a>
-</div>
+                <div id="@collapseId"
+                     class="accordion-collapse collapse"
+                     aria-labelledby="@headingId"
+                     data-bs-parent="#reportAccordion">
+
+                    <div class="accordion-body">
+
+                        <table class="table table-bordered text-center">
+                            <tr class="table-light">
+                                <th>Members</th>
+                                @foreach (var m in report.TeamMembers)
+                                {
+                                    <th>@m.FullName</th>
+                                }
+                            </tr>
+
+                            <tr>
+                                <th>Plan</th>
+                                @foreach (var m in report.TeamMembers)
+                                {
+                                    <td>@m.Plan</td>
+                                }
+                            </tr>
+
+                            <tr>
+                                <th>Actual</th>
+                                @foreach (var m in report.TeamMembers)
+                                {
+                                    <td>@m.Actual</td>
+                                }
+                            </tr>
+
+                            <tr>
+                                <th>Progress %</th>
+                                @foreach (var m in report.TeamMembers)
+                                {
+                                    <td>@m.ProgressPercent %</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>Output</th>
+                                @foreach (var m in report.TeamMembers)
+                                {
+                                    <td>@m.Output</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>Issue</th>
+                                @foreach (var m in report.TeamMembers)
+                                {
+                                    <td>@m.Issue</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>Action</th>
+                                @foreach (var m in report.TeamMembers)
+                                {
+                                    <td>@m.Action</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>NextPlan</th>
+                                @foreach (var m in report.TeamMembers)
+                                {
+                                    <td>@m.NextPlan</td>
+                                }
+                            </tr>                           
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

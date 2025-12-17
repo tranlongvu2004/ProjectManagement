@@ -18,7 +18,11 @@ namespace PorjectManagement.Controllers
         }
         public IActionResult Dashboard(int projectId, int userId)
         { 
-            
+            int currentUserId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (currentUserId == 0)
+            {
+                return RedirectToAction("Login", "User");
+            }
             var tasks = _context.Tasks
                 .Include(t => t.TaskAssignments)
                 .Include(t => t.CreatedByNavigation)
@@ -103,7 +107,6 @@ namespace PorjectManagement.Controllers
         }
         public IActionResult ExportDashboard(int projectId, int userId)
         {
-            // Lấy dữ liệu Dashboard như bạn đang làm
             var tasks = _context.Tasks
                 .Where(t => t.ProjectId == projectId)
                 .Select(t => new

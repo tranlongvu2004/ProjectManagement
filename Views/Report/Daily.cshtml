@@ -150,6 +150,8 @@
             return res.json();
         })
         .then(data => {
+            if (!data.success) throw new Error();
+
             const alertBox = document.getElementById("dailyAlert");
 
             alertBox.classList.remove("d-none", "alert-danger");
@@ -157,7 +159,12 @@
 
             alertBox.innerHTML = `
                 <strong>✅ Upload daily report thành công!</strong><br/>
-                <small>ReportId: ${data.reportId} | CreatedAt: ${data.createdAt}</small>
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-primary"
+                            onclick="viewReport(${data.projectId})">
+                        📄 View Report
+                    </button>
+                </div>
             `;
 
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -170,4 +177,9 @@
             alertBox.innerText = "❌ Upload daily report thất bại";
         });
     }
+
+    function viewReport(projectId) {
+        window.location.href = `/Report/ViewReport?projectId=${projectId}`;
+    }
 </script>
+
