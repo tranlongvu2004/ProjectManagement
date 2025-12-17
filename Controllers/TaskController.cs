@@ -187,7 +187,7 @@ namespace PorjectManagement.Controllers
             
             if (currentUser == null)
             {
-                TempData["Error"] = "Không tìm thấy thông tin đăng nhập.";
+                TempData["Error"] = "Login information not found.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -195,7 +195,7 @@ namespace PorjectManagement.Controllers
             
             if (model == null)
             {
-                TempData["Error"] = "Không tìm thấy task hoặc bạn không có quyền chỉnh sửa.";
+                TempData["Error"] = "Task not found, or you do not have editing permissions.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -214,13 +214,13 @@ namespace PorjectManagement.Controllers
             }
             if (id != model.TaskId)
             {
-                TempData["Error"] = "Dữ liệu không hợp lệ.";
+                TempData["Error"] = "Data not valid.";
                 return RedirectToAction("Index", "Home");
             }
 
             if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
             {
-                ModelState.AddModelError("Deadline", "Deadline không được ở quá khứ");
+                ModelState.AddModelError("Deadline", "Deadline not in past");
             }
 
             if (!ModelState.IsValid)
@@ -244,16 +244,16 @@ namespace PorjectManagement.Controllers
                 
                 if (!success)
                 {
-                    TempData["Error"] = "Không thể cập nhật task.";
+                    TempData["Error"] = "Cant update task.";
                     return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
                 }
 
-                TempData["Success"] = "Cập nhật task thành công!";
+                TempData["Success"] = "Update task successful!";
                 return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Lỗi: {ex.Message}");
+                ModelState.AddModelError("", $"Error: {ex.Message}");
                 var reloadedModel = await _taskService.GetTaskForEditAsync(id, 1);
                 if (reloadedModel != null)
                 {
