@@ -23,40 +23,52 @@
 
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-4">
+            <label class="form-label fw-semibold text-muted">Search by project's name</label>
         <input name="keyword"
                value="@Model.Keyword"
                class="form-control"
-               placeholder="Search project name..." />
+               placeholder="Enter project's name" />
     </div>
 
     <div class="col-md-3">
+        <label class="form-label fw-semibold text-muted">Filter by status</label>
         <select name="status" class="form-select">
             <option value="">All Status</option>
             @foreach (ProjectStatus s in Enum.GetValues(typeof(ProjectStatus)))
             {
-                <option value="@s" selected="@(Model.Status == s)">
-                    @s
-                </option>
+                    string text = s switch
+                    {
+                        ProjectStatus.InProgress => "In Progress",
+                        ProjectStatus.Completed => "Completed",
+                        ProjectStatus.Dropped => "Dropped",
+                        _ => s.ToString()
+                    };
+
+                    <option value="@s" selected="@(Model.Status == s)">
+                        @text
+                    </option>
             }
         </select>
     </div>
+    <div class="col-md-5 row">
+            <label class="col-md-12 form-label fw-semibold text-muted">Sort by</label>
+            <div class="col-md-6">
+                <select name="sortBy" class="form-select">
+                    <option value="name" selected="@(Model.SortBy == "name")">Name</option>
+                    <option value="deadline" selected="@(Model.SortBy == "deadline")">Deadline</option>
+                </select>
+            </div>
 
-    <div class="col-md-3">
-        <select name="sortBy" class="form-select">
-            <option value="name" selected="@(Model.SortBy=="name")">Name</option>
-            <option value="deadline" selected="@(Model.SortBy=="deadline")">Deadline</option>
-        </select>
+            <div class="col-md-6">
+                <select name="sortDir" class="form-select">
+                    <option value="asc" selected="@(Model.SortDir == "asc")">Ascending</option>
+                    <option value="desc" selected="@(Model.SortDir == "desc")">Descending</option>
+                </select>
+            </div>
     </div>
 
-    <div class="col-md-2">
-        <select name="sortDir" class="form-select">
-            <option value="asc" selected="@(Model.SortDir=="asc")">ASC</option>
-            <option value="desc" selected="@(Model.SortDir=="desc")">DESC</option>
-        </select>
-    </div>
-
-    <div class="col-md-12">
-        <button class="btn btn-primary">
+        <div class="col-md-12 d-flex justify-content-end">
+            <button class="btn btn-primary ms-auto">
             <i class="bi"></i> Apply
         </button>
     </div>
