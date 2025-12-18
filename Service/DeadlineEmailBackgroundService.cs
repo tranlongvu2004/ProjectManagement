@@ -29,6 +29,7 @@ namespace PorjectManagement.Service
                     .Include(a => a.Task)
                     .Include(a => a.User)
                     .Where(a =>
+                        !a.DeadlineMailSent &&
                         a.Task.Deadline >= target.AddMinutes(-5) &&
                         a.Task.Deadline <= target.AddMinutes(5))
                     .ToList();
@@ -36,25 +37,29 @@ namespace PorjectManagement.Service
                 foreach (var a in assignments)
                 {
                     var body = $@"
-                    <h3>⏰ Task Deadline Reminder</h3>
-                    <p>Hello <b>{a.User.FullName}</b>,</p>
-                    <p>Your task <b>{a.Task.Title}</b> will be due in <b>24 hours</b>.</p>
-                    <p><b>Deadline:</b> {a.Task.Deadline:dd/MM/yyyy HH:mm}</p>
-                    <hr/>
-                    <p>Lab Management System</p>
-                ";
+                        <h3>⏰ Task Deadline Reminder</h3>
+                        <p>Hello <b>{a.User.FullName}</b>,</p>
+                        <p>Your task <b>{a.Task.Title}</b> will be due in <b>24 hours</b>.</p>
+                        <p><b>Deadline:</b> {a.Task.Deadline:dd/MM/yyyy HH:mm}</p>
+                        <hr/>
+                        <p>Lab Management System</p>
+                    ";
 
                     await emailSender.SendAsync(
                         a.User.Email,
                         "⏰ Task Deadline – 24 Hours Left",
                         body
                     );
+
+                    a.DeadlineMailSent = true;
                 }
 
-                await db.SaveChangesAsync();
+                await db.SaveChangesAsync(stoppingToken);
+
                 await System.Threading.Tasks.Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
         }
     }
+
 
 }
