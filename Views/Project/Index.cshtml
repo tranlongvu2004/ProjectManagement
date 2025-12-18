@@ -1,5 +1,5 @@
 ﻿@using PorjectManagement.ViewModels
-@model List<ProjectListVM>
+@model ProjectFilterVM
 
 @{
     ViewData["Title"] = "My Projects";
@@ -21,8 +21,50 @@
         }
     </div>
 
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input name="keyword"
+               value="@Model.Keyword"
+               class="form-control"
+               placeholder="Search project name..." />
+    </div>
+
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="">All Status</option>
+            @foreach (ProjectStatus s in Enum.GetValues(typeof(ProjectStatus)))
+            {
+                <option value="@s" selected="@(Model.Status == s)">
+                    @s
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <select name="sortBy" class="form-select">
+            <option value="name" selected="@(Model.SortBy=="name")">Name</option>
+            <option value="deadline" selected="@(Model.SortBy=="deadline")">Deadline</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="sortDir" class="form-select">
+            <option value="asc" selected="@(Model.SortDir=="asc")">ASC</option>
+            <option value="desc" selected="@(Model.SortDir=="desc")">DESC</option>
+        </select>
+    </div>
+
+    <div class="col-md-12">
+        <button class="btn btn-primary">
+            <i class="bi bi-funnel"></i> Apply
+        </button>
+    </div>
+</form>
+
+
     <!-- Projects Table -->
-    @if (Model != null && Model.Any())
+    @if (Model != null)
     {
         <div class="card border-0 shadow-sm">
             <div class="card-body p-0">
@@ -39,13 +81,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @{
-                                int rowIndex = 1;
-                            }
-                            @foreach (var p in Model)
+                            @foreach (var p in Model.Projects)
                             {
                                 <tr>
-                                    <td class="px-4 py-3 text-muted fw-semibold">@(rowIndex++)</td>
+                                    <td class="px-4 py-3 text-muted fw-semibold">@p.Index</td>
                                     <td class="py-3">
                                         <a asp-controller="Workspace" 
                                            asp-action="Details" 
@@ -142,3 +181,29 @@
         padding: 0.4em 0.8em;
     }
 </style>
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-route-page="@(Model.Page - 1)">Previous</a>
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(Model.Page == i ? "active" : "")">
+                    <a class="page-link"
+                       asp-route-page="@i">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.Page == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link"
+                   asp-route-page="@(Model.Page + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}
+
