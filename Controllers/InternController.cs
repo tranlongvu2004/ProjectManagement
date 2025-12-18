@@ -21,7 +21,7 @@ public class InternController : Controller
         int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
         if (roleId != 1)
         {
-            return RedirectToAction("AccessDeny", "Error");
+            return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path +HttpContext.Request.QueryString });
         }
         var query = await _internService.GetInternsAsync();
 

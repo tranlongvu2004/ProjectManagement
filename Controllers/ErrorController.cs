@@ -4,8 +4,9 @@ namespace PorjectManagement.Controllers
 {
     public class ErrorController : Controller
     {
-        public IActionResult AccessDeny()
+        public IActionResult AccessDeny(string returnUrl)
         {
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
     }

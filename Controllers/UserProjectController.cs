@@ -21,7 +21,7 @@ namespace PorjectManagement.Controllers
             var role = HttpContext.Session.GetInt32("RoleId");
             if (role != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
             var project = await _userProjectService.GetProjectByIdAsync(projectId);
             if (project == null) return NotFound();
