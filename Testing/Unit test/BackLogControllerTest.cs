@@ -16,6 +16,7 @@ namespace PorjectManagement.Tests.Controllers
     {
         private readonly Mock<IProjectServices> _mockProjectService;
         private readonly Mock<IUserProjectService> _mockUserProjectService;
+        private readonly Mock<ICommentService> _mockCommentService;
         private readonly LabProjectManagementContext _context;
         private readonly BacklogController _controller;
 
@@ -23,6 +24,7 @@ namespace PorjectManagement.Tests.Controllers
         {
             _mockProjectService = new Mock<IProjectServices>();
             _mockUserProjectService = new Mock<IUserProjectService>();
+            _mockCommentService = new Mock<ICommentService>();
 
             var options = new DbContextOptionsBuilder<LabProjectManagementContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -33,7 +35,8 @@ namespace PorjectManagement.Tests.Controllers
             _controller = new BacklogController(
                 _context,
                 _mockProjectService.Object,
-                _mockUserProjectService.Object
+                _mockUserProjectService.Object,
+                _mockCommentService.Object
             );
 
             // Fake HttpContext + Session

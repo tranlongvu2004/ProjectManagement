@@ -10,17 +10,21 @@ namespace PorjectManagement.Controllers
         private readonly LabProjectManagementContext _context;
         private readonly IProjectServices _projectServices;
         private readonly IUserProjectService _up;
+        private readonly ICommentService _commentService;
 
         public BacklogController(
             LabProjectManagementContext context,
             IProjectServices projectServices,
-            IUserProjectService up)
+            IUserProjectService up,
+            ICommentService commentService)
         {
             _context = context;
             _projectServices = projectServices;
             _up = up;
+            _commentService = commentService;
         }
-        public IActionResult BacklogUI(int projectId)
+
+        public async Task<IActionResult> BacklogUI(int projectId)
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
@@ -33,23 +37,29 @@ namespace PorjectManagement.Controllers
                 .Where(rb => rb.EntityType == "Task")
                 .Select(rb => rb.EntityId).ToHashSet();
 
-            var tasks = _context.Tasks
+            var tasks = await _context.Tasks
                 .Include(t => t.TaskAssignments)
-                  .ThenInclude(ta => ta.User)
+                    .ThenInclude(ta => ta.User)
                 .Include(t => t.TaskAttachments)
-                  .ThenInclude(a => a.UploadedByNavigation)
-            .Where(t => t.ProjectId == projectId
-                && !_context.RecycleBins.Any(r =>
-                r.EntityType == "Task"
-                && r.EntityId == t.TaskId) && !deletedTasks.Contains(t.TaskId))
-            .ToList();
+                    .ThenInclude(a => a.UploadedByNavigation)
+                .Include(t => t.Comments)
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.Role)
+                .Where(t => t.ProjectId == projectId
+                    && !_context.RecycleBins.Any(r =>
+                        r.EntityType == "Task"
+                        && r.EntityId == t.TaskId) 
+                    && !deletedTasks.Contains(t.TaskId))
+                .ToListAsync();
+
             var parentTasks = tasks.Where(t => t.ParentId == null && t.IsParent == true).ToList();
-            var subTasks = tasks.Where(t => t.ParentId != null  && t.IsParent == false).ToList();
+            var subTasks = tasks.Where(t => t.ParentId != null && t.IsParent == false).ToList();
 
             ViewBag.ParentTasks = parentTasks;
             ViewBag.SubTasks = subTasks;
             ViewBag.ProjectId = projectId;
             ViewBag.IsLeader = isLeader;
+            
             return View();
         }
 
@@ -61,13 +71,16 @@ namespace PorjectManagement.Controllers
             {
                 return RedirectToAction("AccessDeny", "Error");
             }
+            
             var task = _context.Tasks
                 .Include(t => t.TaskAssignments)
-                .ThenInclude(ta => ta.User)
+                    .ThenInclude(ta => ta.User)
                 .Include(t => t.TaskAttachments)
                 .Include(t => t.Comments)
                 .FirstOrDefault(t => t.TaskId == request.TaskId);
-            if (task == null) return NotFound();            
+            
+            if (task == null) return NotFound();
+            
             var snapshot = new DTOTaskSnapshot
             {
                 TaskId = task.TaskId,
@@ -78,6 +91,7 @@ namespace PorjectManagement.Controllers
                 Status = task.Status.ToString(),
                 ProjectId = task.ProjectId
             };
+            
             var recycle = new RecycleBin
             {
                 EntityType = "Task",
@@ -86,8 +100,10 @@ namespace PorjectManagement.Controllers
                 DeletedBy = HttpContext.Session.GetInt32("UserId") ?? 0,
                 DeletedAt = DateTime.Now
             };
-            _context.RecycleBins.Add(recycle);           
+            
+            _context.RecycleBins.Add(recycle);
             _context.SaveChanges();
+            
             return Ok();
         }
     }

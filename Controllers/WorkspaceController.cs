@@ -21,7 +21,7 @@ namespace PorjectManagement.Controllers
         {
             if (id <= 0)
             {
-                return BadRequest("Project id không hợp lệ.");
+                return BadRequest("Project id not valid.");
             }
 
             var userEmail = HttpContext.Session.GetString("UserEmail");

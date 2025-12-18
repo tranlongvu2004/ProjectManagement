@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Update Project";
+    var mentorUserId = ViewContext.HttpContext.Session.GetInt32("UserId") ?? 0;
 }
 
 <div class="container-fluid">
@@ -72,8 +73,6 @@
                             <span asp-validation-for="Deadline" class="text-danger small"></span>
                         </div>
 
-                        <!-- Status field removed - auto-calculated based on progress -->
-
                         <hr class="my-4" />
 
                         <!-- Current Members Info -->
@@ -99,6 +98,12 @@
                                                             <i class="bi bi-star-fill"></i> Leader
                                                         </span>
                                                     }
+                                                    @if (member.RoleName == "Mentor")
+                                                    {
+                                                        <span class="badge bg-danger">
+                                                            <i class="bi bi-shield-fill-check"></i> Mentor
+                                                        </span>
+                                                    }
                                                 </div>
                                                 <small class="text-muted">@member.Email - @member.RoleName</small>
                                             </div>
@@ -114,6 +119,38 @@
                                 <i class="bi bi-people-fill text-success"></i> Update member <span class="text-danger">*</span>
                             </label>
                             <div class="card border-0 bg-light p-3" style="max-height: 300px; overflow-y: auto;">
+                                @* Display Mentor (disabled, always checked) *@
+                                @if (Model.CurrentMembers != null)
+                                {
+                                    var mentor = Model.CurrentMembers.FirstOrDefault(m => m.RoleName == "Mentor");
+                                    if (mentor != null)
+                                    {
+                                        <div class="form-check mb-2 border-bottom pb-2">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   name="SelectedUserIds" 
+                                                   value="@mentor.UserId" 
+                                                   id="user_@mentor.UserId"
+                                                   checked
+                                                   disabled
+                                                   data-role="Mentor" />
+                                            <label class="form-check-label d-flex align-items-center opacity-75" for="user_@mentor.UserId">
+                                                <div class="avatar-circle bg-danger text-white me-2" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                                    @mentor.FullName.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold">
+                                                        @mentor.FullName 
+                                                        <span class="badge bg-danger">Mentor</span>
+                                                    </div>
+                                                    <small class="text-muted">@mentor.Email - Cannot be removed</small>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    }
+                                }
+
+                                @* Hiển thị các user khác (non-Mentor) *@
                                 @if (Model.AvailableUsers != null && Model.AvailableUsers.Any())
                                 {
                                     @foreach (var user in Model.AvailableUsers)
@@ -125,7 +162,8 @@
                                                    name="SelectedUserIds" 
                                                    value="@user.UserId" 
                                                    id="user_@user.UserId"
-                                                   @(isChecked ? "checked" : "") />
+                                                   @(isChecked ? "checked" : "")
+                                                   data-role="@user.RoleName" />
                                             <label class="form-check-label d-flex align-items-center" for="user_@user.UserId">
                                                 <div class="avatar-circle bg-primary text-white me-2" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
                                                     @user.FullName.Substring(0, 1).ToUpper()
@@ -157,10 +195,10 @@
                                 <i class="bi bi-star-fill text-warning"></i> Choose Leader <span class="text-danger">*</span>
                             </label>
                             <select asp-for="LeaderId" class="form-select" id="leader-select" required>
-                                <option value="">-- Pls choose Leader --</option>
+                                <option value="">-- Please choose Leader --</option>
                             </select>
                             <small class="text-muted">
-                                <i class="bi bi-info-circle"></i> The leader must be the member chosen above.
+                                <i class="bi bi-info-circle"></i> The leader must be a member (not Mentor) chosen above.
                             </small>
                             <span asp-validation-for="LeaderId" class="text-danger small d-block"></span>
                         </div>
@@ -192,14 +230,22 @@
                 $('.alert').fadeOut('slow');
             }, 5000);
 
+            // Mentor checkbox luôn submit
+            $('#editProjectForm').on('submit', function() {
+                $('input[type="checkbox"][disabled][data-role="Mentor"]').prop('disabled', false);
+            });
+
             $('.user-checkbox').on('change', function () {
                 updateSelectedCount();
                 updateLeaderOptions();
             });
 
             function updateSelectedCount() {
-                const count = $('.user-checkbox:checked').length;
-                $('#selected-count').text(count);
+                // Đếm cả mentor (disabled) và các user khác
+                const mentorCount = $('input[type="checkbox"][data-role="Mentor"]:checked').length;
+                const otherCount = $('.user-checkbox:checked').length;
+                const totalCount = mentorCount + otherCount;
+                $('#selected-count').text(totalCount);
             }
 
             function updateLeaderOptions() {
@@ -209,16 +255,20 @@
                 // Clear existing options (trừ option đầu tiên)
                 leaderSelect.find('option:not(:first)').remove();
 
-                // Add options cho các user đã chọn
+                // Thêm options cho các user KHÔNG PHẢI Mentor đã chọn
                 $('.user-checkbox:checked').each(function () {
                     const userId = $(this).val();
                     const userName = $(this).next('label').find('.fw-semibold').text();
+                    const role = $(this).data('role');
                     
-                    leaderSelect.append(
-                        $('<option></option>')
-                            .val(userId)
-                            .text(userName)
-                    );
+                    // No Mentor in dropdown Leader
+                    if (role !== 'Mentor') {
+                        leaderSelect.append(
+                            $('<option></option>')
+                                .val(userId)
+                                .text(userName)
+                        );
+                    }
                 });
 
                 // Restore leader nếu vẫn còn trong danh sách
@@ -227,20 +277,31 @@
                 }
             }
 
-            // VALIDATE TRƯỚC KHI SUBMIT
+            // VALIDATE SUBMIT
             $('#editProjectForm').on('submit', function(e) {
-                const selectedMembers = $('.user-checkbox:checked').length;
+                const mentorCount = $('input[type="checkbox"][data-role="Mentor"]:checked').length;
+                const otherCount = $('.user-checkbox:checked').length;
+                const totalMembers = mentorCount + otherCount;
                 const selectedLeader = $('#leader-select').val();
 
-                if (selectedMembers === 0) {
+                if (totalMembers === 0) {
                     e.preventDefault();
-                    alert('Vui lòng chọn ít nhất 1 thành viên!');
+                    alert('Please choose at least 1 member!');
                     return false;
                 }
 
                 if (!selectedLeader) {
                     e.preventDefault();
-                    alert('Vui lòng chọn Leader cho dự án!');
+                    alert('Please choose Leader for project!');
+                    $('#leader-select').focus();
+                    return false;
+                }
+
+                // Check Leader no Mentor
+                const leaderCheckbox = $(`input[type="checkbox"][value="${selectedLeader}"]`);
+                if (leaderCheckbox.data('role') === 'Mentor') {
+                    e.preventDefault();
+                    alert('Mentor cannot be selected as Leader!');
                     $('#leader-select').focus();
                     return false;
                 }
@@ -288,5 +349,9 @@
 
     .alert-success {
         border-left-color: #28a745;
+    }
+
+    input[type="checkbox"][disabled] + label {
+        cursor: not-allowed;
     }
 </style>
