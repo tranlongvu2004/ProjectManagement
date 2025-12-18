@@ -50,13 +50,13 @@
 
     <div class="col-md-2">
         <select name="sortDir" class="form-select">
-            <option value="asc" selected="@(Model.SortDir=="asc")">ASC</option>
-            <option value="desc" selected="@(Model.SortDir=="desc")">DESC</option>
+            <option value="asc" selected="@(Model.SortDir=="asc")">Ascending</option>
+            <option value="desc" selected="@(Model.SortDir == "desc")">Descending</option>
         </select>
     </div>
 
-    <div class="col-md-12">
-        <button class="btn btn-primary">
+        <div class="col-md-12 d-flex justify-content-end">
+            <button class="btn btn-primary ms-auto">
             <i class="bi"></i> Apply
         </button>
     </div>

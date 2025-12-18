@@ -30,6 +30,21 @@ namespace PorjectManagement.Controllers
             }
             ViewBag.RoleId = roleId;
             var projects = await _projectServices.GetProjectsOfUserAsync(currentUserId);
+            
+            var sidebarVB = projects
+                .Select(p => new ProjectListVM
+            {
+                ProjectId = p.ProjectId,
+                ProjectName = p.ProjectName,
+                Deadline = p.Deadline,
+                Status = p.Status,
+                LeaderName = p.UserProjects
+                    .Where(x => x.IsLeader == true)
+                    .Select(x => x.User.FullName)
+                    .FirstOrDefault() ?? "Không xác định",
+                MemberCount = p.UserProjects.Count
+            }).ToList();
+
             var query = projects
                 .Select(p => new ProjectListVM
                 {
@@ -88,7 +103,7 @@ namespace PorjectManagement.Controllers
                 TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
                 Projects = sortedProjects
             };
-
+            ViewBag.Projects = sidebarVB;
             return View(vm);
         }
 
