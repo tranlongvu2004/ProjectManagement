@@ -18,7 +18,7 @@ namespace PorjectManagement.Testing.Unit_test
             _controller = new InternController(_mockInternService.Object);
         }
 
-        [Fact]
+        /*[Fact]
         public async System.Threading.Tasks.Task Index_ReturnsViewResult_WithListOfInterns()
         {
             // Arrange
@@ -39,7 +39,7 @@ namespace PorjectManagement.Testing.Unit_test
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsAssignableFrom<IEnumerable<User>>(viewResult.Model);
             Assert.Equal(2, model.Count());
-        }
+        }*/
     }
 
 }

@@ -10,5 +10,7 @@ namespace PorjectManagement.ViewModels
         public ProjectStatus? Status { get; set; }
         public string LeaderName { get; set; }
         public int MemberCount { get; set; }
+        public int Index { get; set; }
+
     }
 }
