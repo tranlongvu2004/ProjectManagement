@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
+using PorjectManagement.ViewModels;
+using System.Text.Json;
 
 namespace PorjectManagement.Service
 {
@@ -23,12 +25,33 @@ namespace PorjectManagement.Service
             );
         }
 
-        public IQueryable<Report> GetReportsByProjectId(int projectId)
+        public List<CreateReportViewModel> GetReportsByProjectId(int projectId)
         {
-            return _context.Reports.Include(r => r.Leader)
-                .Where(r => r.ProjectId == projectId)
-                .OrderByDescending(r => r.CreatedAt);
+            var reports = _context.Reports
+                .Where(r =>
+                    r.ProjectId == projectId &&
+                    (r.ReportType == "daily" || r.ReportType == "weekly")
+                )
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList(); 
+
+            return reports
+                .Select(r =>
+                {
+                    var vm = JsonSerializer.Deserialize<CreateReportViewModel>(
+                        r.FilePath!,
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        })!;
+
+                    vm.CreatedAt = r.CreatedAt ?? DateTime.MinValue;
+                    return vm;
+                })
+                .ToList();
         }
+
+
 
         public async Task<bool> UploadReportAsync(int projectId, string reportType, IFormFile file, int leaderId)
         {
@@ -65,5 +88,70 @@ namespace PorjectManagement.Service
 
             return true;
         }
+        public CreateReportViewModel BuildDailyReportForm(int projectId)
+        {
+            var members = _context.UserProjects
+                .Where(x => x.ProjectId == projectId)
+                .Select(x => new TeamMemberVM
+                {
+                    UserId = x.UserId,
+                    FullName = x.User.FullName
+                })
+                .ToList();
+
+            // ⚠️ giữ Tasks = số member để mapping index
+            var tasks = members.Select(_ => new TaskReportVM()).ToList();
+
+            return new CreateReportViewModel
+            {
+                ProjectId = projectId,
+                TeamMembers = members,
+                Tasks = tasks
+            };
+        }
+
+        public async Task<Report> CreateDailyReportAsync(
+     CreateReportViewModel model,
+     int leaderId)
+        {
+            var reportJson = new DailyReportJson
+            {
+                ProjectId = model.ProjectId,
+                TeamExecutePercent = model.TeamExecutePercent,
+                TeamNextPlan = model.TeamNextPlan,
+                Members = model.TeamMembers.Select((m, i) => new DailyMemberJson
+                {
+                    UserId = m.UserId,
+                    FullName = m.FullName,
+
+                    Plan = model.Tasks[i].Plan,
+                    Actual = model.Tasks[i].Actual,
+                    ProgressPercent = model.Tasks[i].ProgressPercent,
+                    Output = model.Tasks[i].Output,
+                    Issue = model.Tasks[i].Issue,
+                    Action = model.Tasks[i].Action,
+                    NextPlan = model.Tasks[i].NextPlan
+                }).ToList()
+            };
+
+            var json = JsonSerializer.Serialize(reportJson);
+
+            var report = new Report
+            {
+                ProjectId = model.ProjectId,
+                LeaderId = leaderId,
+                ReportType = "daily",
+                FilePath = json,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Reports.Add(report);
+            await _context.SaveChangesAsync();
+
+            return report;
+        }
     }
 }
+
+
+

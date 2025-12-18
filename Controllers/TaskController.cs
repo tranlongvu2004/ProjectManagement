@@ -7,7 +7,7 @@ using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Controllers
 {
-    public class TaskController : BaseController
+    public class TaskController : Controller
     {
         private readonly ITaskService _taskService;
         private readonly IUserProjectService _userProjectService;
@@ -26,12 +26,12 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateTask(int? projectId)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
-
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            if (roleId != 2)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             var vm = new TaskCreateViewModel();
-
-            // Nếu projectId = null → lấy từ URL referrer
             if (!projectId.HasValue)
             {
                 var referer = Request.Headers["Referer"].ToString();
@@ -47,35 +47,22 @@ namespace PorjectManagement.Controllers
                     }
                 }
             }
-
-
-            // Nếu sau khi detect vẫn null → fallback
             if (!projectId.HasValue)
             {
-                // vẫn load dropdown nếu không tìm được projectId
                 var projectList = await _userProjectService.GetAllProjectsAsync();
                 ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
                 vm.ProjectMembers = new List<PorjectManagement.Models.User>();
                 return View(vm);
             }
-
-            // Đến đây chắc chắn có projectId
             vm.ProjectId = projectId.Value;
-
-            // Load thành viên trong project
             vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
-
-            // Ẩn dropdown project trong view
             ViewBag.HideProjectDropdown = true;
             var parentTasks = await _taskService.GetParentTasksByProjectAsync(projectId.Value);
-
             vm.ParentTasks = parentTasks.Select(t => new SelectListItem
             {
                 Value = t.TaskId.ToString(),
                 Text = t.Title
             }).ToList();
-
-
             return View(vm);
         }
 
@@ -83,23 +70,43 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTask(TaskCreateViewModel model)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
-            if (model.Deadline < DateTime.Now)
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if (roleId != 2)
             {
-                ModelState.AddModelError("Deadline", "Deadline cannot be the past");
+                return RedirectToAction("AccessDeny", "Error");
             }
+            var project = await _context.Projects
+         .FirstOrDefaultAsync(p => p.ProjectId == model.ProjectId);
 
+            if (project == null)
+            {
+                ModelState.AddModelError("", "Project does not exist");
+            }
+            else
+            {
+                if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
+                {
+                    ModelState.AddModelError(
+                        "Deadline",
+                        "Deadline cannot be in the past"
+                    );
+                }
+                if (model.Deadline.HasValue && model.Deadline.Value > project.Deadline)
+                {
+                    ModelState.AddModelError(
+                        "Deadline",
+                        $"Task deadline cannot exceed project deadline ({project.Deadline:dd/MM/yyyy})"
+                    );
+                }
+            }
             if (!ModelState.IsValid)
             {
-                // load lại project list
                 ViewBag.ProjectList = new SelectList(
                     await _userProjectService.GetAllProjectsAsync(),
                     "ProjectId",
                     "ProjectName"
                 );
-
-                // load lại member list theo project
                 model.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(model.ProjectId);
 
                 return View(model);
@@ -114,31 +121,36 @@ namespace PorjectManagement.Controllers
                 Priority = model.Priority,
                 Status = PorjectManagement.Models.TaskStatus.ToDo,
                 Deadline = model.Deadline,
-                CreatedBy = 1, // TODO: thay bằng user đang login
+                CreatedBy = userId, 
                 CreatedAt = DateTime.Now,
                  IsParent = !model.IsSubTask,
                 ParentId = model.IsSubTask ? model.ParentTaskId : null
             };
 
             var newTaskId = await _taskService.CreateTaskAsync(task);
-
-            // 3️⃣ Sau đó mới assign user vào task
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
             TempData["SuccessMessage"] = "Create Task successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
-        public async Task<IActionResult> Assign(int id)
+        public async Task<IActionResult> Assign(int id, bool success = false)
         {
             var vm = await _taskService.GetAssignTaskDataAsync(id);
             if (vm == null) return NotFound();
 
+            ViewBag.Success = success;
             return View(vm);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Assign(TaskAssignViewModel model)
         {
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            if (roleId != 2)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             if (model.SelectedUserId <= 0)
             {
                 ModelState.AddModelError("", "You must choose at least 1 member");
@@ -149,8 +161,8 @@ namespace PorjectManagement.Controllers
             try
             {
                 await _taskService.AssignTaskAsync(model.TaskId, model.SelectedUserId);
-                TempData["Success"] = "Task assigned successfully!";
-                return RedirectToAction("Assign", new { id = model.TaskId });
+                ViewBag.SuccessMessage = "Assign task successfully!";
+                return RedirectToAction("Assign", new { id = model.TaskId, success = true });
             }
             catch (Exception ex)
             {
@@ -164,15 +176,18 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
 
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            if (roleId != 2)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             var userEmail = HttpContext.Session.GetString("UserEmail");
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
             
             if (currentUser == null)
             {
-                TempData["Error"] = "Không tìm thấy thông tin đăng nhập.";
+                TempData["Error"] = "Login information not found.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -180,7 +195,7 @@ namespace PorjectManagement.Controllers
             
             if (model == null)
             {
-                TempData["Error"] = "Không tìm thấy task hoặc bạn không có quyền chỉnh sửa.";
+                TempData["Error"] = "Task not found, or you do not have editing permissions.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -192,18 +207,20 @@ namespace PorjectManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, TaskEditViewModel model)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
-
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            if (roleId != 2)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             if (id != model.TaskId)
             {
-                TempData["Error"] = "Dữ liệu không hợp lệ.";
+                TempData["Error"] = "Data not valid.";
                 return RedirectToAction("Index", "Home");
             }
 
             if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
             {
-                ModelState.AddModelError("Deadline", "Deadline không được ở quá khứ");
+                ModelState.AddModelError("Deadline", "Deadline not in past");
             }
 
             if (!ModelState.IsValid)
@@ -227,16 +244,16 @@ namespace PorjectManagement.Controllers
                 
                 if (!success)
                 {
-                    TempData["Error"] = "Không thể cập nhật task.";
+                    TempData["Error"] = "Cant update task.";
                     return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
                 }
 
-                TempData["Success"] = "Cập nhật task thành công!";
+                TempData["Success"] = "Update task successful!";
                 return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Lỗi: {ex.Message}");
+                ModelState.AddModelError("", $"Error: {ex.Message}");
                 var reloadedModel = await _taskService.GetTaskForEditAsync(id, 1);
                 if (reloadedModel != null)
                 {
@@ -246,5 +263,55 @@ namespace PorjectManagement.Controllers
                 return View(model);
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadAttachment(int taskId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return RedirectToAction("BacklogUI", new { projectId = _context.Tasks
+        .Where(t => t.TaskId == taskId)
+        .Select(t => t.ProjectId)
+        .First()
+                });
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return Unauthorized();
+
+            // 📁 tạo thư mục
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var attachment = new TaskAttachment
+            {
+                TaskId = taskId,
+                FileName = Path.GetFileName(file.FileName),
+                FilePath = "/uploads/" + fileName,
+                FileType = file.ContentType,
+                FileSize = file.Length,
+                UploadedBy = userId.Value,
+                UploadedAt = DateTime.Now
+            };
+
+            _context.TaskAttachments.Add(attachment);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Upload file successfully!";
+            return RedirectToAction("BacklogUI","Backlog", new { projectId = _context.Tasks
+        .Where(t => t.TaskId == taskId)
+        .Select(t => t.ProjectId)
+        .First()
+            });
+        }
+
     }
 }

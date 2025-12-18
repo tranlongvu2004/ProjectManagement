@@ -1,21 +1,4 @@
 ﻿@model PorjectManagement.ViewModels.ProjectWorkspaceViewModel
-
-@if (TempData["success"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-@if (TempData["error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
 @{
     ViewData["Title"] = Model.Project.ProjectName;
     var currentUserId = Context.Session.GetInt32("UserId");
@@ -179,46 +162,27 @@
     @if (isLeader)
     {
         <div class="card border-0 shadow-sm mt-4">
-            <div class="card-body">
-                <h5 class="fw-bold mb-3">Upload New Report</h5>
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold mb-1">Daily Report</h5>
+                    <small class="text-muted">
+                        Create daily report for this project
+                    </small>
+                </div>
 
-                <form asp-controller="Report"
-                      asp-action="Upload"
-                      enctype="multipart/form-data"
-                      method="post">
-
-                    <input type="hidden" name="ProjectId" value="@Model.Project.ProjectId" />
-
-                    <div class="mb-3">
-                        <label class="form-label">Report Type</label>
-                        <select class="form-select" name="ReportType">
-                            <option value="Daily">Daily</option>
-                            <option value="Weekly">Weekly</option>
-                            <option value="Final">Final</option>
-
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">Report File</label>
-
-                        <input class="form-control"
-                               type="file"
-                               name="ReportFile"
-                               accept=".docx,.pdf,.xlsx"
-                               required />
-                        <small class="text-muted">
-                            Allowed: .docx, .pdf, .xlsx (Max 20MB)
-                        </small>
-
-                    </div>
-
-                    <button class="btn btn-primary">Upload</button>
-                </form>
+                <a asp-controller="Report"
+                   asp-action="Daily"
+                   asp-route-projectId="@Model.Project.ProjectId"
+                   class="btn btn-primary">
+                    <i class="bi bi-file-earmark-text"></i>
+                    Create Daily Report
+                </a>
             </div>
         </div>
     }
+    <a href="/Report/ViewReport?projectId=@ViewBag.ProjectId" class="dashboard-btn">
+        <i class="fa fa-chart-line"></i> View Report
+    </a>
 </div>
 
 <style>

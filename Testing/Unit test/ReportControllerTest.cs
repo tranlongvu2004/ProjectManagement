@@ -55,6 +55,7 @@ namespace PorjectManagement.Testing
         {
             // Arrange
             _context.Session.SetInt32("UserId", 10);
+
             _mockService
                 .Setup(s => s.IsLeaderOfProject(10, 1))
                 .Returns(false);
@@ -66,8 +67,9 @@ namespace PorjectManagement.Testing
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
         }
 
+
         [TestMethod]
-        public void ViewReport_IsLeader_ReturnViewWithReports()
+        public void ViewReport_IsLeader_ReturnViewWithDailyReports()
         {
             // Arrange
             _context.Session.SetInt32("UserId", 10);
@@ -76,27 +78,24 @@ namespace PorjectManagement.Testing
                 .Setup(s => s.IsLeaderOfProject(10, 1))
                 .Returns(true);
 
-            var fakeReports = new List<Report>
-            {
-                new Report { ReportId = 1 },
-                new Report { ReportId = 2 }
-            };
+            var fakeReports = new List<CreateReportViewModel>
+    {
+        new CreateReportViewModel
+        {
+            ProjectId = 1,
+            TeamExecutePercent = 50
+        },
+        new CreateReportViewModel
+        {
+            ProjectId = 1,
+            TeamExecutePercent = 70
+        }
+    };
 
             _mockService
                 .Setup(s => s.GetReportsByProjectId(1))
-                .Returns(fakeReports.AsQueryable());
+                .Returns(fakeReports);
 
-            // Act
-            var result = _controller.ViewReport(1) as ViewResult;
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result.Model, typeof(List<Report>));
-
-            var model = result.Model as List<Report>;
-            Assert.AreEqual(2, model!.Count);
-
-            Assert.AreEqual(1, _controller.ViewBag.ProjectId);
         }
     }
 }

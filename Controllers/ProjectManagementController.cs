@@ -5,11 +5,10 @@ using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Controllers
 {
-    public class ProjectManagementController : BaseController
+    public class ProjectManagementController : Controller
     {
         private readonly IProjectServices _projectServices;
-        private readonly IUserServices _userServices;
-
+        private readonly IUserServices _userServices;        
         public ProjectManagementController(
             IProjectServices projectServices,
             IUserServices userServices)
@@ -22,24 +21,27 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
-
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            if(userId == 0)
+            {
+                return RedirectToAction("Login", "User");
+            }
+            if (roleId != 1)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             var userEmail = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(userEmail))
             {
-                TempData["Error"] = "Không tìm thấy thông tin đăng nhập.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('Login information not found.'); window.location.href='/Project/Index';</script>", "text/html");
             }
             var currentUser = _userServices.GetUser(userEmail);
 
             if (currentUser == null || currentUser.RoleId != 1)
             {
-                TempData["Error"] = "Chỉ Mentor mới có quyền tạo project.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('Only mentors can create projects..'); window.location.href='/Project/Index';</script>", "text/html");
             }
-            TempData.Remove("Error");
-            TempData.Remove("Success");
 
             var model = new ProjectCreateViewModel
             {
@@ -55,41 +57,37 @@ namespace PorjectManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProjectCreateViewModel model)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
 
             var userEmail = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(userEmail))
             {
-                TempData["Error"] = "Không tìm thấy thông tin đăng nhập.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('Login information not found.'); window.location.href='/Project/Index';</script>", "text/html");
             }
             var currentUser = _userServices.GetUser(userEmail);
 
             if (currentUser == null || currentUser.RoleId != 1)
             {
-                TempData["Error"] = "Không có quyền tạo project.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('No permission to create project.'); window.location.href='/Project/Index';</script>", "text/html");
             }
 
             if (model.Deadline.Date < DateTime.Now.Date)
             {
-                ModelState.AddModelError("Deadline", "Deadline không được ở quá khứ");
+                ModelState.AddModelError("Deadline", "Deadline not in the past");
             }
             
             if (model.SelectedUserIds == null || !model.SelectedUserIds.Any())
             {
-                ModelState.AddModelError("SelectedUserIds", "Vui lòng chọn ít nhất 1 thành viên cho project.");
+                ModelState.AddModelError("SelectedUserIds", "Please select at least 1 member for project.");
             }
 
             if (!model.LeaderId.HasValue || model.LeaderId.Value <= 0)
             {
-                ModelState.AddModelError("LeaderId", "Vui lòng chọn Leader cho dự án.");
+                ModelState.AddModelError("LeaderId", "Please select Leader for project.");
             }
 
             else if (model.SelectedUserIds != null && !model.SelectedUserIds.Contains(model.LeaderId.Value))
             {
-                ModelState.AddModelError("LeaderId", "Leader phải là thành viên của project.");
+                ModelState.AddModelError("LeaderId", "Leader must be member of project.");
             }
 
             if (!ModelState.IsValid)
@@ -102,15 +100,11 @@ namespace PorjectManagement.Controllers
             {
                 int projectId = await _projectServices.CreateProjectWithTeamAsync(model, currentUser.UserId);
                
-                TempData.Remove("Error");
-                TempData["Success"] = "Tạo project thành công!";
-                
-                return RedirectToAction("Details", "Workspace", new { id = projectId });
+                return Content($"<script>alert('Create project sucessfully!'); window.location.href='/Workspace/Details/{projectId}';</script>", "text/html");
             }
             catch (Exception ex)
             {
-                TempData.Remove("Success");
-                ModelState.AddModelError("", $"Lỗi khi tạo project: {ex.Message}");
+                ModelState.AddModelError("", $"Error when create project: {ex.Message}");
                 model.AvailableUsers = await _projectServices.GetAvailableUsersAsync();
                 return View(model);
             }
@@ -120,33 +114,29 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
-
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            if (roleId != 1)
+            {
+                return RedirectToAction("AccessDeny", "Error");
+            }
             var userEmail = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(userEmail))
             {
-                TempData["Error"] = "Không tìm thấy thông tin đăng nhập.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('Login information not found.'); window.location.href='/Project/Index';</script>", "text/html");
             }
 
             var currentUser = _userServices.GetUser(userEmail);
             if (currentUser == null || currentUser.RoleId != 1)
             {
-                TempData["Error"] = "Chỉ Mentor mới có quyền cập nhật project.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('Only Mentor can update project.'); window.location.href='/Project/Index';</script>", "text/html");
             }
 
             var model = await _projectServices.GetProjectForUpdateAsync(id, currentUser.UserId);
             
             if (model == null)
             {
-                TempData["Error"] = "Không tìm thấy project hoặc bạn không có quyền chỉnh sửa.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('Project not found or you don't have editing permissions.'); window.location.href='/Project/Index';</script>", "text/html");
             }
-
-            TempData.Remove("Error");
-            TempData.Remove("Success");
 
             return View(model);
         }
@@ -156,46 +146,41 @@ namespace PorjectManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ProjectUpdateViewModel model)
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
 
             if (id != model.ProjectId)
             {
-                TempData["Error"] = "Dữ liệu không hợp lệ.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('Data not valid.'); window.location.href='/Project/Index';</script>", "text/html");
             }
 
             var userEmail = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(userEmail))
             {
-                TempData["Error"] = "Không tìm thấy thông tin đăng nhập.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('Login information not found.'); window.location.href='/Project/Index';</script>", "text/html");
             }
 
             var currentUser = _userServices.GetUser(userEmail);
             if (currentUser == null || currentUser.RoleId != 1)
             {
-                TempData["Error"] = "Không có quyền cập nhật project.";
-                return RedirectToAction("Index", "Project");
+                return Content("<script>alert('No update permissions project.'); window.location.href='/Project/Index';</script>", "text/html");
             }
 
             if (model.Deadline.Date < DateTime.Now.Date)
             {
-                ModelState.AddModelError("Deadline", "Deadline không được ở quá khứ");
+                ModelState.AddModelError("Deadline", "Deadline not in past");
             }
 
             if (model.SelectedUserIds == null || !model.SelectedUserIds.Any())
             {
-                ModelState.AddModelError("SelectedUserIds", "Vui lòng chọn ít nhất 1 thành viên cho project.");
+                ModelState.AddModelError("SelectedUserIds", "Please select at least 1 member for project.");
             }
 
             if (!model.LeaderId.HasValue || model.LeaderId.Value <= 0)
             {
-                ModelState.AddModelError("LeaderId", "Vui lòng chọn Leader cho dự án.");
+                ModelState.AddModelError("LeaderId", "Please select Leader for project.");
             }
             else if (model.SelectedUserIds != null && !model.SelectedUserIds.Contains(model.LeaderId.Value))
             {
-                ModelState.AddModelError("LeaderId", "Leader phải là thành viên của project.");
+                ModelState.AddModelError("LeaderId", "Leader must be member of project.");
             }
 
             if (!ModelState.IsValid)
@@ -211,19 +196,14 @@ namespace PorjectManagement.Controllers
                 
                 if (!success)
                 {
-                    TempData["Error"] = "Không thể cập nhật project.";
-                    return RedirectToAction("Index", "Project");
+                    return Content("<script>alert('Cant update project.'); window.location.href='/Project/Index';</script>", "text/html");
                 }
 
-                TempData.Remove("Error");
-                TempData["Success"] = "Cập nhật project thành công!";
-                
-                return RedirectToAction("Details", "Workspace", new { id = model.ProjectId });
+                return Content($"<script>alert('Update project sucessfully!'); window.location.href='/Workspace/Details/{model.ProjectId}';</script>", "text/html");
             }
             catch (Exception ex)
             {
-                TempData.Remove("Success");
-                ModelState.AddModelError("", $"Lỗi khi cập nhật project: {ex.Message}");
+                ModelState.AddModelError("", $"Error when update project: {ex.Message}");
                 model.AvailableUsers = await _projectServices.GetAvailableUsersAsync();
                 model.CurrentMembers = await _projectServices.GetProjectMembersAsync(id);
                 return View(model);

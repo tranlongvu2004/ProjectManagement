@@ -34,7 +34,19 @@ namespace PorjectManagement.Service
         // Workspace detail
         public async Task<ProjectWorkspaceViewModel?> GetWorkspaceAsync(int projectId)
         {
-            return await _projectRepo.GetWorkspaceAsync(projectId);
+            var workspace = await _projectRepo.GetWorkspaceAsync(projectId);
+            
+            if (workspace == null)
+                return null;
+
+            if (workspace.Project != null)
+            {
+                workspace.Project.Status = workspace.OverallProgress >= 100 
+                    ? "Completed" 
+                    : "InProgress";
+            }
+
+            return workspace;
         }
 
         // Get project by ID
@@ -62,7 +74,7 @@ namespace PorjectManagement.Service
                 ProjectName = model.ProjectName,
                 Description = model.Description,
                 Deadline = model.Deadline,
-                Status = ProjectStatus.InProgress,
+                Status = ProjectStatus.InProgress, 
                 CreatedBy = createdByUserId,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -92,7 +104,7 @@ namespace PorjectManagement.Service
             return projectId;
         }
 
-        // Get available users - chỉ InternLead & Intern
+        // Get available users - chỉ InternLead & Intern
         public async Task<List<AvailableUserItem>> GetAvailableUsersAsync()
         {
             var users = await _userRepo.GetAllUsersWithRolesAsync();
@@ -121,20 +133,12 @@ namespace PorjectManagement.Service
             var availableUsers = await GetAvailableUsersAsync();
             var currentLeader = members.FirstOrDefault(m => m.IsLeader);
 
-            // ✅ FIX: Parse Status từ string sang enum
-            ProjectStatus currentStatus = ProjectStatus.InProgress; // Default
-            if (!string.IsNullOrEmpty(project.Status))
-            {
-                Enum.TryParse<ProjectStatus>(project.Status, out currentStatus);
-            }
-
             return new ProjectUpdateViewModel
             {
                 ProjectId = project.ProjectId,
                 ProjectName = project.ProjectName,
                 Description = project.Description,
                 Deadline = project.Deadline,
-                Status = currentStatus, // ✅ Sử dụng biến local
                 CurrentMemberIds = members.Select(m => m.UserId).ToList(),
                 SelectedUserIds = members.Select(m => m.UserId).ToList(),
                 CurrentLeaderId = currentLeader?.UserId,
@@ -149,6 +153,13 @@ namespace PorjectManagement.Service
             var project = await _projectRepo.GetProjectEntityByIdAsync(model.ProjectId);
             if (project == null)
                 return false;
+
+            // Calculate progress based on completed tasks
+            var workspace = await _projectRepo.GetWorkspaceAsync(model.ProjectId);
+            int progress = workspace?.OverallProgress ?? 0;
+
+            // Auto-calculate status based on progress
+            ProjectStatus newStatus = progress >= 100 ? ProjectStatus.Completed : ProjectStatus.InProgress;
 
             // ✅ 1. Tìm members bị remove
             var currentMemberIds = project.UserProjects.Select(up => up.UserId).ToList();
@@ -173,7 +184,7 @@ namespace PorjectManagement.Service
             project.ProjectName = model.ProjectName;
             project.Description = model.Description;
             project.Deadline = model.Deadline;
-            project.Status = model.Status;
+            project.Status = newStatus; 
             project.UpdatedAt = DateTime.Now;
 
             await _projectRepo.UpdateProjectAsync(project);
@@ -205,6 +216,14 @@ namespace PorjectManagement.Service
         public async Task<Project?> GetProjectEntityByIdAsync(int projectId)
         {
             return await _projectRepo.GetProjectEntityByIdAsync(projectId);
+        }
+
+        public int GetProjectId(int taskId)
+        {
+            return _context.Tasks
+        .Where(t => t.TaskId == taskId)
+        .Select(t => t.ProjectId)
+        .First();
         }
     }
 }

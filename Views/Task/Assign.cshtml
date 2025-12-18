@@ -1,5 +1,13 @@
 ﻿@model PorjectManagement.ViewModels.TaskAssignViewModel
+@if (ViewBag.Success == true)
+{
+    <div class="alert alert-success">
+        Assign task successfully!
+    </div>
+}
+
 @Html.ValidationSummary(false, "", new { @class = "text-danger mb-3" })
+
 
 <style>
     /* ---- CARD ---- */
@@ -91,20 +99,6 @@
     </div>
 
     <div class="assign-body">
-
-        @if (TempData["Success"] != null)
-        {
-            <div class="alert alert-success">
-                @TempData["Success"]
-            </div>
-        }
-
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger">
-                @TempData["Error"]
-            </div>
-        }
 
         <form method="post">
 

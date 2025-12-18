@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using Moq;
 using NuGet.ContentModel;
 using PorjectManagement.Controllers;
@@ -42,6 +43,7 @@ namespace Testing
     public class UserControllerTests
     {
         private Mock<IUserServices> _mockService = null!;
+        private Mock<IEmailService> _mockEmail = null!;
         private UserController _controller = null!;
         private DefaultHttpContext _context = null!;
 
@@ -49,7 +51,8 @@ namespace Testing
         public void Setup()
         {
             _mockService = new Mock<IUserServices>();
-            _controller = new UserController(_mockService.Object);
+            _mockEmail = new Mock<IEmailService>();
+            _controller = new UserController(_mockService.Object, _mockEmail.Object);
 
             _context = new DefaultHttpContext();
             _context.Session = new MockHttpSession();
@@ -142,49 +145,78 @@ namespace Testing
         [TestMethod]
         public void Register_InvalidEmail_ReturnView()
         {
-            var result = _controller.Register("abc", "invalidEmail", "1234", "1234");
+            var result = _controller.Register("");
 
             Assert.IsInstanceOfType(result, typeof(ViewResult));
-            Assert.AreEqual("Email không đúng định dạng.", _controller.ViewBag.Error);
-        }
-
-        [TestMethod]
-        public void Register_PasswordMismatch_ReturnView()
-        {
-            var result = _controller.Register("A", "a@gmail.com", "123", "456");
-
-            Assert.AreEqual("Mật khẩu xác nhận không khớp.", _controller.ViewBag.Error);
+            Assert.AreEqual("Email is required.", _controller.ViewBag.Error);
         }
 
         [TestMethod]
         public void Register_EmailExists_ReturnView()
         {
-            _mockService.Setup(s => s.GetUser("a@gmail.com")).Returns(new User());
+            _mockService.Setup(s => s.GetUser("a@gmail.com"))
+                        .Returns(new User());
 
-            var result = _controller.Register("A", "a@gmail.com", "1234", "1234");
+            var result = _controller.Register("a@gmail.com");
 
-            Assert.AreEqual("Email đã tồn tại.", _controller.ViewBag.Error);
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            Assert.AreEqual("Email already exists.", _controller.ViewBag.Error);
         }
 
         [TestMethod]
-        public void Register_MissingInfo_ReturnView()
+        public void Register_Valid_ReturnCheckEmailView()
         {
-            var result = _controller.Register("", "a@gmail.com", "1234", "1234");
+            _mockService.Setup(s => s.GetUser("a@gmail.com"))
+                        .Returns((User?)null);
 
-            Assert.AreEqual("Vui lòng nhập đầy đủ thông tin.", _controller.ViewBag.Error);
+            var result = _controller.Register("a@gmail.com") as ViewResult;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("CheckEmail", result.ViewName);
+
+            _mockService.Verify(s => s.CreateAccount(It.IsAny<User>()), Times.Once);
         }
 
-        [TestMethod]
-        public void Register_Valid_RedirectToLogin()
-        {
-            _mockService.Setup(s => s.GetUser("a@gmail.com")).Returns((User?)null);
 
-            var result = _controller.Register("A", "a@gmail.com", "12345", "12345")
+        //=============================================================
+        // Complete Registration Tests
+        //=============================================================
+        [TestMethod]
+        public void CompleteRegister_PasswordMismatch_ReturnView()
+        {
+            _mockService.Setup(s => s.GetUser("a@gmail.com"))
+                .Returns(new User { Email = "a@gmail.com", Status = UserStatus.Inactive });
+
+            var result = _controller.CompleteRegister(
+                "a@gmail.com", "User", "12345", "45655");
+
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            Assert.AreEqual("Password mismatch", _controller.ViewBag.Error);
+        }
+
+
+        [TestMethod]
+        public void CompleteRegister_Valid_RedirectToLogin()
+        {
+            var user = new User
+            {
+                Email = "a@gmail.com",
+                Status = UserStatus.Inactive
+            };
+
+            _mockService.Setup(s => s.GetUser("a@gmail.com"))
+                .Returns(user);
+
+            var result = _controller.CompleteRegister(
+                "a@gmail.com", "User", "12345", "12345")
                 as RedirectToActionResult;
 
             Assert.AreEqual("Login", result!.ActionName);
-            _mockService.Verify(s => s.CreateAccount(It.IsAny<User>()), Times.Once);
+            Assert.AreEqual(UserStatus.Active, user.Status);
+
+            _mockService.Verify(s => s.UpdateUser(user), Times.Once);
         }
+
 
         // ============================================================
         // RESET PASSWORD TESTS
@@ -228,41 +260,78 @@ namespace Testing
         [TestMethod]
         public void ResetPasswordConfirm_MissingPassword_ReturnView()
         {
-            var result = _controller.ResetPasswordConfirm("email", "", "");
+            var token = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("email" + "|" + DateTime.Now));
+            var result = _controller.ResetPasswordConfirm(
+                "email",
+                token,
+                "",
+                ""
+            ) as ViewResult;
 
-            Assert.AreEqual("Vui lòng nhập đầy đủ.", _controller.ViewBag.Error);
+            Assert.AreEqual("Password must have at least 5 characters.", _controller.ViewBag.Error);
         }
+
 
         [TestMethod]
         public void ResetPasswordConfirm_MismatchPassword_ReturnView()
         {
-            var result = _controller.ResetPasswordConfirm("email", "123", "456");
+            var token = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("email" + "|" + DateTime.Now));
 
-            Assert.AreEqual("Mật khẩu xác nhận không khớp.", _controller.ViewBag.Error);
+            var result = _controller.ResetPasswordConfirm(
+                "email",
+                token,
+                "12345",
+                "67890"
+            ) as ViewResult;
+
+            Assert.AreEqual("Password mismatch.", _controller.ViewBag.Error);
         }
 
+
         [TestMethod]
-        public void ResetPasswordConfirm_UserNotFound_ReturnView()
+        public void ResetPasswordConfirm_UserNotFound_ReturnInvalidLink()
         {
-            _mockService.Setup(s => s.GetUser("abc")).Returns((User?)null);
-
-            var result = _controller.ResetPasswordConfirm("abc", "12345", "12345");
-
-            Assert.AreEqual("Không tìm thấy tài khoản.", _controller.ViewBag.Error);
+            _mockService.Setup(s => s.GetUser("abc"))
+                        .Returns((User?)null);
+            var token = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("abc" + "|" + DateTime.Now));
+            var result = _controller.ResetPasswordConfirm(
+                "abc",
+                token,
+                "12345",
+                "12345"
+            );
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            Assert.AreEqual("InvalidLink", ((ViewResult)result).ViewName);
         }
 
         [TestMethod]
         public void ResetPasswordConfirm_Valid_Redirect()
         {
-            _mockService.Setup(s => s.GetUser("intern1@example.com")).Returns(
-                new User { Email = "abc", PasswordHash = "old" });
+            _mockService.Setup(s => s.GetUser("intern1@example.com"))
+                .Returns(new User
+                {
+                    Email = "intern1@example.com",
+                    PasswordHash = "old"
+                });
 
-            var result = _controller.ResetPasswordConfirm("intern1@example.com", "11111", "11111")
-                as RedirectToActionResult;
+            var token = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("intern1@example.com" + "|" + DateTime.Now));
 
-            Assert.AreEqual("Login", result!.ActionName);
-            _mockService.Verify(s => s.UpdateUser(It.IsAny<User>()), Times.Once);
+            var result = _controller.ResetPasswordConfirm(
+                "intern1@example.com",
+                token,
+                "11111",
+                "11111"
+            ) as RedirectToActionResult;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Login", result.ActionName);
+
+            _mockService.Verify(
+                s => s.UpdateUser(It.Is<User>(u => u.PasswordHash == "11111")),
+                Times.Once
+            );
         }
+
 
         // ============================================================
         // PROFILE

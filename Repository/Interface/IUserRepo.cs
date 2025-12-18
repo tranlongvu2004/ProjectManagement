@@ -11,6 +11,7 @@ namespace PorjectManagement.Repository.Interface
         User? CreateAccount(User user);
         void UpdateUser(User user);
         void UpdateProfile(User user);
+        void DeleteUser(string email);
         bool IsloginValid(string email, string password);
         Task<List<User>> GetAllUsersWithRolesAsync();
     }

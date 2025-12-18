@@ -5,7 +5,7 @@ using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Controllers
 {
-    public class ProjectController : BaseController
+    public class ProjectController : Controller
     {
         private readonly IProjectServices _projectServices;
 
@@ -17,8 +17,6 @@ namespace PorjectManagement.Controllers
         // GET: /Project
         public async Task<IActionResult> Index()
         {
-            var redirect = RedirectIfNotLoggedIn();
-            if (redirect != null) return redirect;
 
             int currentUserId = HttpContext.Session.GetInt32("UserId") ?? 0;
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;

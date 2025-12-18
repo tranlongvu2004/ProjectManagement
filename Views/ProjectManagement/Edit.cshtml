@@ -18,7 +18,7 @@
             </div>
 
             <!-- Error/Success Messages -->
-            @if (TempData["Error"] != null)
+            @* @if (TempData["Error"] != null)
             {
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
@@ -31,7 +31,7 @@
                     <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-            }
+            } *@
 
             <!-- Form Card -->
             <div class="card shadow-sm border-0">
@@ -72,15 +72,7 @@
                             <span asp-validation-for="Deadline" class="text-danger small"></span>
                         </div>
 
-                        <!-- Status -->
-                        <div class="mb-4">
-                            <label asp-for="Status" class="form-label fw-semibold">
-                                <i class="bi bi-flag-fill text-success"></i> Status <span class="text-danger">*</span>
-                            </label>
-                            <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<PorjectManagement.Models.ProjectStatus>()">
-                            </select>
-                            <span asp-validation-for="Status" class="text-danger small"></span>
-                        </div>
+                        <!-- Status field removed - auto-calculated based on progress -->
 
                         <hr class="my-4" />
 
@@ -165,7 +157,7 @@
                                 <i class="bi bi-star-fill text-warning"></i> Choose Leader <span class="text-danger">*</span>
                             </label>
                             <select asp-for="LeaderId" class="form-select" id="leader-select" required>
-                                <option value="">-- Pls choose Leader --</option>
+                                <option value="">-- Please choose Leader --</option>
                             </select>
                             <small class="text-muted">
                                 <i class="bi bi-info-circle"></i> The leader must be the member chosen above.
@@ -242,13 +234,13 @@
 
                 if (selectedMembers === 0) {
                     e.preventDefault();
-                    alert('Vui lòng chọn ít nhất 1 thành viên!');
+                    alert('Please choose at least 1 member!');
                     return false;
                 }
 
                 if (!selectedLeader) {
                     e.preventDefault();
-                    alert('Vui lòng chọn Leader cho dự án!');
+                    alert('Please choose Leader for project!');
                     $('#leader-select').focus();
                     return false;
                 }

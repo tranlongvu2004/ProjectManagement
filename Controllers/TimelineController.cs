@@ -25,6 +25,7 @@ namespace PorjectManagement.Controllers
                 })
                 .ToList();
             ViewBag.Tasks = System.Text.Json.JsonSerializer.Serialize(task);
+            ViewBag.ProjectId = projectId;
 
             return View();
         }

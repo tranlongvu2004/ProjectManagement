@@ -6,6 +6,7 @@ namespace PorjectManagement.Service.Interface
     {
         void UpdateUser(User user);
         void UpdateProfile(User user);
+        void DeleteUser(string email);
         User? GetUserById(int userId);
         User? GetUser(string email);
         User? CreateAccount(User user);
