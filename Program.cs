@@ -45,7 +45,7 @@ builder.Services.AddScoped<EmailSender>();
 builder.Services.AddHostedService<DeadlineEmailBackgroundService>();
 
 builder.Services.AddSignalR();
-
+builder.Services.AddScoped<ICommentService, CommentService>(); 
 
 
 var app = builder.Build();

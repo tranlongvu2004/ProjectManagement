@@ -6,7 +6,7 @@ namespace PorjectManagement.Service.Interface
     public interface IProjectServices
     {
         // Danh sách project của user
-        Task<List<ProjectListVM>> GetProjectsOfUserAsync(int userId);
+        Task<List<Project>> GetProjectsOfUserAsync(int userId);
         
         // Workspace chi tiết
         Task<ProjectWorkspaceViewModel?> GetWorkspaceAsync(int projectId);
@@ -20,7 +20,7 @@ namespace PorjectManagement.Service.Interface
         Task<List<ProjectTaskItem>> GetProjectTasksAsync(int projectId);
 
         Task<Project?> GetProjectEntityByIdAsync(int projectId);
-        
+        int GetProjectId(int taskId);
         Task<ProjectUpdateViewModel?> GetProjectForUpdateAsync(int projectId, int mentorId);
         Task<bool> UpdateProjectWithTeamAsync(ProjectUpdateViewModel model, int updatedByUserId);
     }

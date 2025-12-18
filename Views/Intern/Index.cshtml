@@ -1,6 +1,45 @@
-﻿@model IEnumerable<PorjectManagement.Models.User>
+﻿@using PorjectManagement.ViewModels
+@model InternFilterVM
+
 
 <h2 class="fw-bold">List of Interns</h2>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input name="keyword"
+               value="@Model.Keyword"
+               class="form-control"
+               placeholder="Search intern name..." />
+    </div>
+
+    <div class="col-md-3">
+        <select name="sortBy" class="form-select">
+            <option value="name" selected="@(Model.SortBy == "name")">
+                Name
+            </option>
+            <option value="created" selected="@(Model.SortBy == "created")">
+                Created at
+            </option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="sortDir" class="form-select">
+            <option value="asc" selected="@(Model.SortDir == "asc")">
+                ASC
+            </option>
+            <option value="desc" selected="@(Model.SortDir == "desc")">
+                DESC
+            </option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">
+            <i class="bi"></i> Apply
+        </button>
+    </div>
+</form>
+
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -9,7 +48,6 @@
                     <tr>
                         <th class="py-3">Name</th>
                         <th class="py-3">Email</th>
-                        <th class="py-3">Status</th>
                         <th class="py-3">Created at</th>
                     </tr>
                 </thead>
@@ -18,45 +56,20 @@
                     @{
                         int rowIndex = 1;
                     }
-                    @foreach (var u in Model)
+                    @foreach (var u in Model.Interns)
                     {
                         <tr>
-                            <!-- Họ tên -->
-                            <td class="py-3 fw-semibold text-dark">
-                                <a href="/User/ViewProfile?userid=@u.UserId"
+                            <td class="py-3 fw-semibold">
+                                <a asp-controller="User"
+                                   asp-action="ViewProfile"
+                                   asp-route-userid="@u.UserId"
                                    class="text-decoration-none fw-semibold text-primary">
                                     @u.FullName
                                 </a>
                             </td>
 
-                            <!-- Email -->
-                            <td class="py-3 text-muted">
-                                @u.Email
-                            </td>
+                            <td class="py-3 text-muted">@u.Email</td>
 
-                            <!-- Trạng thái -->
-                            <td class="py-3">
-                                @switch (u.Status)
-                                {
-                                    case UserStatus.Active:
-                                        <span class="badge bg-success">Active</span>
-                                        break;
-
-                                    case UserStatus.Inactive:
-                                        <span class="badge bg-secondary">Inactive</span>
-                                        break;
-
-                                    case UserStatus.Dropped:
-                                        <span class="badge bg-danger">Dropped</span>
-                                        break;
-
-                                    default:
-                                        <span class="badge bg-light text-dark">Unknown</span>
-                                        break;
-                                }
-                            </td>
-
-                            <!-- Ngày tạo -->
                             <td class="py-3">
                                 @u.CreatedAt?.ToString("dd/MM/yyyy")
                             </td>
@@ -67,3 +80,45 @@
         </div>
     </div>
 </div>
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+
+            <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-route-page="@(Model.Page - 1)"
+                   asp-route-keyword="@Model.Keyword"
+                   asp-route-sortBy="@Model.SortBy"
+                   asp-route-sortDir="@Model.SortDir">
+                    Previous
+                </a>
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(Model.Page == i ? "active" : "")">
+                    <a class="page-link"
+                       asp-route-page="@i"
+                       asp-route-keyword="@Model.Keyword"
+                       asp-route-sortBy="@Model.SortBy"
+                       asp-route-sortDir="@Model.SortDir">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(Model.Page == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link"
+                   asp-route-page="@(Model.Page + 1)"
+                   asp-route-keyword="@Model.Keyword"
+                   asp-route-sortBy="@Model.SortBy"
+                   asp-route-sortDir="@Model.SortDir">
+                    Next
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+}

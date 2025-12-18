@@ -190,6 +190,8 @@ public partial class LabProjectManagementContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
 
+            entity.Property(e => e.DeadlineMailSent).HasDefaultValue(false);
+
             entity.HasOne(d => d.Task).WithMany(p => p.TaskAssignments)
                 .HasForeignKey(d => d.TaskId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

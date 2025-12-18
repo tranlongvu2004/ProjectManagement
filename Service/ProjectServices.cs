@@ -26,22 +26,9 @@ namespace PorjectManagement.Service
         }
 
         // Danh sách project của user
-        public async Task<List<ProjectListVM>> GetProjectsOfUserAsync(int userId)
+        public async Task<List<Project>> GetProjectsOfUserAsync(int userId)
         {
-            var projects = await _projectRepo.GetProjectsOfUserAsync(userId);
-
-            return projects.Select(p => new ProjectListVM
-            {
-                ProjectId = p.ProjectId,
-                ProjectName = p.ProjectName,
-                Deadline = p.Deadline,
-                Status = p.Status,
-                LeaderName = p.UserProjects
-                    .Where(x => x.IsLeader == true)
-                    .Select(x => x.User.FullName)
-                    .FirstOrDefault() ?? "Không xác định",
-                MemberCount = p.UserProjects.Count
-            }).ToList();
+            return await _projectRepo.GetProjectsOfUserAsync(userId);
         }
 
         // Workspace detail
@@ -117,18 +104,20 @@ namespace PorjectManagement.Service
             return projectId;
         }
 
-        // Get available users - chỉ InternLead & Intern
+        // Get available users - bỏ Mentor (RoleId = 1)
         public async Task<List<AvailableUserItem>> GetAvailableUsersAsync()
         {
             var users = await _userRepo.GetAllUsersWithRolesAsync();
 
-            return users.Select(u => new AvailableUserItem
-            {
-                UserId = u.UserId,
-                FullName = u.FullName,
-                Email = u.Email,
-                RoleName = u.Role.RoleName
-            }).ToList();
+            return users
+                .Where(u => u.RoleId != 1) 
+                .Select(u => new AvailableUserItem
+                {
+                    UserId = u.UserId,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    RoleName = u.Role.RoleName
+                }).ToList();
         }
 
         public async Task<ProjectUpdateViewModel?> GetProjectForUpdateAsync(int projectId, int mentorId)
@@ -229,6 +218,14 @@ namespace PorjectManagement.Service
         public async Task<Project?> GetProjectEntityByIdAsync(int projectId)
         {
             return await _projectRepo.GetProjectEntityByIdAsync(projectId);
+        }
+
+        public int GetProjectId(int taskId)
+        {
+            return _context.Tasks
+        .Where(t => t.TaskId == taskId)
+        .Select(t => t.ProjectId)
+        .First();
         }
     }
 }
