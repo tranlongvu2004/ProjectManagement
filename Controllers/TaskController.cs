@@ -263,5 +263,55 @@ namespace PorjectManagement.Controllers
                 return View(model);
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadAttachment(int taskId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return RedirectToAction("BacklogUI", new { projectId = _context.Tasks
+        .Where(t => t.TaskId == taskId)
+        .Select(t => t.ProjectId)
+        .First()
+                });
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return Unauthorized();
+
+            // 📁 tạo thư mục
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var attachment = new TaskAttachment
+            {
+                TaskId = taskId,
+                FileName = Path.GetFileName(file.FileName),
+                FilePath = "/uploads/" + fileName,
+                FileType = file.ContentType,
+                FileSize = file.Length,
+                UploadedBy = userId.Value,
+                UploadedAt = DateTime.Now
+            };
+
+            _context.TaskAttachments.Add(attachment);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Upload file successfully!";
+            return RedirectToAction("BacklogUI","Backlog", new { projectId = _context.Tasks
+        .Where(t => t.TaskId == taskId)
+        .Select(t => t.ProjectId)
+        .First()
+            });
+        }
+
     }
 }
