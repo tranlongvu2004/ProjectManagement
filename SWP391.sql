@@ -1,4 +1,4 @@
-﻿IF EXISTS (SELECT name FROM sys.databases WHERE name = 'LabProjectManagement')
+﻿IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'LabProjectManagement')
 BEGIN
     ALTER DATABASE LabProjectManagement SET MULTI_USER WITH ROLLBACK IMMEDIATE;
     DROP DATABASE LabProjectManagement;
@@ -151,6 +151,11 @@ CREATE TABLE RecycleBin (
     DeletedBy INT NULL,                       -- Id người xoá (nhưng không FK)
     DeletedAt DATETIME DEFAULT GETDATE()
 );
+ALTER TABLE TaskAttachments
+ALTER COLUMN FileType NVARCHAR(255);
+
+ALTER TABLE TaskAssignment
+ADD DeadlineMailSent BIT DEFAULT 0;
 /* ================================
    E. SEED DATA
 =================================*/
@@ -231,5 +236,5 @@ VALUES
 -- Reports
 INSERT INTO Reports (ProjectId, LeaderId, ReportType, FilePath)
 VALUES
-(1, 1, 'weekly', '/reports/project1_week1.pdf'),
-(2, 1, 'daily', '/reports/project2_day1.pdf');
+(1, 1, 'weekly', '{}'),
+(2, 1, 'daily', '{}');
