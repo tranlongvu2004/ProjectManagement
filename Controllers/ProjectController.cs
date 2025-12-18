@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PorjectManagement.Models;
 using PorjectManagement.Service.Interface;
+using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Controllers
 {
@@ -23,7 +25,22 @@ namespace PorjectManagement.Controllers
                 return RedirectToAction("Login", "User");
             }
             ViewBag.RoleId = roleId;
-            var model = await _projectServices.GetProjectsOfUserAsync(currentUserId);
+            var projects = await _projectServices.GetProjectsOfUserAsync(currentUserId);
+
+            var model = projects.Select(p => new ProjectListVM
+            {
+                ProjectId = p.ProjectId,
+                ProjectName = p.ProjectName,
+                Deadline = p.Deadline,
+                Status = p.Status,
+                LeaderName = p.UserProjects
+                    .Where(x => x.IsLeader == true)
+                    .Select(x => x.User.FullName)
+                    .FirstOrDefault() ?? "Không xác định",
+                MemberCount = p.UserProjects.Count
+            }).ToList();
+
+            ViewBag.Projects = model;
             return View(model);
         }
     }
