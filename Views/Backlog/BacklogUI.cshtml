@@ -175,6 +175,7 @@
                     </td>
                     <td>@parent.Deadline?.ToString("MMM d")</td>
                     <td><span class="badge bg-warning">@parent.Priority</span></td>
+                    @if(roleId == 2){
                     <td>
                         <a asp-controller="Task" asp-action="Edit" asp-route-id="@parent.TaskId"
                            class="btn btn-sm btn-edit">
@@ -202,7 +203,7 @@
                                 data-bs-target="#commentModal">
                             <i class="bi bi-chat-dots"></i> Comment (@parent.Comments.Count)
                         </button>
-
+                        
                         @if (!hasSubTasks)
                         {
                             <button class="btn btn-sm btn-warning delete-btn"
@@ -212,6 +213,7 @@
                             </button>
                         }
                     </td>
+                    }
                     <td>
                         @if (parent.TaskAttachments != null && parent.TaskAttachments.Any())
                         {
@@ -257,6 +259,7 @@
                         </td>
                         <td>@child.Deadline?.ToString("MMM d")</td>
                         <td><span class="badge bg-dark">@child.Priority</span></td>
+                        @if (roleId == 2){
                         <td>
                             <a asp-controller="Task" asp-action="Edit" asp-route-id="@child.TaskId"
                                class="btn btn-sm btn-edit">
@@ -291,6 +294,7 @@
                                 <i class="bi bi-trash"></i> Delete
                             </button>
                         </td>
+                        }
                         <td>
                             @if (child.TaskAttachments.Any())
                             {
