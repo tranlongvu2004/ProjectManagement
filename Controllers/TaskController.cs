@@ -199,6 +199,15 @@ namespace PorjectManagement.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
+            // Lấy project deadline vào view
+            var project = await _context.Projects
+                .FirstOrDefaultAsync(p => p.ProjectId == model.ProjectId);
+            
+            if (project != null)
+            {
+                ViewBag.ProjectDeadline = project.Deadline;
+            }
+
             return View(model);
         }
 
@@ -218,9 +227,43 @@ namespace PorjectManagement.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
+            // Lấy project validate deadline
+            var project = await _context.Projects
+                .FirstOrDefaultAsync(p => p.ProjectId == model.ProjectId);
+
+            if (project == null)
             {
-                ModelState.AddModelError("Deadline", "Deadline not in past");
+                ModelState.AddModelError("", "Project does not exist");
+            }
+            else
+            {
+                if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
+                {
+                    ModelState.AddModelError("Deadline", "Deadline not in past");
+                }
+
+                // Validate: Task deadline < project deadline
+                if (model.Deadline.HasValue && model.Deadline.Value > project.Deadline)
+                {
+                    ModelState.AddModelError(
+                        "Deadline",
+                        $"Task deadline cannot exceed project deadline ({project.Deadline:dd/MM/yyyy})"
+                    );
+                }
+            }
+
+            // Validate: No assign task Mentor
+            if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
+            {
+                var mentorIds = await _context.Users
+                    .Where(u => model.SelectedUserIds.Contains(u.UserId) && u.RoleId == 1)
+                    .Select(u => u.UserId)
+                    .ToListAsync();
+
+                if (mentorIds.Any())
+                {
+                    ModelState.AddModelError("SelectedUserIds", "Cannot assign task to Mentor.");
+                }
             }
 
             if (!ModelState.IsValid)
@@ -232,6 +275,13 @@ namespace PorjectManagement.Controllers
                     model.ProjectMembers = reloadedModel.ProjectMembers;
                     model.CurrentAssignees = reloadedModel.CurrentAssignees;
                 }
+                
+                // Truyền lại ProjectDeadline cho view
+                if (project != null)
+                {
+                    ViewBag.ProjectDeadline = project.Deadline;
+                }
+                
                 return View(model);
             }
 
@@ -260,6 +310,13 @@ namespace PorjectManagement.Controllers
                     model.ProjectMembers = reloadedModel.ProjectMembers;
                     model.CurrentAssignees = reloadedModel.CurrentAssignees;
                 }
+                
+                // Truyền lại ProjectDeadline cho view
+                if (project != null)
+                {
+                    ViewBag.ProjectDeadline = project.Deadline;
+                }
+                
                 return View(model);
             }
         }

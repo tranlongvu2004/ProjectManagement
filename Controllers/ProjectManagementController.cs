@@ -90,6 +90,16 @@ namespace PorjectManagement.Controllers
                 ModelState.AddModelError("LeaderId", "Leader must be member of project.");
             }
 
+            // Check Leader no Mentor
+            if (model.LeaderId.HasValue)
+            {
+                var leaderUser = _userServices.GetUserById(model.LeaderId.Value);
+                if (leaderUser?.RoleId == 1)
+                {
+                    ModelState.AddModelError("LeaderId", "Mentor cannot be selected as Leader.");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 model.AvailableUsers = await _projectServices.GetAvailableUsersAsync();
@@ -174,6 +184,12 @@ namespace PorjectManagement.Controllers
                 ModelState.AddModelError("SelectedUserIds", "Please select at least 1 member for project.");
             }
 
+            // Check Mentor no remove
+            if (model.SelectedUserIds != null && !model.SelectedUserIds.Contains(currentUser.UserId))
+            {
+                ModelState.AddModelError("SelectedUserIds", "Mentor cannot be removed from the project.");
+            }
+
             if (!model.LeaderId.HasValue || model.LeaderId.Value <= 0)
             {
                 ModelState.AddModelError("LeaderId", "Please select Leader for project.");
@@ -181,6 +197,16 @@ namespace PorjectManagement.Controllers
             else if (model.SelectedUserIds != null && !model.SelectedUserIds.Contains(model.LeaderId.Value))
             {
                 ModelState.AddModelError("LeaderId", "Leader must be member of project.");
+            }
+
+            // Check Leader no Mentor
+            if (model.LeaderId.HasValue)
+            {
+                var leaderUser = _userServices.GetUserById(model.LeaderId.Value);
+                if (leaderUser?.RoleId == 1)
+                {
+                    ModelState.AddModelError("LeaderId", "Mentor cannot be selected as Leader.");
+                }
             }
 
             if (!ModelState.IsValid)

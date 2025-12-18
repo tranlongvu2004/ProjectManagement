@@ -109,25 +109,31 @@ namespace PorjectManagement.Service
                             .ThenInclude(u => u.Role)
                 .Include(t => t.TaskAssignments)
                     .ThenInclude(ta => ta.User)
+                        .ThenInclude(u => u.Role)
                 .FirstOrDefaultAsync(t => t.TaskId == taskId);
 
             if (task == null)
                 return null;
 
-            // ✅ Check quyền: Chỉ người trong project hoặc creator có thể edit
+            // Check quyền: Chỉ người trong project hoặc creator có thể edit
             var isInProject = task.Project.UserProjects.Any(up => up.UserId == currentUserId);
             if (!isInProject && task.CreatedBy != currentUserId)
                 return null;
 
-            var currentAssignees = task.TaskAssignments.Select(ta => new TaskAssigneeItem
-            {
-                UserId = ta.User.UserId,
-                FullName = ta.User.FullName,
-                Email = ta.User.Email,
-                RoleName = ta.User.Role?.RoleName
-            }).ToList();
+            // Current assignees - bỏ Mentor nếu có 
+            var currentAssignees = task.TaskAssignments
+                .Where(ta => ta.User.RoleId != 1) // bỏ Mentor
+                .Select(ta => new TaskAssigneeItem
+                {
+                    UserId = ta.User.UserId,
+                    FullName = ta.User.FullName,
+                    Email = ta.User.Email,
+                    RoleName = ta.User.Role?.RoleName
+                }).ToList();
 
+            // Project members - bỏ Mentor (RoleId = 1)
             var projectMembers = task.Project.UserProjects
+                .Where(up => up.User.RoleId != 1) 
                 .Select(up => up.User)
                 .ToList();
 
@@ -140,8 +146,12 @@ namespace PorjectManagement.Service
                 Priority = task.Priority ?? TaskPriority.Low,
                 Status = task.Status ?? Models.TaskStatus.ToDo,
                 Deadline = task.Deadline,
-                CurrentAssigneeIds = task.TaskAssignments.Select(ta => ta.UserId).ToList(),
-                SelectedUserIds = task.TaskAssignments.Select(ta => ta.UserId).ToList(),
+                CurrentAssigneeIds = task.TaskAssignments
+                    .Where(ta => ta.User.RoleId != 1) 
+                    .Select(ta => ta.UserId).ToList(),
+                SelectedUserIds = task.TaskAssignments
+                    .Where(ta => ta.User.RoleId != 1) 
+                    .Select(ta => ta.UserId).ToList(),
                 ProjectMembers = projectMembers,
                 CurrentAssignees = currentAssignees
             };
