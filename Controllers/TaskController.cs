@@ -268,7 +268,7 @@ namespace PorjectManagement.Controllers
         public async Task<IActionResult> UploadAttachment(int taskId, IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return RedirectToAction("BacklogUI", new { projectId = _context.Tasks
+                return RedirectToAction("BacklogUI","Backlog", new { projectId = _context.Tasks
         .Where(t => t.TaskId == taskId)
         .Select(t => t.ProjectId)
         .First()
