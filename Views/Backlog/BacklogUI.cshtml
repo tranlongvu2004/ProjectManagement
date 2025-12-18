@@ -121,10 +121,6 @@
             </a>
         }
 
-        <a href="/Dashboard/Dashboard?projectId=@projectId&userId=@userId" class="dashboard-btn">
-            <i class="fa fa-chart-line"></i> Dashboard
-        </a>
-
         <a href="/Timeline/Timeline?projectId=@projectId" class="dashboard-btn">
             <i class="fa fa-chart-line"></i> Timeline
         </a>
@@ -140,7 +136,7 @@
                 <th>Task</th>
                 <th>Owner</th>
                 <th>Status</th>
-                <th>Due Date</th>
+                <th>Deadline</th>
                 <th>Priority</th>
                 <th>Action</th>
                 <th>Output resource</th>
@@ -171,11 +167,45 @@
                         }
                     </td>
                     <td>
-                        <span class="badge bg-info">@parent.Status</span>
+                        @{
+                            var statusParent = parent.Status switch
+                        {
+                                PorjectManagement.Models.TaskStatus.ToDo          => "bg-primary",
+                                PorjectManagement.Models.TaskStatus.Doing        => "bg-warning text-dark",
+                                PorjectManagement.Models.TaskStatus.Completed    => "bg-success",
+                                PorjectManagement.Models.TaskStatus.Stuck        => "bg-danger",
+                                PorjectManagement.Models.TaskStatus.Not_Started  => "bg-secondary",
+                                _ => "bg-light text-dark"
+                         };
+                        }
+
+                                    <span class="badge @statusParent">
+                                        @parent.Status
+                                    </span>
+
                     </td>
                     <td>@parent.Deadline?.ToString("MMM d")</td>
-                    <td><span class="badge bg-warning">@parent.Priority</span></td>
                     <td>
+                        @{
+
+                            var priorityParent = parent.Priority switch 
+                            {
+                                PorjectManagement.Models.TaskPriority.Low       => "bg-primary", 
+                                PorjectManagement.Models.TaskPriority.Medium    => "bg-warning text-dark", 
+                                PorjectManagement.Models.TaskPriority.High      => "bg-dark",
+                                PorjectManagement.Models.TaskPriority.Necessary => "bg-danger",
+                                _ => "bg-light text-dark"
+                            };
+
+                        }
+                                  <span class="badge @priorityParent">
+                                     @parent.Priority
+                                </span>
+                        </td>
+                    
+                        <td>
+                            @if(roleId == 2)
+                    {
                         <a asp-controller="Task" asp-action="Edit" asp-route-id="@parent.TaskId"
                            class="btn btn-sm btn-edit">
                             <i class="bi bi-pencil-fill"></i> Edit
@@ -194,14 +224,6 @@
                             <i class="bi bi-upload"></i> Upload
                         </button>
 
-                        <!-- 🆕 COMMENT BUTTON - PARENT TASK -->
-                        <button class="btn btn-sm btn-info comment-btn"
-                                data-task-id="@parent.TaskId"
-                                data-task-name="@parent.Title"
-                                data-bs-toggle="modal"
-                                data-bs-target="#commentModal">
-                            <i class="bi bi-chat-dots"></i> Comment (@parent.Comments.Count)
-                        </button>
 
                         @if (!hasSubTasks)
                         {
@@ -211,7 +233,20 @@
                                 <i class="bi bi-trash"></i> Delete
                             </button>
                         }
+                    }
+                        <!-- 🆕 COMMENT BUTTON - PARENT TASK -->
+                        <button class="btn btn-sm btn-info comment-btn"
+                                data-task-id="@parent.TaskId"
+                                data-task-name="@parent.Title"
+                                data-bs-toggle="modal"
+                                data-bs-target="#commentModal">
+                            <i class="bi bi-chat-dots"></i> (@parent.Comments.Count)
+                        </button>
                     </td>
+                    
+                    
+                        
+                    
                     <td>
                         @if (parent.TaskAttachments != null && parent.TaskAttachments.Any())
                         {
@@ -253,11 +288,39 @@
                             }
                         </td>
                         <td>
-                            <span class="badge bg-secondary">@child.Status</span>
+
+                            @{
+                            var statusChild = child.Status switch
+                        {
+                                PorjectManagement.Models.TaskStatus.ToDo          => "bg-primary",
+                                PorjectManagement.Models.TaskStatus.Doing        => "bg-warning text-dark",
+                                PorjectManagement.Models.TaskStatus.Completed    => "bg-success",
+                                PorjectManagement.Models.TaskStatus.Stuck        => "bg-danger",
+                                PorjectManagement.Models.TaskStatus.Not_Started  => "bg-secondary",
+                                _ => "bg-light text-dark"
+                         };
+                        }
+
+                            <span class="badge @statusChild">@child.Status</span>
                         </td>
                         <td>@child.Deadline?.ToString("MMM d")</td>
-                        <td><span class="badge bg-dark">@child.Priority</span></td>
                         <td>
+
+                            @{
+                            var priorityChild = child.Priority switch {
+                                PorjectManagement.Models.TaskPriority.Low => "bg-primary", 
+                                PorjectManagement.Models.TaskPriority.Medium => "bg-warning text-dark", 
+                                PorjectManagement.Models.TaskPriority.High => "bg-dark",
+                                PorjectManagement.Models.TaskPriority.Necessary => "bg-danger",
+                                _ => "bg-light text-dark" 
+                            };
+
+                        }
+                            <span class="badge @priorityChild">@child.Priority</span>
+                            </td>
+                        <td>
+                            @if(roleId == 2)
+                            {
                             <a asp-controller="Task" asp-action="Edit" asp-route-id="@child.TaskId"
                                class="btn btn-sm btn-edit">
                                 <i class="bi bi-pencil-fill"></i> Edit
@@ -276,20 +339,22 @@
                                 <i class="bi bi-upload"></i> Upload
                             </button>
 
-                            <!-- 🆕 COMMENT BUTTON - SUBTASK -->
-                            <button class="btn btn-sm btn-info comment-btn"
-                                    data-task-id="@child.TaskId"
-                                    data-task-name="@child.Title"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#commentModal">
-                                <i class="bi bi-chat-dots"></i> Comment (@child.Comments.Count)
-                            </button>
-
                             <button class="btn btn-sm btn-warning delete-btn"
                                     data-task-id="@child.TaskId"
                                     data-task-name="@child.Title">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
+                            }
+
+                                <!-- 🆕 COMMENT BUTTON - SUBTASK -->
+                            <button class="btn btn-sm btn-info comment-btn"
+                                    data-task-id="@child.TaskId"
+                                    data-task-name="@child.Title"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#commentModal">
+                                <i class="bi bi-chat-dots"></i> (@child.Comments.Count)
+                            </button>
+
                         </td>
                         <td>
                             @if (child.TaskAttachments.Any())
