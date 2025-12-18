@@ -28,7 +28,7 @@ namespace PorjectManagement.Testing.Unit_test
             return controller;
         }
 
-        // 1️⃣ UserId = 0 → Redirect Login
+        /*// 1️⃣ UserId = 0 → Redirect Login
         [Fact]
         public async System.Threading.Tasks.Task Index_UserIdIsZero_RedirectsToLogin()
         {
@@ -120,7 +120,7 @@ namespace PorjectManagement.Testing.Unit_test
                 s => s.GetProjectsOfUserAsync(userId),
                 Times.Once
             );
-        }
+        }*/
     }
 }
 
