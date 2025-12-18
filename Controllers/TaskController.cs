@@ -11,15 +11,18 @@ namespace PorjectManagement.Controllers
     {
         private readonly ITaskService _taskService;
         private readonly IUserProjectService _userProjectService;
-        private readonly LabProjectManagementContext _context; 
+        private readonly ICommentService _commentService;
+        private readonly LabProjectManagementContext _context;
 
         public TaskController(
             ITaskService taskService,
             IUserProjectService userProjectService,
+            ICommentService commentService,
             LabProjectManagementContext context)
         {
             _taskService = taskService;
             _userProjectService = userProjectService;
+            _commentService = commentService;
             _context = context;
         }
 
@@ -121,9 +124,9 @@ namespace PorjectManagement.Controllers
                 Priority = model.Priority,
                 Status = PorjectManagement.Models.TaskStatus.ToDo,
                 Deadline = model.Deadline,
-                CreatedBy = userId, 
+                CreatedBy = userId,
                 CreatedAt = DateTime.Now,
-                 IsParent = !model.IsSubTask,
+                IsParent = !model.IsSubTask,
                 ParentId = model.IsSubTask ? model.ParentTaskId : null
             };
 
@@ -184,7 +187,7 @@ namespace PorjectManagement.Controllers
             }
             var userEmail = HttpContext.Session.GetString("UserEmail");
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
-            
+
             if (currentUser == null)
             {
                 TempData["Error"] = "Login information not found.";
@@ -192,7 +195,7 @@ namespace PorjectManagement.Controllers
             }
 
             var model = await _taskService.GetTaskForEditAsync(id, currentUser.UserId);
-            
+
             if (model == null)
             {
                 TempData["Error"] = "Task not found, or you do not have editing permissions.";
@@ -202,7 +205,7 @@ namespace PorjectManagement.Controllers
             // Lấy project deadline vào view
             var project = await _context.Projects
                 .FirstOrDefaultAsync(p => p.ProjectId == model.ProjectId);
-            
+
             if (project != null)
             {
                 ViewBag.ProjectDeadline = project.Deadline;
@@ -275,13 +278,13 @@ namespace PorjectManagement.Controllers
                     model.ProjectMembers = reloadedModel.ProjectMembers;
                     model.CurrentAssignees = reloadedModel.CurrentAssignees;
                 }
-                
+
                 // Truyền lại ProjectDeadline cho view
                 if (project != null)
                 {
                     ViewBag.ProjectDeadline = project.Deadline;
                 }
-                
+
                 return View(model);
             }
 
@@ -289,9 +292,9 @@ namespace PorjectManagement.Controllers
             {
                 var userEmail = HttpContext.Session.GetString("UserEmail");
                 var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
-                
+
                 bool success = await _taskService.UpdateTaskAsync(model, currentUser.UserId);
-                
+
                 if (!success)
                 {
                     TempData["Error"] = "Cant update task.";
@@ -310,13 +313,13 @@ namespace PorjectManagement.Controllers
                     model.ProjectMembers = reloadedModel.ProjectMembers;
                     model.CurrentAssignees = reloadedModel.CurrentAssignees;
                 }
-                
+
                 // Truyền lại ProjectDeadline cho view
                 if (project != null)
                 {
                     ViewBag.ProjectDeadline = project.Deadline;
                 }
-                
+
                 return View(model);
             }
         }
@@ -325,7 +328,9 @@ namespace PorjectManagement.Controllers
         public async Task<IActionResult> UploadAttachment(int taskId, IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return RedirectToAction("BacklogUI", new { projectId = _context.Tasks
+                return RedirectToAction("BacklogUI", new
+                {
+                    projectId = _context.Tasks
         .Where(t => t.TaskId == taskId)
         .Select(t => t.ProjectId)
         .First()
@@ -363,12 +368,62 @@ namespace PorjectManagement.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Upload file successfully!";
-            return RedirectToAction("BacklogUI","Backlog", new { projectId = _context.Tasks
+            return RedirectToAction("BacklogUI", "Backlog", new
+            {
+                projectId = _context.Tasks
         .Where(t => t.TaskId == taskId)
         .Select(t => t.ProjectId)
         .First()
             });
         }
 
+        // POST: /Task/AddComment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddComment(int taskId, string content)
+        {
+            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+            // Chỉ Intern/InternLead được comment
+            if (roleId != 2 || userId == 0)
+            {
+                TempData["Error"] = "You don't have permission to add comment.";
+                return RedirectToAction("BacklogUI", "Backlog");
+            }
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                TempData["Error"] = "Comment cannot be empty.";
+                return RedirectToAction("BacklogUI", "Backlog", new { projectId = ViewBag.ProjectId });
+            }
+
+            var success = await _commentService.AddCommentAsync(taskId, userId, content);
+
+            if (success)
+            {
+                TempData["Success"] = "Comment added successfully!";
+            }
+            else
+            {
+                TempData["Error"] = "Failed to add comment.";
+            }
+
+            // Quay lại trang BacklogUI
+            var projectId = await _context.Tasks
+                .Where(t => t.TaskId == taskId)
+                .Select(t => t.ProjectId)
+                .FirstOrDefaultAsync();
+
+            return RedirectToAction("BacklogUI", "Backlog", new { projectId = projectId });
+        }
+
+        // GET: /api/comments/{taskId}
+        [HttpGet("/api/comments/{taskId}")]
+        public async Task<IActionResult> GetComments(int taskId)
+        {
+            var comments = await _commentService.GetCommentsByTaskIdAsync(taskId);
+            return Json(comments);
+        }
     }
 }

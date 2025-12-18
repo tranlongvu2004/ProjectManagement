@@ -46,7 +46,7 @@ namespace PorjectManagement.Service
                 .Include(t => t.Project)
                     .ThenInclude(p => p.UserProjects)
                         .ThenInclude(up => up.User)
-                .Include(t => t.TaskAssignments) 
+                .Include(t => t.TaskAssignments)
                 .FirstOrDefaultAsync(t => t.TaskId == taskId);
 
             if (task == null) return null;
@@ -57,7 +57,7 @@ namespace PorjectManagement.Service
 
             var users = task.Project.UserProjects
                 .Where(up =>
-                 up.User.RoleId != 1 && !assignedUserIds.Contains(up.UserId)) 
+                 up.User.RoleId != 1 && !assignedUserIds.Contains(up.UserId))
                 .Select(up => new UserListItemVM
                 {
                     UserId = up.User.UserId,
@@ -79,14 +79,14 @@ namespace PorjectManagement.Service
 
         public async Task<bool> AssignTaskAsync(int taskId, int userId)
         {
-        
+
             bool exists = await _context.TaskAssignments
                 .AnyAsync(x => x.TaskId == taskId && x.UserId == userId);
 
             if (exists)
                 throw new Exception("This intern already assigned for another task");
 
-            
+
             var newAssignment = new TaskAssignment
             {
                 TaskId = taskId,
@@ -133,7 +133,7 @@ namespace PorjectManagement.Service
 
             // Project members - bỏ Mentor (RoleId = 1)
             var projectMembers = task.Project.UserProjects
-                .Where(up => up.User.RoleId != 1) 
+                .Where(up => up.User.RoleId != 1)
                 .Select(up => up.User)
                 .ToList();
 
@@ -147,10 +147,10 @@ namespace PorjectManagement.Service
                 Status = task.Status ?? Models.TaskStatus.ToDo,
                 Deadline = task.Deadline,
                 CurrentAssigneeIds = task.TaskAssignments
-                    .Where(ta => ta.User.RoleId != 1) 
+                    .Where(ta => ta.User.RoleId != 1)
                     .Select(ta => ta.UserId).ToList(),
                 SelectedUserIds = task.TaskAssignments
-                    .Where(ta => ta.User.RoleId != 1) 
+                    .Where(ta => ta.User.RoleId != 1)
                     .Select(ta => ta.UserId).ToList(),
                 ProjectMembers = projectMembers,
                 CurrentAssignees = currentAssignees
@@ -199,13 +199,13 @@ namespace PorjectManagement.Service
         }
         public async Task<List<Models.Task>> GetParentTasksByProjectAsync(int projectId)
         {
-           
-return await _context.Tasks
-        .Where(t =>
-            t.ProjectId == projectId &&
-            t.IsParent.HasValue && t.IsParent.Value == true
-        )
-       .ToListAsync();
+
+            return await _context.Tasks
+                    .Where(t =>
+                        t.ProjectId == projectId &&
+                        t.IsParent.HasValue && t.IsParent.Value == true
+                    )
+                   .ToListAsync();
         }
 
     }

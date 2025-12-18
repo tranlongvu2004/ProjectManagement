@@ -20,6 +20,7 @@ namespace PorjectManagement.Tests.Controllers
     {
         private readonly Mock<ITaskService> _taskServiceMock;
         private readonly Mock<IUserProjectService> _userProjectServiceMock;
+        private readonly Mock<ICommentService> _commentServiceMock;
         private readonly LabProjectManagementContext _context;
         private readonly TaskController _controller;
 
@@ -27,6 +28,7 @@ namespace PorjectManagement.Tests.Controllers
         {
             _taskServiceMock = new Mock<ITaskService>();
             _userProjectServiceMock = new Mock<IUserProjectService>();
+            _commentServiceMock = new Mock<ICommentService>();
 
             // ✅ Setup InMemory Database
             var options = new DbContextOptionsBuilder<LabProjectManagementContext>()
@@ -48,6 +50,7 @@ namespace PorjectManagement.Tests.Controllers
             _controller = new TaskController(
                 _taskServiceMock.Object,
                 _userProjectServiceMock.Object,
+                _commentServiceMock.Object,
                 _context
             );
 
