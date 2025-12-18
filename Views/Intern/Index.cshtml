@@ -5,39 +5,44 @@
 <h2 class="fw-bold">List of Interns</h2>
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-5">
+        <label class="form-label fw-semibold text-muted">Search by intern's name</label>
         <input name="keyword"
                value="@Model.Keyword"
                class="form-control"
-               placeholder="Search intern name..." />
+               placeholder="Enter intern's name" />
     </div>
+    <div class="col-md-7 row">
+        <label class="col-md-12 form-label fw-semibold text-muted">Sort by</label>
+        <div class="col-md-5">
+            <select name="sortBy" class="form-select">
+                <option value="name" selected="@(Model.SortBy == "name")">
+                    Name
+                </option>
+                <option value="created" selected="@(Model.SortBy == "created")">
+                    Created at
+                </option>
+            </select>
+        </div>
 
-    <div class="col-md-3">
-        <select name="sortBy" class="form-select">
-            <option value="name" selected="@(Model.SortBy == "name")">
-                Name
-            </option>
-            <option value="created" selected="@(Model.SortBy == "created")">
-                Created at
-            </option>
-        </select>
-    </div>
+        <div class="col-md-5">
+            <select name="sortDir" class="form-select">
+                <option value="asc" selected="@(Model.SortDir == "asc")">
+                    Ascending
+                </option>
+                <option value="desc" selected="@(Model.SortDir == "desc")">
+                    Descending
+                </option>
+            </select>
+        </div>
 
-    <div class="col-md-2">
-        <select name="sortDir" class="form-select">
-            <option value="asc" selected="@(Model.SortDir == "asc")">
-                ASC
-            </option>
-            <option value="desc" selected="@(Model.SortDir == "desc")">
-                DESC
-            </option>
-        </select>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100">
+                <i class="bi"></i> Apply
+            </button>
+        </div>
     </div>
-
-    <div class="col-md-2">
-        <button class="btn btn-primary w-100">
-            <i class="bi"></i> Apply
-        </button>
-    </div>
+   
+        
 </form>
 
 <div class="card border-0 shadow-sm">
