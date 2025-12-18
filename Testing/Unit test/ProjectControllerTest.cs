@@ -15,113 +15,152 @@ namespace PorjectManagement.Testing.Unit_test
     public class ProjectControllerTests
     {
         private readonly Mock<IProjectServices> _mockService;
+        private readonly ProjectController _controller;
 
         public ProjectControllerTests()
         {
             _mockService = new Mock<IProjectServices>();
-        }
+            _controller = new ProjectController(_mockService.Object);
 
-        private ProjectController CreateController(int? userId, int? roleId)
-        {
-            var controller = new ProjectController(_mockService.Object);
-            ControllerTestHelper.CreateControllerWithSession(controller, userId, roleId);
-            return controller;
-        }
+            var httpContext = new DefaultHttpContext();
+            httpContext.Session = new TestSession();
 
-        /*// 1️⃣ UserId = 0 → Redirect Login
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+        }
         [Fact]
-        public async System.Threading.Tasks.Task Index_UserIdIsZero_RedirectsToLogin()
+        public async System.Threading.Tasks.Task Index_UserNotLoggedIn_RedirectToLogin()
         {
             // Arrange
-            var controller = CreateController(null, null);
+            _controller.HttpContext.Session.SetInt32("UserId", 0);
 
             // Act
-            var result = await controller.Index();
+            var result = await _controller.Index(null, null);
 
             // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Login", redirect.ActionName);
             Assert.Equal("User", redirect.ControllerName);
         }
-
-        // 2️⃣ Session hợp lệ → Return View
         [Fact]
-        public async System.Threading.Tasks.Task Index_ValidSession_ReturnsViewWithModel()
+        public async System.Threading.Tasks.Task Index_UserLoggedIn_ReturnsViewWithProjects()
         {
             // Arrange
-            var userId = 1;
-            var roleId = 2;
+            _controller.HttpContext.Session.SetInt32("UserId", 1);
+            _controller.HttpContext.Session.SetInt32("RoleId", 1);
 
             var projects = new List<Project>
+    {
+        new Project
         {
-            new Project
+            ProjectId = 1,
+            ProjectName = "Lab Management",
+            Deadline = DateTime.Now.AddDays(10),
+            Status = ProjectStatus.InProgress,
+            UserProjects = new List<UserProject>
             {
-                ProjectId = 10,
-                ProjectName = "Lab Project",
-                Status = ProjectStatus.InProgress,
-                UserProjects = new List<UserProject>
+                new UserProject
                 {
-                    new UserProject
-                    {
-                        IsLeader = true,
-                        User = new User { FullName = "Intern Lead" }
-                    },
-                    new UserProject
-                    {
-                        IsLeader = false,
-                        User = new User { FullName = "Member" }
-                    }
+                    IsLeader = true,
+                    User = new User { FullName = "Mentor A" }
                 }
             }
-        };
+        }
+    };
 
             _mockService
-                .Setup(s => s.GetProjectsOfUserAsync(userId))
+                .Setup(s => s.GetProjectsOfUserAsync(1))
                 .ReturnsAsync(projects);
 
-            var controller = CreateController(userId, roleId);
-
             // Act
-            var result = await controller.Index();
+            var result = await _controller.Index(null, null);
 
             // Assert
-            var viewResult = Assert.IsType<ViewResult>(result);
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ProjectFilterVM>(view.Model);
 
-            var model = Assert.IsAssignableFrom<List<ProjectListVM>>(viewResult.Model);
-            Assert.Single(model);
-
-            Assert.Equal("Lab Project", model[0].ProjectName);
-            Assert.Equal("Intern Lead", model[0].LeaderName);
-            Assert.Equal(2, model[0].MemberCount);
-
-            Assert.Equal(roleId, controller.ViewBag.RoleId);
-            Assert.NotNull(controller.ViewBag.Projects);
+            Assert.Single(model.Projects);
+            Assert.Equal("Lab Management", model.Projects.First().ProjectName);
         }
-
-        // 3️⃣ Service được gọi đúng userId
         [Fact]
-        public async System.Threading.Tasks.Task Index_ValidSession_CallsServiceOnce()
+        public async System.Threading.Tasks.Task Index_WithKeyword_FiltersProjectsCorrectly()
         {
             // Arrange
-            var userId = 5;
-            var roleId = 1;
+            _controller.HttpContext.Session.SetInt32("UserId", 1);
+
+            var projects = new List<Project>
+    {
+        new Project
+        {
+            ProjectId = 1,
+            ProjectName = "Lab Management",
+            Status = ProjectStatus.InProgress,
+            UserProjects = new List<UserProject>()
+        },
+        new Project
+        {
+            ProjectId = 2,
+            ProjectName = "Library System",
+            Status = ProjectStatus.InProgress,
+            UserProjects = new List<UserProject>()
+        }
+    };
 
             _mockService
-                .Setup(s => s.GetProjectsOfUserAsync(userId))
-                .ReturnsAsync(new List<Project>());
-
-            var controller = CreateController(userId, roleId);
+                .Setup(s => s.GetProjectsOfUserAsync(1))
+                .ReturnsAsync(projects);
 
             // Act
-            await controller.Index();
+            var result = await _controller.Index("Lab", null);
 
             // Assert
-            _mockService.Verify(
-                s => s.GetProjectsOfUserAsync(userId),
-                Times.Once
-            );
-        }*/
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ProjectFilterVM>(view.Model);
+
+            Assert.Single(model.Projects);
+            Assert.Equal("Lab Management", model.Projects.First().ProjectName);
+        }
+        [Fact]
+        public async System.Threading.Tasks.Task Index_WithStatus_FiltersByStatus()
+        {
+            // Arrange
+            _controller.HttpContext.Session.SetInt32("UserId", 1);
+
+            var projects = new List<Project>
+    {
+        new Project
+        {
+            ProjectId = 1,
+            ProjectName = "Project A",
+            Status = ProjectStatus.Completed,
+            UserProjects = new List<UserProject>()
+        },
+        new Project
+        {
+            ProjectId = 2,
+            ProjectName = "Project B",
+            Status = ProjectStatus.InProgress,
+            UserProjects = new List<UserProject>()
+        }
+    };
+
+            _mockService
+                .Setup(s => s.GetProjectsOfUserAsync(1))
+                .ReturnsAsync(projects);
+
+            // Act
+            var result = await _controller.Index(null, ProjectStatus.Completed);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ProjectFilterVM>(view.Model);
+
+            Assert.Single(model.Projects);
+            Assert.Equal(ProjectStatus.Completed, model.Projects.First().Status);
+        }
+
     }
 }
-
 

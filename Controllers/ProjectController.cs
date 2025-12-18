@@ -14,36 +14,6 @@ namespace PorjectManagement.Controllers
         {
             _projectServices = projectServices;
         }
-
-        /*public async Task<IActionResult> Index()
-        {
-
-            int currentUserId = HttpContext.Session.GetInt32("UserId") ?? 0;
-            int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
-            if (currentUserId == 0)
-            {
-                return RedirectToAction("Login", "User");
-            }
-            ViewBag.RoleId = roleId;
-            var projects = await _projectServices.GetProjectsOfUserAsync(currentUserId);
-
-            var model = projects.Select(p => new ProjectListVM
-            {
-                ProjectId = p.ProjectId,
-                ProjectName = p.ProjectName,
-                Deadline = p.Deadline,
-                Status = p.Status,
-                LeaderName = p.UserProjects
-                    .Where(x => x.IsLeader == true)
-                    .Select(x => x.User.FullName)
-                    .FirstOrDefault() ?? "Không xác định",
-                MemberCount = p.UserProjects.Count
-            }).ToList();
-
-            ViewBag.Projects = model;
-            return View(model);
-        }*/
-
         public async Task<IActionResult> Index(
             string? keyword,
             ProjectStatus? status,
