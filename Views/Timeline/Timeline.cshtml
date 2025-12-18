@@ -28,17 +28,32 @@
                     id: t.TaskId,
                     title: t.Title,
                     owner: t.Owner,
-                    start: t.End,
+                    start: t.Start,
+                    end: addOneDay(t.End),
                     backgroundColor: status[t.Status] || "#607d8b",
                     borderColor: status[t.Status] || "#607d8b",
                     allDay: true
             }));
             var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
             initialView: 'dayGridMonth',
-            events: events
+            events: events,
+            eventDidMount(info) {
+                info.el.title =
+                    info.event.title +
+                    " | " +
+                    info.event.start.toLocaleDateString() +
+                    " → " +
+                    info.event.end.toLocaleDateString();
+            }
 
         });
 
         calendar.render();
+
+        function addOneDay(dateStr) {
+        const d = new Date(dateStr);
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split('T')[0];
+    }
     });
 </script>
