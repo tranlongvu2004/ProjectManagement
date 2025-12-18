@@ -480,57 +480,82 @@
             <tr>
 
                         @{
-                            var allTasksStatus = (ViewBag.ParentTasks as List<PorjectManagement.Models.Task>)
+                            var allTasks = (ViewBag.ParentTasks as List<PorjectManagement.Models.Task>)
                             .Concat(ViewBag.SubTasks as List<PorjectManagement.Models.Task>)
                             .ToList();
 
-                            var allTasksPriority = (ViewBag.ParentTasks as List<PorjectManagement.Models.Task>)
-                            .Concat(ViewBag.SubTasks as List<PorjectManagement.Models.Task>)
-                            .ToList();
+                            int totalTasks = allTasks.Count == 0 ? 1 : allTasks.Count;
 
-                            int totalStatus = allTasksStatus.Count == 0 ? 1 : allTasksStatus.Count;
-                            int totalPriority = allTasksPriority.Count == 0 ? 1 : allTasksPriority.Count;
+                            int done = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Completed);
+                            int doing = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Doing);
+                            int stuck = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Stuck);
+                            int todo = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.ToDo);
 
-                            int done = allTasksStatus.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Completed);
-                            int doing = allTasksStatus.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Doing);
-                            int stuck = allTasksStatus.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Stuck);
-                            int todo = allTasksStatus.Count(t => t.Status == PorjectManagement.Models.TaskStatus.ToDo);
-
-                            int low = allTasksPriority.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Low);
-                            int medium = allTasksPriority.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Medium);
-                            int high = allTasksPriority.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.High);
-                            int necessary = allTasksPriority.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Necessary);
+                            int low = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Low);
+                            int medium = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Medium);
+                            int high = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.High);
+                            int necessary = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Necessary);
                         }
                         <td colspan="2"></td>
                         <td>
                         <div class="summary-bar">
                             <div class="summary-segment bg-success"
-                                style="width:@(done * 100 / totalStatus)%"></div>
+                                style="width:@(done * 100 / totalTasks)%"></div>
 
                             <div class="summary-segment bg-warning"
-                                style="width:@(doing * 100 / totalStatus)%"></div>
+                                style="width:@(doing * 100 / totalTasks)%"></div>
 
                             <div class="summary-segment bg-danger"
-                                style="width:@(stuck * 100 / totalStatus)%"></div>
+                                style="width:@(stuck * 100 / totalTasks)%"></div>
 
                             <div class="summary-segment bg-secondary"
-                                style="width:@(todo * 100 / totalStatus)%"></div>
+                                style="width:@(todo * 100 / totalTasks)%"></div>
                         </div>
                         </td>
-                        <td></td>   
+                        <td>
+
+                            @functions {
+                            string GetDueClass(DateTime? due, PorjectManagement.Models.TaskStatus status)
+                            {
+                                if (status == PorjectManagement.Models.TaskStatus.Completed)
+                                return "bg-success";
+
+                                 if (!due.HasValue) return "bg-secondary";
+
+                                var today = DateTime.Today;
+
+                                if (due < today) return "bg-danger";
+                                if (due == today) return "bg-warning text-dark";
+                                return "bg-primary";
+                            }
+                            }
+
+                            @{
+                            var minDate = allTasks.Where(t => t.Deadline != null).Min(t => t.Deadline);
+                            var maxDate = allTasks.Where(t => t.Deadline != null).Max(t => t.Deadline);
+                        }
+
+                            @if (minDate != null && maxDate != null)
+                        {
+                            <span class="badge bg-dark">
+                                @minDate.Value.ToString("MMM dd") - @maxDate.Value.ToString("MMM dd")
+                            </span>
+                        }
+
+                        </td>   
                         <td>
                         <div class="summary-bar">
                             <div class="summary-segment bg-success"
-                                style="width:@(low * 100 / totalPriority)%"></div>
+                                style="width:@(low * 100 / totalTasks)%"></div>
 
                             <div class="summary-segment bg-warning"
-                                style="width:@(medium * 100 / totalPriority)%"></div>
+                                style="width:@(medium * 100 / totalTasks)%"></div>
 
                             <div class="summary-segment bg-danger"
-                                style="width:@(high * 100 / totalPriority)%"></div>
+                                style="width:@(high * 100 / totalTasks)%"></div>
 
                             <div class="summary-segment bg-secondary"
-                                style="width:@(necessary * 100 / totalPriority)%"></div>
+                                style="width:@(necessary * 100 / totalTasks)%"></div>
                         </div>
                         </td>
                         <td colspan="2"></td>
@@ -758,4 +783,7 @@
                 commentsContainer.innerHTML = '<p class="text-danger">Failed to load comments.</p>';
             });
     }
+
+
+
 </script>
