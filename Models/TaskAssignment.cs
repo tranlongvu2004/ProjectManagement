@@ -12,6 +12,7 @@ public partial class TaskAssignment
     public int UserId { get; set; }
 
     public DateTime? AssignedAt { get; set; }
+    public bool DeadlineMailSent { get; set; } = false;
 
     public virtual Task Task { get; set; } = null!;
 
