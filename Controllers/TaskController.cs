@@ -240,9 +240,10 @@ namespace PorjectManagement.Controllers
             }
             else
             {
+                // Validate: Deadline > thời gian hiện tại
                 if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
                 {
-                    ModelState.AddModelError("Deadline", "Deadline not in past");
+                    ModelState.AddModelError("Deadline", "Deadline cannot be in the past");
                 }
 
                 // Validate: Task deadline < project deadline
@@ -250,7 +251,7 @@ namespace PorjectManagement.Controllers
                 {
                     ModelState.AddModelError(
                         "Deadline",
-                        $"Task deadline cannot exceed project deadline ({project.Deadline:dd/MM/yyyy})"
+                        $"Task deadline cannot exceed project deadline ({project.Deadline:dd/MM/yyyy HH:mm})"
                     );
                 }
             }
@@ -279,7 +280,7 @@ namespace PorjectManagement.Controllers
                     model.CurrentAssignees = reloadedModel.CurrentAssignees;
                 }
 
-                // Truyền lại ProjectDeadline cho view
+                // Truyền ProjectDeadline cho view
                 if (project != null)
                 {
                     ViewBag.ProjectDeadline = project.Deadline;
@@ -314,7 +315,7 @@ namespace PorjectManagement.Controllers
                     model.CurrentAssignees = reloadedModel.CurrentAssignees;
                 }
 
-                // Truyền lại ProjectDeadline cho view
+                // Truyền ProjectDeadline cho view
                 if (project != null)
                 {
                     ViewBag.ProjectDeadline = project.Deadline;
