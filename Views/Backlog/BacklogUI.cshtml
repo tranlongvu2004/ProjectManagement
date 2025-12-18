@@ -148,6 +148,7 @@
                 <th>Due Date</th>
                 <th>Priority</th>
                 <th>Action</th>
+                <th>Output resource</th>
             </tr>
         </thead>
 
@@ -198,6 +199,13 @@
                                class="btn btn-sm btn-assign-task">
                                 <i class="bi bi-person-plus"></i> Assign
                             </a>
+                        <button class="btn btn-sm btn-outline-primary upload-btn"
+                                data-task-id="@parent.TaskId"
+                                data-bs-toggle="modal"
+                                data-bs-target="#uploadModal">
+                            <i class="bi bi-upload"></i> Upload
+                        </button>
+
                         @if (!hasSubTasks)
                         {
                             <button class="btn btn-sm btn-warning delete-btn"
@@ -205,6 +213,29 @@
                                     data-task-name="@parent.Title">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
+                        }
+                    </td>
+                    <td>
+                        @if (parent.TaskAttachments != null && parent.TaskAttachments.Any())
+                        {
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var att in parent.TaskAttachments)
+                                {
+                                    <li>
+                                        📎
+                                        <a href="@att.FilePath" target="_blank">
+                                            @att.FileName
+                                        </a>
+                                        <small class="text-muted">
+                                            (@(att.FileSize / 1024) KB)
+                                        </small>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No attachment</span>
                         }
                     </td>
                 </tr>
@@ -242,20 +273,75 @@
                                 <i class="bi bi-pencil-fill"></i> Edit
                             </a>
                               <!-- ASSIGN (SUBTASK) -->
-    <a asp-controller="Task"
-       asp-action="Assign"
-       asp-route-id="@child.TaskId"
-       class="btn btn-sm btn-assign-task">
-        <i class="bi bi-person-plus"></i> Assign
-    </a>
+                            <a asp-controller="Task"
+                               asp-action="Assign"
+                               asp-route-id="@child.TaskId"
+                               class="btn btn-sm btn-assign-task">
+                                <i class="bi bi-person-plus"></i> Assign
+                            </a>
+                            <button class="btn btn-sm btn-outline-primary upload-btn"
+                                    data-task-id="@child.TaskId"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#uploadModal">
+                                <i class="bi bi-upload"></i> Upload
+                            </button>
+
                             <button class="btn btn-sm btn-warning delete-btn"
                                     data-task-id="@child.TaskId"
                                     data-task-name="@child.Title">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
                         </td>
+                        <td>
+                            @if (child.TaskAttachments.Any())
+                            {
+                                foreach (var att in child.TaskAttachments)
+                                {
+                                    <a href="@att.FilePath" target="_blank">@att.FileName</a>
+                    
+                                    <br />
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">No attachment</span>
+                            }
+                        </td>
                     </tr>
                 }
+                <div class="modal fade" id="uploadModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <form id="uploadForm"
+                              enctype="multipart/form-data"
+                              method="post"
+                              asp-controller="Task"
+                              asp-action="UploadAttachment">
+
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Upload Attachment</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <input type="hidden" name="TaskId" id="uploadTaskId" />
+
+                                    <input type="file"
+                                           name="file"
+                                           class="form-control"
+                                           required />
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">
+                                        Upload
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
             }
         </tbody>
 
@@ -391,4 +477,13 @@
         });
     });
 </script>
+<script>
+    document.querySelectorAll('.upload-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.getElementById('uploadTaskId').value =
+                this.dataset.taskId;
+        });
+    });
+</script>
+
 

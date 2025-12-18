@@ -230,5 +230,13 @@ namespace PorjectManagement.Service
         {
             return await _projectRepo.GetProjectEntityByIdAsync(projectId);
         }
+
+        public int GetProjectId(int taskId)
+        {
+            return _context.Tasks
+        .Where(t => t.TaskId == taskId)
+        .Select(t => t.ProjectId)
+        .First();
+        }
     }
 }

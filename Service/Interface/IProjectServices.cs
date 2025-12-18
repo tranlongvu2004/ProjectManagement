@@ -20,7 +20,7 @@ namespace PorjectManagement.Service.Interface
         Task<List<ProjectTaskItem>> GetProjectTasksAsync(int projectId);
 
         Task<Project?> GetProjectEntityByIdAsync(int projectId);
-        
+        int GetProjectId(int taskId);
         Task<ProjectUpdateViewModel?> GetProjectForUpdateAsync(int projectId, int mentorId);
         Task<bool> UpdateProjectWithTeamAsync(ProjectUpdateViewModel model, int updatedByUserId);
     }

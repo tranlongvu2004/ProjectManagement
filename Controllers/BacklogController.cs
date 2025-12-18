@@ -35,7 +35,9 @@ namespace PorjectManagement.Controllers
 
             var tasks = _context.Tasks
                 .Include(t => t.TaskAssignments)
-                .ThenInclude(ta => ta.User)
+                  .ThenInclude(ta => ta.User)
+                .Include(t => t.TaskAttachments)
+                  .ThenInclude(a => a.UploadedByNavigation)
             .Where(t => t.ProjectId == projectId
                 && !_context.RecycleBins.Any(r =>
                 r.EntityType == "Task"
