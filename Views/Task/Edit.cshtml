@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Update Task";
+    var projectDeadline = ViewBag.ProjectDeadline as DateTime?;
 }
 
 <div class="container-fluid">
@@ -88,11 +89,32 @@
                                 <label asp-for="Deadline" class="form-label fw-semibold">
                                     <i class="bi bi-calendar-event text-danger"></i> Deadline
                                 </label>
-                                <input asp-for="Deadline"
-                                       type="date"
-                                       class="form-control"
-                                       min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                @if (projectDeadline.HasValue)
+                                {
+                                    <input type="date" 
+                                           id="Deadline" 
+                                           name="Deadline" 
+                                           class="form-control"
+                                           value="@(Model.Deadline?.ToString("yyyy-MM-dd"))"
+                                           min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                           max="@projectDeadline.Value.ToString("yyyy-MM-dd")" />
+                                }
+                                else
+                                {
+                                    <input type="date" 
+                                           id="Deadline" 
+                                           name="Deadline" 
+                                           class="form-control"
+                                           value="@(Model.Deadline?.ToString("yyyy-MM-dd"))"
+                                           min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                }
                                 <span asp-validation-for="Deadline" class="text-danger small"></span>
+                                @if (projectDeadline.HasValue)
+                                {
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i> Project deadline: <strong>@projectDeadline.Value.ToString("dd/MM/yyyy")</strong>
+                                    </small>
+                                }
                             </div>
                         </div>
 
@@ -204,6 +226,28 @@
                 const count = $('.user-checkbox:checked').length;
                 $('#selected-count').text(count);
             }
+
+            // ✅ Client-side validation cho deadline
+            $('#editTaskForm').on('submit', function(e) {
+                const deadlineInput = $('input[name="Deadline"]').val();
+                
+                @if (projectDeadline.HasValue)
+                {
+                    <text>
+                    if (deadlineInput) {
+                        const taskDeadline = new Date(deadlineInput);
+                        const projectDeadline = new Date('@projectDeadline.Value.ToString("yyyy-MM-dd")');
+                        
+                        if (taskDeadline > projectDeadline) {
+                            e.preventDefault();
+                            alert('Task deadline cannot exceed project deadline (@projectDeadline.Value.ToString("dd/MM/yyyy"))');
+                            $('input[name="Deadline"]').focus();
+                            return false;
+                        }
+                    }
+                    </text>
+                }
+            });
 
             // Initialize
             updateSelectedCount();
