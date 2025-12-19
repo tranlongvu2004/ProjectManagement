@@ -490,6 +490,7 @@
                             int doing = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Doing);
                             int stuck = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Stuck);
                             int todo = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.ToDo);
+                            int notStarted = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Not_Started);
 
                             int low = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Low);
                             int medium = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Medium);
@@ -499,36 +500,25 @@
                         <td colspan="2"></td>
                         <td>
                         <div class="summary-bar">
+                            
+                            <div class="summary-segment bg-primary"
+                                style="width:@(todo * 100 / totalTasks)%"></div>
+
+                            <div class="summary-segment bg-warning text-dark"
+                                style="width:@(doing * 100 / totalTasks)%"></div>
+
                             <div class="summary-segment bg-success"
                                 style="width:@(done * 100 / totalTasks)%"></div>
-
-                            <div class="summary-segment bg-warning"
-                                style="width:@(doing * 100 / totalTasks)%"></div>
 
                             <div class="summary-segment bg-danger"
                                 style="width:@(stuck * 100 / totalTasks)%"></div>
 
                             <div class="summary-segment bg-secondary"
-                                style="width:@(todo * 100 / totalTasks)%"></div>
+                                style="width:@(notStarted * 100 / totalTasks)%"></div>
                         </div>
+
                         </td>
                         <td>
-
-                            @functions {
-                            string GetDueClass(DateTime? due, PorjectManagement.Models.TaskStatus status)
-                            {
-                                if (status == PorjectManagement.Models.TaskStatus.Completed)
-                                return "bg-success";
-
-                                 if (!due.HasValue) return "bg-secondary";
-
-                                var today = DateTime.Today;
-
-                                if (due < today) return "bg-danger";
-                                if (due == today) return "bg-warning text-dark";
-                                return "bg-primary";
-                            }
-                            }
 
                             @{
                             var minDate = allTasks.Where(t => t.Deadline != null).Min(t => t.Deadline);
@@ -545,16 +535,16 @@
                         </td>   
                         <td>
                         <div class="summary-bar">
-                            <div class="summary-segment bg-success"
+                            <div class="summary-segment bg-primary"
                                 style="width:@(low * 100 / totalTasks)%"></div>
 
-                            <div class="summary-segment bg-warning"
+                            <div class="summary-segment bg-warning text-dark"
                                 style="width:@(medium * 100 / totalTasks)%"></div>
 
-                            <div class="summary-segment bg-danger"
+                            <div class="summary-segment bg-dark"
                                 style="width:@(high * 100 / totalTasks)%"></div>
 
-                            <div class="summary-segment bg-secondary"
+                            <div class="summary-segment bg-danger"
                                 style="width:@(necessary * 100 / totalTasks)%"></div>
                         </div>
                         </td>
