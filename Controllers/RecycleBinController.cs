@@ -50,7 +50,7 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
             var item = _context.RecycleBins.FirstOrDefault(x => x.RecycleId == request.RecycleId);
             if (item == null) return NotFound();
@@ -81,7 +81,7 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
             }
             var item = _context.RecycleBins.FirstOrDefault(x => x.RecycleId == request.RecycleId);
             if (item == null) return NotFound();

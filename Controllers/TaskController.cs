@@ -32,7 +32,7 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
             var vm = new TaskCreateViewModel();
             if (!projectId.HasValue)
@@ -77,7 +77,7 @@ namespace PorjectManagement.Controllers
             int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
             }
             var project = await _context.Projects
          .FirstOrDefaultAsync(p => p.ProjectId == model.ProjectId);
@@ -152,7 +152,7 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
             }
             if (model.SelectedUserId <= 0)
             {
@@ -183,7 +183,7 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
             }
             var userEmail = HttpContext.Session.GetString("UserEmail");
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
@@ -222,7 +222,7 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
             }
             if (id != model.TaskId)
             {
@@ -328,9 +328,7 @@ namespace PorjectManagement.Controllers
         public async Task<IActionResult> UploadAttachment(int taskId, IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return RedirectToAction("BacklogUI", new
-                {
-                    projectId = _context.Tasks
+                return RedirectToAction("BacklogUI","Backlog", new { projectId = _context.Tasks
         .Where(t => t.TaskId == taskId)
         .Select(t => t.ProjectId)
         .First()

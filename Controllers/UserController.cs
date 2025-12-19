@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using PorjectManagement.Models;
 using PorjectManagement.Service;
 using PorjectManagement.Service.Interface;
@@ -274,6 +275,11 @@ namespace PorjectManagement.Controllers
             }
 
             var user = _userService.GetUser(email);
+            if (user?.PasswordHash == newpassword)
+            {
+                ViewBag.Error = "Do not use old password.";
+                return View();
+            }
             if (user == null)
                 return View("InvalidLink");
 
@@ -379,6 +385,11 @@ namespace PorjectManagement.Controllers
             }
 
             var user = _userService.GetUser(email);
+            if (user?.PasswordHash == newPassword)
+            {
+                ViewBag.Error = "Do not use old password.";
+                return View();
+            }
             if (user == null)
                 return View("InvalidLink");
 
