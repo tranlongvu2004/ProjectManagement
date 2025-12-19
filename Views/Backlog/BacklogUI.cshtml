@@ -201,7 +201,7 @@
         }
 
         <a href="/Timeline/Timeline?projectId=@projectId" class="dashboard-btn">
-            <i class="fa fa-chart-line"></i> Timeline
+            <i class="fa fa-chart-line"></i> Calendar
         </a>
 
         <a href="/RecycleBin/RecycleBin" class="dashboard-btn">
@@ -342,26 +342,27 @@
                                 </small>
                             }
                         </div>
+                            @if (roleId == 2)
+                            {
+                                <!-- Delete -->
+                                <form asp-controller="Task"
+                                asp-action="DeleteAttachment"
+                                method="post"
+                                class="d-inline">
+                                    <input type="hidden" name="taskId" value="@parent.TaskId" />
 
-                        <!-- Delete -->
-                             <form asp-controller="Task"
-                                  asp-action="DeleteAttachment"
-                                  method="post"
-                                  class="d-inline">
-                                <input type="hidden" name="taskId" value="@parent.TaskId" />
-
-                                <button type="submit"
-                                        class="btn btn-sm btn-outline-danger"
-                                        title="Delete attachment"
-                                        onclick="return confirm('Delete attachment?');">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </form>
+                                    <button type="submit"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Delete attachment"
+                                    onclick="return confirm('Delete attachment?');">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
 
 
-                            <!-- Replace -->
-                            <form asp-controller="Task"
-                                  asp-action="ReplaceAttachment"
+                                <!-- Replace -->
+                                <form asp-controller="Task"
+                                asp-action="ReplaceAttachment"
                                   method="post"
                                   enctype="multipart/form-data"
                                   class="d-inline">
@@ -375,7 +376,7 @@
                                            onchange="this.form.submit()" />
                                 </label>
                             </form>
-
+                            }
                     }
                     else
                     {
