@@ -27,7 +27,7 @@ namespace PorjectManagement.Controllers
             bool isLeader = _reportService.IsLeaderOfProject(userId.Value, projectId);
 
             if (roleId == 2 && !isLeader)
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             var reports = _reportService.GetReportsByProjectId(projectId);
             ViewBag.ProjectId = projectId;
             return View(reports);
@@ -40,7 +40,7 @@ namespace PorjectManagement.Controllers
             if (leaderId == null) return Unauthorized();
 
             if (!_reportService.IsLeaderOfProject(leaderId.Value, projectId))
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
 
             var vm = _reportService.BuildDailyReportForm(projectId);
             vm.ReportType = "daily";
@@ -54,7 +54,7 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
             }
             int? leaderId = HttpContext.Session.GetInt32("UserId");
             if (leaderId == null) return RedirectToAction("Login", "User");

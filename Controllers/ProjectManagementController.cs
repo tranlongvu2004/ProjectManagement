@@ -29,7 +29,7 @@ namespace PorjectManagement.Controllers
             }
             if (roleId != 1)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
             var userEmail = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(userEmail))

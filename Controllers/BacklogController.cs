@@ -69,9 +69,9 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny","Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
-            
+
             var task = _context.Tasks
                 .Include(t => t.TaskAssignments)
                     .ThenInclude(ta => ta.User)
