@@ -23,8 +23,42 @@ namespace PorjectManagement.Controllers
             {
                 return RedirectToAction("Login", "User");
             }
+
+            var usersInProject = _context.UserProjects
+        .Include(up => up.User)
+        .Where(up => up.ProjectId == projectId)
+        .Select(up => up.User)
+        .ToList();
+
+            var taskAssignments = _context.TaskAssignments
+       .Include(ta => ta.Task)
+       .Where(ta =>
+           ta.Task.ProjectId == projectId &&
+           !_context.RecycleBins.Any(rb =>
+               rb.EntityType == "Task" && rb.EntityId == ta.TaskId))
+       .ToList();
+
+
+            var tasksForChart = usersInProject.SelectMany(u =>
+            {
+                var userTasks = taskAssignments
+                    .Where(ta => ta.UserId == u.UserId)
+                    .Select(ta => new
+                    {
+                        ProjectId = projectId,
+                        Title = ta.Task.Title,
+                        Status = ta.Task.Status.ToString(),
+                        Owner = u.FullName
+                    })
+                    .ToList();
+
+                return userTasks;
+            }).ToList();
+
+
             var tasks = _context.Tasks
                 .Include(t => t.TaskAssignments)
+                .ThenInclude(ta => ta.User)
                 .Include(t => t.CreatedByNavigation)
                 .Where(t => t.ProjectId == projectId
                     && !_context.RecycleBins.Any(rb =>
@@ -34,7 +68,9 @@ namespace PorjectManagement.Controllers
                     t.ProjectId,
                     t.Title,
                     Status = t.Status.ToString(),
-                    Owner = t.CreatedByNavigation.FullName ?? "Unknown"
+                    Owner = t.TaskAssignments
+                        .Select(ta => ta.User.FullName)
+                        .FirstOrDefault() ?? "Unassigned"
                 })
                 .ToList();
 
@@ -58,7 +94,8 @@ namespace PorjectManagement.Controllers
             int inProgressTasks = tasks.Count(t => t.Status == "Doing");
 
             ViewBag.OwnerTasks = System.Text.Json.JsonSerializer.Serialize(ownerTasks);
-            ViewBag.Tasks = System.Text.Json.JsonSerializer.Serialize(tasks);   
+            ViewBag.Tasks = System.Text.Json.JsonSerializer.Serialize(tasks);
+            ViewBag.TasksForChart = System.Text.Json.JsonSerializer.Serialize(tasksForChart);
             ViewBag.TotalTasks = totalTasks;
             ViewBag.CompletedTasks = completedTasks;
             ViewBag.StuckTasks = stuckTasks;
@@ -72,19 +109,21 @@ namespace PorjectManagement.Controllers
         [HttpGet]
         public IActionResult GetTasks(int projectId)
         {
-            var tasks = _context.Tasks
-                .Select(t => new
+            var tasks = _context.TaskAssignments
+                .Include(ta => ta.User)
+                .Include(ta => ta.Task)
+                .Where(ta => ta.Task.ProjectId == projectId)
+                .Select(ta => new
                 {
-                    t.ProjectId,
-                    t.Title,
-                    Status = t.Status.ToString(),
-                    Owner = t.CreatedByNavigation.FullName ?? "Unknown"
+                    ta.Task.Title,
+                    Status = ta.Task.Status.ToString(),
+                    Owner = ta.User.FullName
                 })
-                .Where(t => t.ProjectId == projectId)
                 .ToList();
 
             return Json(tasks);
         }
+
 
         [HttpGet]
         public IActionResult GetTasksByUserId(int projectId, int userId)

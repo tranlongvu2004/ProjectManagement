@@ -69,9 +69,9 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny","Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
-            
+
             var task = _context.Tasks
                 .Include(t => t.TaskAssignments)
                     .ThenInclude(ta => ta.User)
@@ -80,7 +80,42 @@ namespace PorjectManagement.Controllers
                 .FirstOrDefault(t => t.TaskId == request.TaskId);
             
             if (task == null) return NotFound();
+
+            if(task.Status == Models.TaskStatus.Completed)
+            {
+                return BadRequest("Completed task cannot be deleted.");
+            }
+            ;
+
+            int deletedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+            DeleteTaskRecursive(task, deletedBy);
+
+            _context.SaveChanges();
             
+            return Ok();
+        }
+
+        private void DeleteTaskRecursive(Models.Task task, int deletedBy)
+        {
+            // Validate Completed
+            if (task.Status == Models.TaskStatus.Completed)
+                throw new Exception("Cannot delete completed task");
+
+            // Delete subtask first
+            var children = _context.Tasks
+                .Include(t => t.TaskAssignments).ThenInclude(ta => ta.User)
+                .Include(t => t.TaskAttachments)
+                .Include(t => t.Comments)
+                .Where(t => t.ParentId == task.TaskId)
+                .ToList();
+
+            foreach (var child in children)
+            {
+                DeleteTaskRecursive(child, deletedBy);
+            }
+
+            // Snapshot
             var snapshot = new DTOTaskSnapshot
             {
                 TaskId = task.TaskId,
@@ -91,21 +126,17 @@ namespace PorjectManagement.Controllers
                 Status = task.Status.ToString(),
                 ProjectId = task.ProjectId
             };
-            
-            var recycle = new RecycleBin
+
+            _context.RecycleBins.Add(new RecycleBin
             {
                 EntityType = "Task",
                 EntityId = task.TaskId,
                 DataSnapshot = System.Text.Json.JsonSerializer.Serialize(snapshot),
-                DeletedBy = HttpContext.Session.GetInt32("UserId") ?? 0,
+                DeletedBy = deletedBy,
                 DeletedAt = DateTime.Now
-            };
-            
-            _context.RecycleBins.Add(recycle);
-            _context.SaveChanges();
-            
-            return Ok();
+            });
         }
+
     }
 
     public class DeleteTaskRequest

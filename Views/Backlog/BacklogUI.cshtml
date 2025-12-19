@@ -20,6 +20,53 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
+
+    /* TABLE BORDER & SHADOW */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Header */
+.table thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Row border */
+.table tbody tr {
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Hover effect */
+.table tbody tr:hover {
+    background-color: #f9fbfd;
+}
+
+/* Parent task */
+.parent-row {
+    background-color: #ffffff;
+    font-weight: 500;
+}
+
+/* Subtask */
+.subtask-row {
+    background-color: #fafafa;
+    border-left: 4px solid #e9ecef;
+}
+
+/* Cell padding */
+.table td, .table th {
+    vertical-align: middle;
+    padding: 12px;
+}
+
+
     .dashboard-btn {
         padding: 8px 16px;
         background: linear-gradient(135deg, #4c6ef5, #3b5bdb);
@@ -83,6 +130,38 @@
             background-color: #0b5ed7;
             color: white;
         }
+
+        .summary-bar {
+    display: flex;
+    height: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #e9ecef;
+}
+
+.summary-segment {
+    height: 100%;
+}
+
+.output-cell {
+    max-width: 260px;
+}
+
+.output-list {
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+.output-item a {
+    display: inline-block;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+
 </style>
 
 <div class="container mt-4">
@@ -121,10 +200,6 @@
             </a>
         }
 
-        <a href="/Dashboard/Dashboard?projectId=@projectId&userId=@userId" class="dashboard-btn">
-            <i class="fa fa-chart-line"></i> Dashboard
-        </a>
-
         <a href="/Timeline/Timeline?projectId=@projectId" class="dashboard-btn">
             <i class="fa fa-chart-line"></i> Timeline
         </a>
@@ -140,7 +215,7 @@
                 <th>Task</th>
                 <th>Owner</th>
                 <th>Status</th>
-                <th>Due Date</th>
+                <th>Deadline</th>
                 <th>Priority</th>
                 <th>Action</th>
                 <th>Output resource</th>
@@ -171,11 +246,45 @@
                         }
                     </td>
                     <td>
-                        <span class="badge bg-info">@parent.Status</span>
+                        @{
+                            var statusParent = parent.Status switch
+                        {
+                                PorjectManagement.Models.TaskStatus.ToDo          => "bg-primary",
+                                PorjectManagement.Models.TaskStatus.Doing        => "bg-warning text-dark",
+                                PorjectManagement.Models.TaskStatus.Completed    => "bg-success",
+                                PorjectManagement.Models.TaskStatus.Stuck        => "bg-danger",
+                                PorjectManagement.Models.TaskStatus.Not_Started  => "bg-secondary",
+                                _ => "bg-light text-dark"
+                         };
+                        }
+
+                                    <span class="badge @statusParent">
+                                        @parent.Status
+                                    </span>
+
                     </td>
                     <td>@parent.Deadline?.ToString("MMM d")</td>
-                    <td><span class="badge bg-warning">@parent.Priority</span></td>
                     <td>
+                        @{
+
+                            var priorityParent = parent.Priority switch 
+                            {
+                                PorjectManagement.Models.TaskPriority.Low       => "bg-primary", 
+                                PorjectManagement.Models.TaskPriority.Medium    => "bg-warning text-dark", 
+                                PorjectManagement.Models.TaskPriority.High      => "bg-dark",
+                                PorjectManagement.Models.TaskPriority.Necessary => "bg-danger",
+                                _ => "bg-light text-dark"
+                            };
+
+                        }
+                                  <span class="badge @priorityParent">
+                                     @parent.Priority
+                                </span>
+                        </td>
+                    
+                        <td>
+                            @if(roleId == 2)
+                    {
                         <a asp-controller="Task" asp-action="Edit" asp-route-id="@parent.TaskId"
                            class="btn btn-sm btn-edit">
                             <i class="bi bi-pencil-fill"></i> Edit
@@ -194,46 +303,52 @@
                             <i class="bi bi-upload"></i> Upload
                         </button>
 
+                            <button class="btn btn-sm btn-warning delete-btn"
+                                    data-task-id="@parent.TaskId"
+                                    data-task-name="@parent.Title">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                    }
                         <!-- 🆕 COMMENT BUTTON - PARENT TASK -->
                         <button class="btn btn-sm btn-info comment-btn"
                                 data-task-id="@parent.TaskId"
                                 data-task-name="@parent.Title"
                                 data-bs-toggle="modal"
                                 data-bs-target="#commentModal">
-                            <i class="bi bi-chat-dots"></i> Comment (@parent.Comments.Count)
+                            <i class="bi bi-chat-dots"></i> (@parent.Comments.Count)
                         </button>
+                    </td>
+                    
+                    
+                        
+                    
+                    <td class="output-cell">
+    @if (parent.TaskAttachments != null && parent.TaskAttachments.Any())
+    {
+        <div class="output-list">
+            @foreach (var att in parent.TaskAttachments.Take(2))
+            {
+                <div class="output-item">
+                     <a href="@att.FilePath" target="_blank" title="@att.FileName">
+                        📎
+                    </a>
+                </div>
+            }
 
-                        @if (!hasSubTasks)
-                        {
-                            <button class="btn btn-sm btn-warning delete-btn"
-                                    data-task-id="@parent.TaskId"
-                                    data-task-name="@parent.Title">
-                                <i class="bi bi-trash"></i> Delete
-                            </button>
-                        }
-                    </td>
-                    <td>
-                        @if (parent.TaskAttachments != null && parent.TaskAttachments.Any())
-                        {
-                            <ul class="list-unstyled mb-0">
-                                @foreach (var att in parent.TaskAttachments)
-                                {
-                                    <li>
-                                        📎 <a href="@att.FilePath" target="_blank">
-                                            @att.FileName
-                                        </a>
-                                        <small class="text-muted">
-                                            (@(att.FileSize / 1024) KB)
-                                        </small>
-                                    </li>
-                                }
-                            </ul>
-                        }
-                        else
-                        {
-                            <span class="text-muted">No attachment</span>
-                        }
-                    </td>
+            @if (parent.TaskAttachments.Count > 2)
+            {
+                <small class="text-muted">
+                    +@(parent.TaskAttachments.Count - 2) more
+                </small>
+            }
+        </div>
+    }
+    else
+    {
+        <span class="text-muted">No attachment</span>
+    }
+</td>
+
                 </tr>
 
                 <!-- SUBTASKS -->
@@ -253,11 +368,39 @@
                             }
                         </td>
                         <td>
-                            <span class="badge bg-secondary">@child.Status</span>
+
+                            @{
+                            var statusChild = child.Status switch
+                        {
+                                PorjectManagement.Models.TaskStatus.ToDo          => "bg-primary",
+                                PorjectManagement.Models.TaskStatus.Doing        => "bg-warning text-dark",
+                                PorjectManagement.Models.TaskStatus.Completed    => "bg-success",
+                                PorjectManagement.Models.TaskStatus.Stuck        => "bg-danger",
+                                PorjectManagement.Models.TaskStatus.Not_Started  => "bg-secondary",
+                                _ => "bg-light text-dark"
+                         };
+                        }
+
+                            <span class="badge @statusChild">@child.Status</span>
                         </td>
                         <td>@child.Deadline?.ToString("MMM d")</td>
-                        <td><span class="badge bg-dark">@child.Priority</span></td>
                         <td>
+
+                            @{
+                            var priorityChild = child.Priority switch {
+                                PorjectManagement.Models.TaskPriority.Low => "bg-primary", 
+                                PorjectManagement.Models.TaskPriority.Medium => "bg-warning text-dark", 
+                                PorjectManagement.Models.TaskPriority.High => "bg-dark",
+                                PorjectManagement.Models.TaskPriority.Necessary => "bg-danger",
+                                _ => "bg-light text-dark" 
+                            };
+
+                        }
+                            <span class="badge @priorityChild">@child.Priority</span>
+                            </td>
+                        <td>
+                            @if(roleId == 2)
+                            {
                             <a asp-controller="Task" asp-action="Edit" asp-route-id="@child.TaskId"
                                class="btn btn-sm btn-edit">
                                 <i class="bi bi-pencil-fill"></i> Edit
@@ -276,20 +419,22 @@
                                 <i class="bi bi-upload"></i> Upload
                             </button>
 
-                            <!-- 🆕 COMMENT BUTTON - SUBTASK -->
-                            <button class="btn btn-sm btn-info comment-btn"
-                                    data-task-id="@child.TaskId"
-                                    data-task-name="@child.Title"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#commentModal">
-                                <i class="bi bi-chat-dots"></i> Comment (@child.Comments.Count)
-                            </button>
-
                             <button class="btn btn-sm btn-warning delete-btn"
                                     data-task-id="@child.TaskId"
                                     data-task-name="@child.Title">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
+                            }
+
+                                <!-- 🆕 COMMENT BUTTON - SUBTASK -->
+                            <button class="btn btn-sm btn-info comment-btn"
+                                    data-task-id="@child.TaskId"
+                                    data-task-name="@child.Title"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#commentModal">
+                                <i class="bi bi-chat-dots"></i> (@child.Comments.Count)
+                            </button>
+
                         </td>
                         <td>
                             @if (child.TaskAttachments.Any())
@@ -305,7 +450,7 @@
                                 <span class="text-muted">No attachment</span>
                             }
                         </td>
-                    </tr>
+                    </tr>   
                 }
 
                 <div class="modal fade" id="uploadModal" tabindex="-1">
@@ -331,6 +476,82 @@
                     </div>
                 </div>
             }
+
+            <tr>
+
+                        @{
+                            var allTasks = (ViewBag.ParentTasks as List<PorjectManagement.Models.Task>)
+                            .Concat(ViewBag.SubTasks as List<PorjectManagement.Models.Task>)
+                            .ToList();
+
+                            int totalTasks = allTasks.Count == 0 ? 1 : allTasks.Count;
+
+                            int done = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Completed);
+                            int doing = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Doing);
+                            int stuck = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Stuck);
+                            int todo = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.ToDo);
+                            int notStarted = allTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Not_Started);
+
+                            int low = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Low);
+                            int medium = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Medium);
+                            int high = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.High);
+                            int necessary = allTasks.Count(t => t.Priority == PorjectManagement.Models.TaskPriority.Necessary);
+                        }
+                        <td colspan="2"></td>
+                        <td>
+                        <div class="summary-bar">
+                            
+                            <div class="summary-segment bg-primary"
+                                style="width:@(todo * 100 / totalTasks)%"></div>
+
+                            <div class="summary-segment bg-warning text-dark"
+                                style="width:@(doing * 100 / totalTasks)%"></div>
+
+                            <div class="summary-segment bg-success"
+                                style="width:@(done * 100 / totalTasks)%"></div>
+
+                            <div class="summary-segment bg-danger"
+                                style="width:@(stuck * 100 / totalTasks)%"></div>
+
+                            <div class="summary-segment bg-secondary"
+                                style="width:@(notStarted * 100 / totalTasks)%"></div>
+                        </div>
+
+                        </td>
+                        <td>
+
+                            @{
+                            var minDate = allTasks.Where(t => t.Deadline != null).Min(t => t.Deadline);
+                            var maxDate = allTasks.Where(t => t.Deadline != null).Max(t => t.Deadline);
+                        }
+
+                            @if (minDate != null && maxDate != null)
+                        {
+                            <span class="badge bg-dark">
+                                @minDate.Value.ToString("MMM dd") - @maxDate.Value.ToString("MMM dd")
+                            </span>
+                        }
+
+                        </td>   
+                        <td>
+                        <div class="summary-bar">
+                            <div class="summary-segment bg-primary"
+                                style="width:@(low * 100 / totalTasks)%"></div>
+
+                            <div class="summary-segment bg-warning text-dark"
+                                style="width:@(medium * 100 / totalTasks)%"></div>
+
+                            <div class="summary-segment bg-dark"
+                                style="width:@(high * 100 / totalTasks)%"></div>
+
+                            <div class="summary-segment bg-danger"
+                                style="width:@(necessary * 100 / totalTasks)%"></div>
+                        </div>
+                        </td>
+                        <td colspan="2"></td>
+
+                    </tr>
+
         </tbody>
     </table>
 </div>
@@ -552,4 +773,7 @@
                 commentsContainer.innerHTML = '<p class="text-danger">Failed to load comments.</p>';
             });
     }
+
+
+
 </script>
