@@ -578,5 +578,22 @@ namespace PorjectManagement.Controllers
             return Json(new { success = true });
         }
 
+        [HttpPost]
+        public IActionResult DeleteComment([FromBody] DeleteCommentRequest req)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+            var comment = _context.Comments
+                .FirstOrDefault(c => c.CommentId == req.CommentId);
+
+            if (comment == null || comment.UserId != userId)
+                return Forbid();
+
+            _context.Comments.Remove(comment);
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
     }
 }

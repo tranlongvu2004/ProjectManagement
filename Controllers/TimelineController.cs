@@ -18,8 +18,12 @@ namespace PorjectManagement.Controllers
                 {
                     t.TaskId,
                     t.Title,
-                    Start = t.CreatedAt,
-                    End = t.Deadline,
+                    Start = t.CreatedAt.HasValue
+                    ? t.CreatedAt.Value.Date
+                    : (DateTime?)null,
+                    End = t.Deadline.HasValue
+                    ? t.Deadline.Value.Date.AddDays(1)
+                    : (DateTime?)null,
                     Status = t.Status.ToString() ?? "Not_Started",
                     Owner = t.TaskAssignments.FirstOrDefault() != null ? t.TaskAssignments.FirstOrDefault()!.User.FullName : "Unassigned"
                 })
