@@ -610,17 +610,28 @@
                     <p class="text-center text-muted">Loading comments...</p>
                 </div>
 
-                <!-- Add Comment Form -->
-                <form asp-controller="Task" asp-action="AddComment" method="post">
-                    <input type="hidden" name="taskId" id="commentTaskId" />
-                    <div class="input-group">
-                        <textarea name="content" class="form-control" rows="2"
+                <input type="hidden" id="commentTaskId" />
+
+                @if (roleId == 2)
+                {
+                    <form asp-controller="Task" asp-action="AddComment" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="taskId" id="commentTaskIdForm" />
+                        <div class="input-group">
+                            <textarea name="content" class="form-control" rows="2"
                                   placeholder="Write a comment..." required></textarea>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send-fill"></i> Send
-                        </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send-fill"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-info mb-0">
+                        View comments
                     </div>
-                </form>
+                }
             </div>
         </div>
     </div>
