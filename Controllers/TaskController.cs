@@ -384,6 +384,117 @@ namespace PorjectManagement.Controllers
             });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteAttachment(int taskId)
+        {
+            var attachment = await _context.TaskAttachments
+                .FirstOrDefaultAsync(a => a.TaskId == taskId);
+
+            if (attachment == null)
+                return RedirectToAction("BacklogUI", "Backlog", new
+                {
+                    projectId = _context.Tasks
+                        .Where(t => t.TaskId == taskId)
+                        .Select(t => t.ProjectId)
+                        .First()
+                });
+
+            var physicalPath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                attachment.FilePath.TrimStart('/')
+            );
+
+            if (System.IO.File.Exists(physicalPath))
+                System.IO.File.Delete(physicalPath);
+
+            _context.TaskAttachments.Remove(attachment);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Delete attachment successfully!";
+            return RedirectToAction("BacklogUI", "Backlog", new
+            {
+                projectId = _context.Tasks
+                    .Where(t => t.TaskId == taskId)
+                    .Select(t => t.ProjectId)
+                    .First()
+            });
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ReplaceAttachment(int taskId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return RedirectToAction("BacklogUI", "Backlog", new
+                {
+                    projectId = _context.Tasks
+                        .Where(t => t.TaskId == taskId)
+                        .Select(t => t.ProjectId)
+                        .First()
+                });
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return Unauthorized();
+
+            var oldAttachment = await _context.TaskAttachments
+                .FirstOrDefaultAsync(a => a.TaskId == taskId);
+
+            if (oldAttachment != null)
+            {
+                var oldPhysicalPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    oldAttachment.FilePath.TrimStart('/')
+                );
+
+                if (System.IO.File.Exists(oldPhysicalPath))
+                    System.IO.File.Delete(oldPhysicalPath);
+
+                _context.TaskAttachments.Remove(oldAttachment);
+                await _context.SaveChangesAsync();
+            }
+
+            // === Upload mới (GIỐNG UploadAttachment) ===
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var attachment = new TaskAttachment
+            {
+                TaskId = taskId,
+                FileName = file.FileName,
+                FilePath = "/uploads/" + fileName,
+                FileType = file.ContentType,
+                FileSize = file.Length,
+                UploadedBy = userId.Value,
+                UploadedAt = DateTime.Now
+            };
+
+            _context.TaskAttachments.Add(attachment);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Replace attachment successfully!";
+            return RedirectToAction("BacklogUI", "Backlog", new
+            {
+                projectId = _context.Tasks
+                    .Where(t => t.TaskId == taskId)
+                    .Select(t => t.ProjectId)
+                    .First()
+            });
+        }
+
+
+
         // POST: /Task/AddComment
         [HttpPost]
         [ValidateAntiForgeryToken]
