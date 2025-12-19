@@ -120,10 +120,11 @@
 
 <script>
       let tasks = @Html.Raw(ViewBag.Tasks);
+      let chartTask = @Html.Raw(ViewBag.TasksForChart);
       let userTasks = @Html.Raw(ViewBag.OwnerTasks);
       const ctx = document.getElementById('projectChart');
       const ctx2 = document.getElementById('ownerChart');
-      const chartData = getChartDataFromTasks(tasks);
+      const chartData = getChartDataFromTasks(chartTask);
       const userChart = getUserChartData(userTasks);
       //Project Chart
 

@@ -50,7 +50,7 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
             var item = _context.RecycleBins.FirstOrDefault(x => x.RecycleId == request.RecycleId);
             if (item == null) return NotFound();
@@ -81,10 +81,26 @@ namespace PorjectManagement.Controllers
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny", "Error");
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
             }
             var item = _context.RecycleBins.FirstOrDefault(x => x.RecycleId == request.RecycleId);
             if (item == null) return NotFound();
+
+            var task = _context.Tasks.FirstOrDefault(t => t.TaskId == item.EntityId);
+            if (task == null) return NotFound();
+
+            if (task.ParentId != null)
+            {
+                bool parentStillDeleted = _context.RecycleBins.Any(rb =>
+                    rb.EntityType == "Task" &&
+                    rb.EntityId == task.ParentId);
+
+                if (parentStillDeleted)
+                {
+                    return BadRequest("You must restore parent task first.");
+                }
+            };
+
             _context.RecycleBins.Remove(item);
             _context.SaveChanges();
             return Ok();
