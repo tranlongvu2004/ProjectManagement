@@ -921,6 +921,11 @@ function enhanceCommentsForEdit() {
         editBtn.innerText = 'Edit';
         editBtn.style.cursor = 'pointer';
 
+        const deleteBtn = document.createElement('div');
+        deleteBtn.innerText = 'Delete';
+        deleteBtn.style.cursor = 'pointer';
+
+        menu.appendChild(deleteBtn);
         menu.appendChild(editBtn);
         item.appendChild(menu);
 
@@ -962,6 +967,29 @@ function enhanceCommentsForEdit() {
                 });
             };
         };
+
+                deleteBtn.onclick = function () {
+            menu.style.display = 'none';
+
+            if (!confirm('Are you sure?')) return;
+
+            fetch('/Task/DeleteComment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ commentId })
+            })
+            .then(r => {
+                if (r.ok) {
+                    const taskId = document.getElementById('commentTaskId').value;
+                    loadComments(taskId);
+                    setTimeout(enhanceCommentsForEdit, 300);
+                } else {
+                    alert('Delete failed');
+                }
+            });
+        };
+
 
         // click ra ngoài thì đóng menu
         document.addEventListener('click', function () {
