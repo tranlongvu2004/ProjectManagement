@@ -287,26 +287,26 @@
                     {
                         <a asp-controller="Task" asp-action="Edit" asp-route-id="@parent.TaskId"
                            class="btn btn-sm btn-edit">
-                            <i class="bi bi-pencil-fill"></i> Edit
+                            <i class="bi bi-pencil-fill"></i>
                         </a>
 
                         <!-- ASSIGN -->
                         <a asp-controller="Task" asp-action="Assign" asp-route-id="@parent.TaskId"
                            class="btn btn-sm btn-assign-task">
-                            <i class="bi bi-person-plus"></i> Assign
+                            <i class="bi bi-person-plus"></i>
                         </a>
 
                         <button class="btn btn-sm btn-outline-primary upload-btn"
                                 data-task-id="@parent.TaskId"
                                 data-bs-toggle="modal"
                                 data-bs-target="#uploadModal">
-                            <i class="bi bi-upload"></i> Upload
+                            <i class="bi bi-upload"></i>
                         </button>
 
                             <button class="btn btn-sm btn-warning delete-btn"
                                     data-task-id="@parent.TaskId"
                                     data-task-name="@parent.Title">
-                                <i class="bi bi-trash"></i> Delete
+                                <i class="bi bi-trash"></i>
                             </button>
                     }
                         <!-- 🆕 COMMENT BUTTON - PARENT TASK -->
@@ -440,26 +440,26 @@
                             {
                             <a asp-controller="Task" asp-action="Edit" asp-route-id="@child.TaskId"
                                class="btn btn-sm btn-edit">
-                                <i class="bi bi-pencil-fill"></i> Edit
+                                <i class="bi bi-pencil-fill"></i>
                             </a>
 
                             <!-- ASSIGN (SUBTASK) -->
                             <a asp-controller="Task" asp-action="Assign" asp-route-id="@child.TaskId"
                                class="btn btn-sm btn-assign-task">
-                                <i class="bi bi-person-plus"></i> Assign
+                                <i class="bi bi-person-plus"></i>
                             </a>
 
                             <button class="btn btn-sm btn-outline-primary upload-btn"
                                     data-task-id="@child.TaskId"
                                     data-bs-toggle="modal"
                                     data-bs-target="#uploadModal">
-                                <i class="bi bi-upload"></i> Upload
+                                <i class="bi bi-upload"></i>
                             </button>
 
                             <button class="btn btn-sm btn-warning delete-btn"
                                     data-task-id="@child.TaskId"
                                     data-task-name="@child.Title">
-                                <i class="bi bi-trash"></i> Delete
+                                <i class="bi bi-trash"></i>
                             </button>
                             }
 
