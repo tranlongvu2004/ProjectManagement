@@ -21,6 +21,7 @@ namespace PorjectManagement.Tests.Controllers
         private readonly Mock<ITaskService> _taskServiceMock;
         private readonly Mock<IUserProjectService> _userProjectServiceMock;
         private readonly Mock<ICommentService> _commentServiceMock;
+        private readonly Mock<IProjectServices> _projectServicesMock;
         private readonly LabProjectManagementContext _context;
         private readonly TaskController _controller;
 
@@ -29,6 +30,7 @@ namespace PorjectManagement.Tests.Controllers
             _taskServiceMock = new Mock<ITaskService>();
             _userProjectServiceMock = new Mock<IUserProjectService>();
             _commentServiceMock = new Mock<ICommentService>();
+            _projectServicesMock = new Mock<IProjectServices>();
 
             // ✅ Setup InMemory Database
             var options = new DbContextOptionsBuilder<LabProjectManagementContext>()
@@ -51,6 +53,7 @@ namespace PorjectManagement.Tests.Controllers
                 _taskServiceMock.Object,
                 _userProjectServiceMock.Object,
                 _commentServiceMock.Object,
+                _projectServicesMock.Object,
                 _context
             );
 
@@ -79,7 +82,7 @@ namespace PorjectManagement.Tests.Controllers
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider
                 .Setup(x => x.GetService(typeof(IProjectServices)))
-                .Returns(Mock.Of<IProjectServices>());
+                .Returns(_projectServicesMock.Object);
             serviceProvider
                 .Setup(x => x.GetService(typeof(IUrlHelperFactory)))
                 .Returns(urlHelperFactoryMock.Object);

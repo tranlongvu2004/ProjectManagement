@@ -12,17 +12,20 @@ namespace PorjectManagement.Controllers
         private readonly ITaskService _taskService;
         private readonly IUserProjectService _userProjectService;
         private readonly ICommentService _commentService;
+        private readonly IProjectServices _projectServices;
         private readonly LabProjectManagementContext _context;
 
         public TaskController(
             ITaskService taskService,
             IUserProjectService userProjectService,
             ICommentService commentService,
+            IProjectServices projectServices,
             LabProjectManagementContext context)
         {
             _taskService = taskService;
             _userProjectService = userProjectService;
             _commentService = commentService;
+            _projectServices = projectServices;
             _context = context;
         }
 
@@ -133,6 +136,9 @@ namespace PorjectManagement.Controllers
             var newTaskId = await _taskService.CreateTaskAsync(task);
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
+
+            await _projectServices.UpdateProjectStatusAsync(model.ProjectId);
+
             TempData["SuccessMessage"] = "Create Task successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
@@ -301,6 +307,8 @@ namespace PorjectManagement.Controllers
                     TempData["Error"] = "Cant update task.";
                     return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
                 }
+
+                await _projectServices.UpdateProjectStatusAsync(model.ProjectId);
 
                 TempData["Success"] = "Update task successful!";
                 return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
