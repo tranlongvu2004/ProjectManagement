@@ -23,5 +23,10 @@ namespace PorjectManagement.Service.Interface
         int GetProjectId(int taskId);
         Task<ProjectUpdateViewModel?> GetProjectForUpdateAsync(int projectId, int mentorId);
         Task<bool> UpdateProjectWithTeamAsync(ProjectUpdateViewModel model, int updatedByUserId);
+
+        System.Threading.Tasks.Task UpdateProjectStatusAsync(int projectId);
+        Task<ProjectStatus> CalculateProjectStatusAsync(int projectId);
+        Task<int> GetProgressPercentageAsync(int projectId);
+
     }
 }

@@ -52,18 +52,6 @@ namespace PorjectManagement.Controllers
                     })
                     .ToList();
 
-                // User KHÔNG có task vẫn hiện (count = 0)
-                if (!userTasks.Any())
-                {
-                    userTasks.Add(new
-                    {
-                        ProjectId = projectId,
-                        Title = "No Task",
-                        Status = "NoTask",
-                        Owner = u.FullName
-                    });
-                }
-
                 return userTasks;
             }).ToList();
 
