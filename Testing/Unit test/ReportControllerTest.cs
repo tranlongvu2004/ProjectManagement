@@ -23,7 +23,7 @@ namespace PorjectManagement.Testing
             _controller = new ReportController(_mockService.Object);
 
             _context = new DefaultHttpContext();
-            _context.Session = new MockHttpSession();
+          //  _context.Session = new MockHttpSession();
 
             _controller.ControllerContext = new ControllerContext
             {
