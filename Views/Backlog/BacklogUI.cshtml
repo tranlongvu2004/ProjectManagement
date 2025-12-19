@@ -885,7 +885,6 @@ function enhanceCommentsForEdit() {
     document.querySelectorAll('#commentsList .comment-item').forEach(item => {
             const commentUserId = parseInt(item.dataset.userId);
         if (commentUserId !== CURRENT_USER_ID) return;
-        // tránh add trùng
         if (item.querySelector('.comment-more')) return;
 
         item.style.position = 'relative'; 
@@ -918,7 +917,7 @@ function enhanceCommentsForEdit() {
         menu.style.zIndex = '1000';
 
         const editBtn = document.createElement('div');
-        editBtn.innerText = 'Chỉnh sửa';
+        editBtn.innerText = 'Edit';
         editBtn.style.cursor = 'pointer';
 
         menu.appendChild(editBtn);
