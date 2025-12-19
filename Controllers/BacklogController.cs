@@ -48,7 +48,7 @@ namespace PorjectManagement.Controllers
                 .Where(t => t.ProjectId == projectId
                     && !_context.RecycleBins.Any(r =>
                         r.EntityType == "Task"
-                        && r.EntityId == t.TaskId) 
+                        && r.EntityId == t.TaskId)
                     && !deletedTasks.Contains(t.TaskId))
                 .ToListAsync();
 
@@ -59,17 +59,17 @@ namespace PorjectManagement.Controllers
             ViewBag.SubTasks = subTasks;
             ViewBag.ProjectId = projectId;
             ViewBag.IsLeader = isLeader;
-            
+
             return View();
         }
 
         [HttpPost]
-        public IActionResult DeleteTask([FromBody] DeleteTaskRequest request)
+        public async Task<IActionResult> DeleteTask([FromBody] DeleteTaskRequest request)
         {
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
-                return RedirectToAction("AccessDeny","Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
 
             var task = _context.Tasks
@@ -78,24 +78,32 @@ namespace PorjectManagement.Controllers
                 .Include(t => t.TaskAttachments)
                 .Include(t => t.Comments)
                 .FirstOrDefault(t => t.TaskId == request.TaskId);
-            
+
             if (task == null) return NotFound();
 
-            if(task.Status == Models.TaskStatus.Completed)
+            // Completed task cannot be deleted
+            if (task.Status == Models.TaskStatus.Completed)
             {
                 return BadRequest("Completed task cannot be deleted.");
             }
-            ;
+
+            // Lưu projectId trước khi delete 
+            int projectId = task.ProjectId;
 
             int deletedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
 
+            // Delete task recursively (dev/duc)
             DeleteTaskRecursive(task, deletedBy);
 
-            _context.SaveChanges();
-            
+            await _context.SaveChangesAsync();
+
+            // NEW: Update project status sau khi delete task
+            await _projectServices.UpdateProjectStatusAsync(projectId);
+
             return Ok();
         }
 
+        // Xóa task và tất cả subtasks (recursive)
         private void DeleteTaskRecursive(Models.Task task, int deletedBy)
         {
             // Validate Completed
@@ -136,7 +144,6 @@ namespace PorjectManagement.Controllers
                 DeletedAt = DateTime.Now
             });
         }
-
     }
 
     public class DeleteTaskRequest

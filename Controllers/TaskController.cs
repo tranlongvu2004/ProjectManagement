@@ -12,17 +12,20 @@ namespace PorjectManagement.Controllers
         private readonly ITaskService _taskService;
         private readonly IUserProjectService _userProjectService;
         private readonly ICommentService _commentService;
+        private readonly IProjectServices _projectServices;
         private readonly LabProjectManagementContext _context;
 
         public TaskController(
             ITaskService taskService,
             IUserProjectService userProjectService,
             ICommentService commentService,
+            IProjectServices projectServices,
             LabProjectManagementContext context)
         {
             _taskService = taskService;
             _userProjectService = userProjectService;
             _commentService = commentService;
+            _projectServices = projectServices;
             _context = context;
         }
 
@@ -133,6 +136,9 @@ namespace PorjectManagement.Controllers
             var newTaskId = await _taskService.CreateTaskAsync(task);
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
+
+            await _projectServices.UpdateProjectStatusAsync(model.ProjectId);
+
             TempData["SuccessMessage"] = "Create Task successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
         }
@@ -240,9 +246,10 @@ namespace PorjectManagement.Controllers
             }
             else
             {
+                // Validate: Deadline > thời gian hiện tại
                 if (model.Deadline.HasValue && model.Deadline.Value < DateTime.Now)
                 {
-                    ModelState.AddModelError("Deadline", "Deadline not in past");
+                    ModelState.AddModelError("Deadline", "Deadline cannot be in the past");
                 }
 
                 // Validate: Task deadline < project deadline
@@ -250,7 +257,7 @@ namespace PorjectManagement.Controllers
                 {
                     ModelState.AddModelError(
                         "Deadline",
-                        $"Task deadline cannot exceed project deadline ({project.Deadline:dd/MM/yyyy})"
+                        $"Task deadline cannot exceed project deadline ({project.Deadline:dd/MM/yyyy HH:mm})"
                     );
                 }
             }
@@ -279,7 +286,7 @@ namespace PorjectManagement.Controllers
                     model.CurrentAssignees = reloadedModel.CurrentAssignees;
                 }
 
-                // Truyền lại ProjectDeadline cho view
+                // Truyền ProjectDeadline cho view
                 if (project != null)
                 {
                     ViewBag.ProjectDeadline = project.Deadline;
@@ -301,6 +308,8 @@ namespace PorjectManagement.Controllers
                     return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
                 }
 
+                await _projectServices.UpdateProjectStatusAsync(model.ProjectId);
+
                 TempData["Success"] = "Update task successful!";
                 return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
             }
@@ -314,7 +323,7 @@ namespace PorjectManagement.Controllers
                     model.CurrentAssignees = reloadedModel.CurrentAssignees;
                 }
 
-                // Truyền lại ProjectDeadline cho view
+                // Truyền ProjectDeadline cho view
                 if (project != null)
                 {
                     ViewBag.ProjectDeadline = project.Deadline;

@@ -19,22 +19,6 @@
                 </a>
             </div>
 
-            @* <!-- Messages -->
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-            @if (TempData["Success"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            } *@
-
             <!-- Form Card -->
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
@@ -84,35 +68,41 @@
                                 <span asp-validation-for="Status" class="text-danger small"></span>
                             </div>
 
-                            <!-- Deadline -->
+                            <!-- Deadline với giờ phút -->
                             <div class="col-md-4">
                                 <label asp-for="Deadline" class="form-label fw-semibold">
                                     <i class="bi bi-calendar-event text-danger"></i> Deadline
                                 </label>
+                                @{
+                                    var minDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+                                    var maxDateTime = projectDeadline.HasValue ? projectDeadline.Value.ToString("yyyy-MM-ddTHH:mm") : "";
+                                    var currentValue = Model.Deadline.HasValue ? Model.Deadline.Value.ToString("yyyy-MM-ddTHH:mm") : "";
+                                }
+
                                 @if (projectDeadline.HasValue)
                                 {
-                                    <input type="date" 
-                                           id="Deadline" 
-                                           name="Deadline" 
+                                    <input type="datetime-local"
+                                           id="Deadline"
+                                           name="Deadline"
                                            class="form-control"
-                                           value="@(Model.Deadline?.ToString("yyyy-MM-dd"))"
-                                           min="@DateTime.Now.ToString("yyyy-MM-dd")"
-                                           max="@projectDeadline.Value.ToString("yyyy-MM-dd")" />
+                                           value="@currentValue"
+                                           min="@minDateTime"
+                                           max="@maxDateTime" />
                                 }
                                 else
                                 {
-                                    <input type="date" 
-                                           id="Deadline" 
-                                           name="Deadline" 
+                                    <input type="datetime-local"
+                                           id="Deadline"
+                                           name="Deadline"
                                            class="form-control"
-                                           value="@(Model.Deadline?.ToString("yyyy-MM-dd"))"
-                                           min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                           value="@currentValue"
+                                           min="@minDateTime" />
                                 }
                                 <span asp-validation-for="Deadline" class="text-danger small"></span>
                                 @if (projectDeadline.HasValue)
                                 {
                                     <small class="text-muted">
-                                        <i class="bi bi-info-circle"></i> Project deadline: <strong>@projectDeadline.Value.ToString("dd/MM/yyyy")</strong>
+                                        <i class="bi bi-info-circle"></i> Project deadline: <strong>@projectDeadline.Value.ToString("dd/MM/yyyy HH:mm")</strong>
                                     </small>
                                 }
                             </div>
@@ -133,8 +123,8 @@
                                         <div class="d-flex align-items-center mb-2">
                                             <div class="avatar-circle bg-secondary text-white me-2"
                                                  style="width: 32px; height: 32px; border-radius: 50%;
-                                                                display: flex; align-items: center; justify-content: center;
-                                                                font-weight: bold;">
+                                                                        display: flex; align-items: center; justify-content: center;
+                                                                        font-weight: bold;">
                                                 @assignee.FullName.Substring(0, 1).ToUpper()
                                             </div>
                                             <div>
@@ -168,8 +158,8 @@
                                             <label class="form-check-label d-flex align-items-center" for="user_@member.UserId">
                                                 <div class="avatar-circle bg-primary text-white me-2"
                                                      style="width: 32px; height: 32px; border-radius: 50%;
-                                                                    display: flex; align-items: center; justify-content: center;
-                                                                    font-weight: bold;">
+                                                                            display: flex; align-items: center; justify-content: center;
+                                                                            font-weight: bold;">
                                                     @member.FullName.Substring(0, 1).ToUpper()
                                                 </div>
                                                 <div>
@@ -227,25 +217,56 @@
                 $('#selected-count').text(count);
             }
 
-            // ✅ Client-side validation cho deadline
+            // ✅ Client-side validation cho deadline với giờ phút
             $('#editTaskForm').on('submit', function(e) {
                 const deadlineInput = $('input[name="Deadline"]').val();
-                
-                @if (projectDeadline.HasValue)
-                {
-                    <text>
-                    if (deadlineInput) {
-                        const taskDeadline = new Date(deadlineInput);
-                        const projectDeadline = new Date('@projectDeadline.Value.ToString("yyyy-MM-dd")');
-                        
-                        if (taskDeadline > projectDeadline) {
-                            e.preventDefault();
-                            alert('Task deadline cannot exceed project deadline (@projectDeadline.Value.ToString("dd/MM/yyyy"))');
-                            $('input[name="Deadline"]').focus();
-                            return false;
-                        }
+
+                if (deadlineInput) {
+                    const taskDeadline = new Date(deadlineInput);
+                    const now = new Date();
+
+                    // Validate: Deadline phải lớn hơn thời gian hiện tại
+                    if (taskDeadline < now) {
+                        e.preventDefault();
+                        alert('Deadline cannot be in the past. Please select a future date and time.');
+                        $('input[name="Deadline"]').focus();
+                        return false;
                     }
-                    </text>
+
+                    @if (projectDeadline.HasValue)
+                    {
+                            <text>
+                            // Validate: Deadline không được vượt quá project deadline
+                            const projectDeadline = new Date('@projectDeadline.Value.ToString("yyyy-MM-ddTHH:mm")');
+
+                            if (taskDeadline > projectDeadline) {
+                                e.preventDefault();
+                                alert('Task deadline cannot exceed project deadline (@projectDeadline.Value.ToString("dd/MM/yyyy HH:mm"))');
+                                $('input[name="Deadline"]').focus();
+                                return false;
+                            }
+                            </text>
+                    }
+                }
+            });
+
+            // ✅ Real-time validation khi user thay đổi deadline
+            $('input[name="Deadline"]').on('change', function() {
+                const deadlineInput = $(this).val();
+
+                if (deadlineInput) {
+                    const taskDeadline = new Date(deadlineInput);
+                    const now = new Date();
+
+                    if (taskDeadline < now) {
+                        $(this).addClass('is-invalid');
+                        if (!$(this).next('.invalid-feedback').length) {
+                            $(this).after('<div class="invalid-feedback">Deadline cannot be in the past</div>');
+                        }
+                    } else {
+                        $(this).removeClass('is-invalid');
+                        $(this).next('.invalid-feedback').remove();
+                    }
                 }
             });
 
@@ -278,4 +299,25 @@
         .btn-primary:hover {
             background: linear-gradient(135deg, #5568d3 0%, #65408b 100%);
         }
+
+    /* Style cho datetime-local input */
+    input[type="datetime-local"] {
+        padding: 0.5rem;
+    }
+
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(0.5);
+        }
+
+        input[type="datetime-local"].is-invalid {
+            border-color: #dc3545;
+        }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.875rem;
+        color: #dc3545;
+        margin-top: 0.25rem;
+    }
 </style>
