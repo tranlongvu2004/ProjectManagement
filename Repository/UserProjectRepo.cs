@@ -53,7 +53,8 @@ namespace PorjectManagement.Repository
         public async Task<List<User>> GetUsersByProjectIdAsync(int projectId)
         {
             return await _context.UserProjects
-                .Where(up => up.ProjectId == projectId)
+                .Where(up => up.ProjectId == projectId
+                 && up.User.RoleId != 1)
                 .Select(up => up.User)
                 .ToListAsync();
         }

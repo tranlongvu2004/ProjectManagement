@@ -3,21 +3,14 @@
     ViewData["Title"] = "Add Members";
 }
 
-
-
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-<style>
 
-   
+<style>
     .card {
         border: none;
         border-radius: 18px;
         box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         overflow: hidden;
-    }
-
-    .table {
-        margin-bottom: 0;
     }
 
     table thead {
@@ -32,13 +25,9 @@
             border-bottom: 1px solid #e2e6ef;
         }
 
-    .user-row {
-        transition: 0.15s ease-in-out;
+    .user-row:hover {
+        background: #eef4ff !important;
     }
-
-        .user-row:hover {
-            background: #eef4ff !important;
-        }
 
     .user-check,
     #selectAll {
@@ -47,27 +36,17 @@
     }
 
     .rounded-circle {
-        background: linear-gradient(135deg, #5673ff, #3a56ff) !important;
+        background: linear-gradient(135deg, #5673ff, #3a56ff);
         color: #fff;
         font-weight: 600;
         font-size: 15px;
-        width: 40px;
-        height: 40px;
+        width: 38px;
+        height: 38px;
     }
 
     .fw-bold {
         font-size: 15px;
         color: #222;
-    }
-    .progress {
-        background: #e6ebf4 !important;
-        border-radius: 14px;
-        height: 8px;
-    }
-
-    .progress-bar {
-        background: #5277ff !important;
-        border-radius: 14px;
     }
 
     .badge {
@@ -77,19 +56,9 @@
         font-weight: 600;
     }
 
-        .badge.bg-success {
-            background-color: #d8f7de !important;
-            color: #2c8d55 !important;
-        }
-
         .badge.bg-primary {
             background-color: #e1e7ff !important;
             color: #3955ff !important;
-        }
-
-        .badge.bg-secondary {
-            background-color: #ececec !important;
-            color: #555 !important;
         }
 
         .badge.bg-warning.text-dark {
@@ -97,17 +66,9 @@
             color: #7a5a00 !important;
         }
 
-    #projectSelect {
-        border-radius: 12px;
-        padding: 10px 14px;
-        height: 48px;
-        border: 1px solid #d4dae5;
-        transition: 0.2s;
-    }
-
-        #projectSelect:focus {
-            border-color: #4d6bff;
-            box-shadow: 0 0 0 3px rgba(71, 99, 255, 0.25);
+        .badge.bg-secondary {
+            background-color: #ececec !important;
+            color: #555 !important;
         }
 
     #searchBox {
@@ -115,64 +76,51 @@
         padding: 10px 14px;
         width: 360px;
         border: 1px solid #d4dae5;
-        transition: 0.2s;
     }
 
-        #searchBox:focus {
-            border-color: #3d73ff;
-            box-shadow: 0 0 0 3px rgba(61,115,255,0.25);
-        }
-
     button.btn-primary {
-        background: #3d6bff !important;
+        background: #3d6bff;
         border: none;
         padding: 11px 22px;
         font-size: 15px;
         border-radius: 12px;
         font-weight: 600;
-        box-shadow: 0 4px 12px rgba(61,115,255,0.3);
-        transition: 0.15s ease-in-out;
     }
 
-        button.btn-primary:hover {
-            background: #2858ff !important;
-            transform: translateY(-2px);
-        }
-
-    .btn-outline-secondary {
-        padding: 10px 20px;
-        border-radius: 12px;
+    /* ===== CÂN CỘT SAU KHI BỎ STATUS ===== */
+    .col-check {
+        width: 48px;
+        text-align: center;
     }
 
-    #selectedCount {
-        font-weight: 600;
-        color: #3d4a63;
-        font-size: 14px;
+    .col-name {
+        width: 28%;
     }
 
-    .alert {
-        border-radius: 14px;
-        padding: 16px 18px;
-        font-size: 14px;
+    .col-email {
+        width: 32%;
     }
 
+    .col-start {
+        width: 14%;
+        white-space: nowrap;
+    }
 
+    .col-role {
+        width: 16%;
+        text-align: center;
+    }
 </style>
 
 <div class="container my-4">
-
     <h3 class="mb-3">
         Add members to project:
         <span class="text-primary">@Model.ProjectName</span>
     </h3>
 
-
-
     <div class="d-flex justify-content-between align-items-center mb-3">
-
-        <form class="d-flex" method="get" action="">
-            <input id="searchBox" class="form-control me-2" type="search" placeholder="Search by intern's name" aria-label="Search">
-        </form>
+        <input id="searchBox" class="form-control" type="search"
+               placeholder="Search by intern's name" />
     </div>
 
     <form id="addForm" asp-controller="UserProject" asp-action="AddMembers" method="post">
@@ -182,124 +130,71 @@
         <div class="card">
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
-                    <thead class="bg-light">
+                    <thead>
                         <tr>
-                            <th style="width:40px;"><input id="selectAll" type="checkbox" /></th>
-                            <th>Intern Name</th>
-                            <th>Gmail</th>
-                            <th>Start Day</th>
-                            <th>Role</th>
-                            <th>Status</th>
+                            <th class="col-check">
+                                <input id="selectAll" type="checkbox" />
+                            </th>
+                            <th class="col-name">Intern Name</th>
+                            <th class="col-email">Gmail</th>
+                            <th class="col-start">Start Day</th>
+                            <th class="col-role">Role</th>
                         </tr>
                     </thead>
+
                     <tbody id="usersTableBody">
-    @for (int i = 0; i < Model.Users.Count; i++)
-    {
-        var u = Model.Users[i];
-        <tr class="user-row" data-name="@u.FullName.ToLower()">
+                        @for (int i = 0; i < Model.Users.Count; i++)
+                        {
+                            var u = Model.Users[i];
+                            <tr class="user-row" data-name="@u.FullName.ToLower()">
+                                <td class="col-check">
+                                    <input class="form-check-input user-check"
+                                           name="SelectedUserIds"
+                                           type="checkbox"
+                                           value="@u.UserId" />
+                                </td>
 
-            <td>
-                <input class="form-check-input user-check"
-                       name="SelectedUserIds"
-                       type="checkbox"
-                       value="@u.UserId" />
-            </td>
+                                <td class="col-name">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                            @u.FullName.Split(' ').Last().Substring(0, 1).ToUpper()
+                                        </div>
+                                        <div class="fw-bold">@u.FullName</div>
+                                    </div>
+                                </td>
 
-            <td>
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-secondary me-2"
-                         style="width:38px;height:38px;
-                                display:flex;align-items:center;
-                                justify-content:center;color:white;">
-                        @u.FullName.Split(' ').Last().Substring(0,1).ToUpper()
-                    </div>
-                    <div>
-                        <div class="fw-bold">@u.FullName</div>
-                    </div>
-                </div>
-            </td>
+                                <td class="col-email">@u.Email</td>
 
-            <td>@u.Email</td>
+                                <td class="col-start">
+                                    @(u.CreatedAt.HasValue
+                                                                    ? u.CreatedAt.Value.ToString("dd/MM/yyyy")
+                                                                    : "")
+                                                                     </td>
 
-            <td>
-                @(u.CreatedAt.HasValue
-                    ? u.CreatedAt.Value.ToString("dd/MM/yyyy")
-                    : "")
-                                                                     <td>
-                                                                         <span class="badge
-            @(u.RoleName == "Mentor" ? "bg-primary" :
-                                                    u.RoleName == "InternLead" ? "bg-warning text-dark" :
-                                                    "bg-secondary")">
+                                <td class="col-role">
+                                    <span class="badge
+                                            @(u.RoleName == "Mentor" ? "bg-primary" :
+                                                                                    u.RoleName == "InternLead" ? "bg-warning text-dark" :
+                                                                                    "bg-secondary")">
                                     @u.RoleName
                                 </span>
                             </td>
-
-            <td>
-                @switch (u.Status)
-                {
-                    case "Active":
-                        <span class="badge bg-success">Active</span>;
-                        break;
-
-                    case "Completed":
-                        <span class="badge bg-primary">Inactive</span>;
-                        break;
-
-                    default:
-                        <span class="badge bg-secondary">@u.Status</span>;
-                        break;
-                }
-            </td>
-
-        </tr>
-    }
-
-</tbody>
-                    @if (TempData["AddResults"] != null)
-                    {
-                        var results = System.Text.Json.JsonSerializer.Deserialize<Dictionary<int, string>>(TempData["AddResults"].ToString());
-
-                        <div class="alert alert-info">
-                            @foreach (var r in results)
-                            {
-                                <p>
-                                    User ID @r.Key:
-                                    @{
-                                        string msg = r.Value switch
-                                        {
-                                            "success" => "Added successfully",
-                                            "exists" => " Already exists in the project",
-                                            "invalid_status" => "Cannot add: intern does not exist",
-                                            _ => "Undefined"
-                                        };
-                                    }
-                                    @msg
-                                </p>
-                            }
-                        </div>
-                    }
-                    @if (TempData["Info"] != null)
-                    {
-                        <div class="alert alert-danger mt-3">
-                            @TempData["Info"]
-                        </div>
-                    }
-
-
-
-
+                        </tr>
+                                                }
+                    </tbody>
                 </table>
             </div>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-3">
-            <div>
-                <span id="selectedCount">0 interns selected</span>
-            </div>
+            <span id="selectedCount">0 interns selected</span>
+
             <div>
                 <a asp-controller="Home" asp-action="Index"
                    class="btn btn-outline-secondary me-2">Cancel</a>
-                <button type="submit" class="btn btn-primary">Add (<span id="addCount">0</span>)</button>
+                <button type="submit" class="btn btn-primary">
+                    Add (<span id="addCount">0</span>)
+                </button>
             </div>
         </div>
     </form>
@@ -319,54 +214,24 @@
             addCountSpan.textContent = checked;
         }
 
-        selectAll.addEventListener('change', function () {
+        selectAll.addEventListener('change', () => {
             checks.forEach(c => c.checked = selectAll.checked);
             updateCounts();
         });
 
-        checks.forEach(c => c.addEventListener('change', function () {
-            if (!this.checked) {
-                selectAll.checked = false;
-            } else {
-                if (document.querySelectorAll('.user-check:not(:checked)').length === 0) {
-                    selectAll.checked = true;
-                }
-            }
+        checks.forEach(c => c.addEventListener('change', () => {
+            selectAll.checked = [...checks].every(x => x.checked);
             updateCounts();
         }));
 
         searchBox.addEventListener('input', function () {
-            const q = this.value.trim().toLowerCase();
-            const rows = document.querySelectorAll('.user-row');
-            rows.forEach(r => {
-                const name = r.getAttribute('data-name') ?? '';
-                const role = r.getAttribute('data-role') ?? '';
-                   if (!q || name.includes(q) || role.includes(q)) {
-        r.style.display = '';
-    } else {
-        r.style.display = 'none';
-    }
-
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('.user-row').forEach(r => {
+                r.style.display = r.dataset.name.includes(q) ? '' : 'none';
             });
             updateCounts();
         });
 
         updateCounts();
     })();
-     document.getElementById("addForm").addEventListener("submit", function (e) {
-        const checked = document.querySelectorAll(".user-check:checked").length;
-
-        if (!project) {
-            e.preventDefault();
-            alert("You need to select a project!");
-            return;
-        }
-
-        if (checked === 0) {
-            e.preventDefault();
-            alert("You must select at least 1 intern!");
-        }
-    });
 </script>
-
-

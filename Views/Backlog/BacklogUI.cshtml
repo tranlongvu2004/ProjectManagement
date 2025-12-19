@@ -293,26 +293,26 @@
                     {
                         <a asp-controller="Task" asp-action="Edit" asp-route-id="@parent.TaskId"
                            class="btn btn-sm btn-edit">
-                            <i class="bi bi-pencil-fill"></i> Edit
+                            <i class="bi bi-pencil-fill"></i>
                         </a>
 
                         <!-- ASSIGN -->
                         <a asp-controller="Task" asp-action="Assign" asp-route-id="@parent.TaskId"
                            class="btn btn-sm btn-assign-task">
-                            <i class="bi bi-person-plus"></i> Assign
+                            <i class="bi bi-person-plus"></i>
                         </a>
 
                         <button class="btn btn-sm btn-outline-primary upload-btn"
                                 data-task-id="@parent.TaskId"
                                 data-bs-toggle="modal"
                                 data-bs-target="#uploadModal">
-                            <i class="bi bi-upload"></i> Upload
+                            <i class="bi bi-upload"></i>
                         </button>
 
                             <button class="btn btn-sm btn-warning delete-btn"
                                     data-task-id="@parent.TaskId"
                                     data-task-name="@parent.Title">
-                                <i class="bi bi-trash"></i> Delete
+                                <i class="bi bi-trash"></i>
                             </button>
                     }
                         <!-- 🆕 COMMENT BUTTON - PARENT TASK -->
@@ -447,26 +447,26 @@
                             {
                             <a asp-controller="Task" asp-action="Edit" asp-route-id="@child.TaskId"
                                class="btn btn-sm btn-edit">
-                                <i class="bi bi-pencil-fill"></i> Edit
+                                <i class="bi bi-pencil-fill"></i>
                             </a>
 
                             <!-- ASSIGN (SUBTASK) -->
                             <a asp-controller="Task" asp-action="Assign" asp-route-id="@child.TaskId"
                                class="btn btn-sm btn-assign-task">
-                                <i class="bi bi-person-plus"></i> Assign
+                                <i class="bi bi-person-plus"></i>
                             </a>
 
                             <button class="btn btn-sm btn-outline-primary upload-btn"
                                     data-task-id="@child.TaskId"
                                     data-bs-toggle="modal"
                                     data-bs-target="#uploadModal">
-                                <i class="bi bi-upload"></i> Upload
+                                <i class="bi bi-upload"></i>
                             </button>
 
                             <button class="btn btn-sm btn-warning delete-btn"
                                     data-task-id="@child.TaskId"
                                     data-task-name="@child.Title">
-                                <i class="bi bi-trash"></i> Delete
+                                <i class="bi bi-trash"></i>
                             </button>
                             }
 
@@ -826,10 +826,12 @@
             const taskName = this.dataset.taskName;
 
             document.getElementById('commentTaskId').value = taskId;
+            document.getElementById('commentTaskIdForm').value = taskId; // ⭐ THIẾU DÒNG NÀY
             document.getElementById('commentTaskName').innerText = taskName;
 
             // Load comments
             loadComments(taskId);
+            setTimeout(enhanceCommentsForEdit, 300);
         });
     });
 
@@ -851,7 +853,7 @@
                     const date = new Date(comment.createdAt).toLocaleString();
 
                     html += `
-                        <div class="comment-item mb-3 p-3 border rounded">
+                        <div class="comment-item mb-3 p-3 border rounded" data-id="${comment.commentId}" data-user-id="${comment.userId}">
                             <div class="d-flex align-items-start">
                                 <div class="avatar-circle bg-secondary text-white me-2"
                                      style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;">
@@ -878,5 +880,98 @@
     }
 
 
+</script>
+<script>
+function enhanceCommentsForEdit() {
+    document.querySelectorAll('#commentsList .comment-item').forEach(item => {
+            const commentUserId = parseInt(item.dataset.userId);
+        if (commentUserId !== CURRENT_USER_ID) return;
+        if (item.querySelector('.comment-more')) return;
 
+        item.style.position = 'relative'; 
+
+        const contentP = item.querySelector('p');
+        if (!contentP) return;
+
+        const commentId = item.dataset.id;
+        const oldText = contentP.innerText;
+
+        // nút ...
+        const moreBtn = document.createElement('span');
+        moreBtn.innerText = '...';
+        moreBtn.classList.add('comment-more');
+        moreBtn.style.cursor = 'pointer';
+        moreBtn.style.float = 'right';
+        moreBtn.style.fontWeight = 'bold';
+
+        contentP.parentElement.prepend(moreBtn);
+
+        // menu nhỏ
+        const menu = document.createElement('div');
+        menu.style.position = 'absolute';
+        menu.style.right = '10px';
+        menu.style.top = '25px';
+        menu.style.background = '#fff';
+        menu.style.border = '1px solid #ccc';
+        menu.style.padding = '5px';
+        menu.style.display = 'none';
+        menu.style.zIndex = '1000';
+
+        const editBtn = document.createElement('div');
+        editBtn.innerText = 'Edit';
+        editBtn.style.cursor = 'pointer';
+
+        menu.appendChild(editBtn);
+        item.appendChild(menu);
+
+        // click ...
+        moreBtn.onclick = function (e) {
+            e.stopPropagation();
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        };
+
+        // click chỉnh sửa
+        editBtn.onclick = function () {
+            menu.style.display = 'none';
+
+            contentP.innerHTML = `
+                <textarea class="form-control mb-2">${oldText}</textarea>
+                <button class="btn btn-sm btn-primary">Send</button>
+            `;
+
+            contentP.querySelector('button').onclick = function () {
+                const newContent = contentP.querySelector('textarea').value;
+
+                fetch('/Task/UpdateComment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        commentId: commentId,
+                        content: newContent
+                    })
+                })
+                .then(r => {
+                    if (r.ok) {
+                        const taskId = document.getElementById('commentTaskId').value;
+                        loadComments(taskId);
+                        setTimeout(enhanceCommentsForEdit, 300);
+                    } else {
+                        alert('Update failed');
+                    }
+                });
+            };
+        };
+
+        // click ra ngoài thì đóng menu
+        document.addEventListener('click', function () {
+            menu.style.display = 'none';
+        });
+    });
+}
+</script>
+<script>
+    const CURRENT_USER_ID = @(
+        Context.Session.GetInt32("UserId") ?? 0
+    );
 </script>
