@@ -41,9 +41,9 @@ namespace PorjectManagement.Service
 
             if (workspace.Project != null)
             {
-                workspace.Project.Status = workspace.OverallProgress >= 100 
-                    ? "Completed" 
-                    : "InProgress";
+                //workspace.Project.Status = workspace.OverallProgress >= 100 
+                //    ? "Completed" 
+                //    : "InProgress";
             }
 
             return workspace;
@@ -156,25 +156,21 @@ namespace PorjectManagement.Service
             if (project == null)
                 return false;
 
-            // Calculate progress based on completed tasks
-            var workspace = await _projectRepo.GetWorkspaceAsync(model.ProjectId);
-            int progress = workspace?.OverallProgress ?? 0;
+            // method Calculator status
+            ProjectStatus newStatus = await CalculateProjectStatusAsync(model.ProjectId);
 
-            // Auto-calculate status based on progress
-            ProjectStatus newStatus = progress >= 100 ? ProjectStatus.Completed : ProjectStatus.InProgress;
-
-            // ✅ 1. Tìm members bị remove
+            // Tìm members bị remove
             var currentMemberIds = project.UserProjects.Select(up => up.UserId).ToList();
             var newMemberIds = model.SelectedUserIds ?? new List<int>();
-            newMemberIds.Add(updatedByUserId); // Mentor luôn trong team
-            
+            newMemberIds.Add(updatedByUserId); 
+
             var removedMemberIds = currentMemberIds.Except(newMemberIds).ToList();
 
-            // ✅ 2. Set assignee = NULL cho tasks của removed members
+            // Set assignee = NULL cho tasks của removed members
             if (removedMemberIds.Any())
             {
                 var taskAssignmentsToRemove = await _context.TaskAssignments
-                    .Where(ta => removedMemberIds.Contains(ta.UserId) && 
+                    .Where(ta => removedMemberIds.Contains(ta.UserId) &&
                                  ta.Task.ProjectId == model.ProjectId)
                     .ToListAsync();
 
@@ -182,11 +178,11 @@ namespace PorjectManagement.Service
                 await _context.SaveChangesAsync();
             }
 
-            // Update thông tin project
+            // Update inform project
             project.ProjectName = model.ProjectName;
             project.Description = model.Description;
             project.Deadline = model.Deadline;
-            project.Status = newStatus; 
+            project.Status = newStatus;
             project.UpdatedAt = DateTime.Now;
 
             await _projectRepo.UpdateProjectAsync(project);
@@ -223,9 +219,72 @@ namespace PorjectManagement.Service
         public int GetProjectId(int taskId)
         {
             return _context.Tasks
-        .Where(t => t.TaskId == taskId)
-        .Select(t => t.ProjectId)
-        .First();
+                .Where(t => t.TaskId == taskId)
+                .Select(t => t.ProjectId)
+                .First();
+        }
+        public async System.Threading.Tasks.Task UpdateProjectStatusAsync(int projectId)
+        {
+            var project = await _context.Projects
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+            if (project == null)
+                return;
+
+            // Tính status mới theo tasks
+            var newStatus = await CalculateProjectStatusAsync(projectId);
+
+            // update nếu status thay đổi
+            if (project.Status != newStatus)
+            {
+                project.Status = newStatus;
+                project.UpdatedAt = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // Tính status theo tasks 
+        public async Task<ProjectStatus> CalculateProjectStatusAsync(int projectId)
+        {
+            var progressPercentage = await GetProgressPercentageAsync(projectId);
+
+            // 100% completed → Completed
+            if (progressPercentage >= 100)
+            {
+                return ProjectStatus.Completed;
+            }
+
+            return ProjectStatus.InProgress;
+        }
+
+        // % hoàn thành dựa trên tasks
+        public async Task<int> GetProgressPercentageAsync(int projectId)
+        {
+            // List task IDs trong RecycleBin
+            var deletedTaskIds = await _context.RecycleBins
+                .Where(rb => rb.EntityType == "Task")
+                .Select(rb => rb.EntityId)
+                .ToListAsync();
+
+            // List parent tasks (không bị xóa)
+            var parentTasks = await _context.Tasks
+                .Where(t => t.ProjectId == projectId
+                    && t.IsParent == true
+                    && t.ParentId == null
+                    && !deletedTaskIds.Contains(t.TaskId))
+                .ToListAsync();
+
+            if (!parentTasks.Any())
+                return 0;
+
+            // Đếm parent tasks completed
+            int completedCount = parentTasks.Count(t => t.Status == PorjectManagement.Models.TaskStatus.Completed);
+            int totalCount = parentTasks.Count;
+
+            // Tính %
+            int percentage = (int)Math.Round((double)completedCount / totalCount * 100);
+
+            return percentage;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
 using PorjectManagement.Service.Interface;
@@ -64,7 +65,7 @@ namespace PorjectManagement.Controllers
         }
 
         [HttpPost]
-        public IActionResult DeleteTask([FromBody] DeleteTaskRequest request)
+        public async Task<IActionResult> DeleteTask([FromBody] DeleteTaskRequest request)
         {
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
@@ -80,7 +81,9 @@ namespace PorjectManagement.Controllers
                 .FirstOrDefault(t => t.TaskId == request.TaskId);
             
             if (task == null) return NotFound();
-            
+
+            int projectId = task.ProjectId;
+
             var snapshot = new DTOTaskSnapshot
             {
                 TaskId = task.TaskId,
@@ -102,8 +105,11 @@ namespace PorjectManagement.Controllers
             };
             
             _context.RecycleBins.Add(recycle);
-            _context.SaveChanges();
+            //_context.SaveChanges();
             
+            await _context.SaveChangesAsync();
+            await _projectServices.UpdateProjectStatusAsync(projectId);
+
             return Ok();
         }
     }
