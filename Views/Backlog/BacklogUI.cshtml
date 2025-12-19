@@ -830,6 +830,7 @@
 
             // Load comments
             loadComments(taskId);
+            setTimeout(enhanceCommentsForEdit, 300);
         });
     });
 
@@ -851,7 +852,7 @@
                     const date = new Date(comment.createdAt).toLocaleString();
 
                     html += `
-                        <div class="comment-item mb-3 p-3 border rounded">
+                        <div class="comment-item mb-3 p-3 border rounded" data-id="${comment.commentId}" data-user-id="${comment.userId}">
                             <div class="d-flex align-items-start">
                                 <div class="avatar-circle bg-secondary text-white me-2"
                                      style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;">
@@ -878,5 +879,99 @@
     }
 
 
+</script>
+<script>
+function enhanceCommentsForEdit() {
+    document.querySelectorAll('#commentsList .comment-item').forEach(item => {
+            const commentUserId = parseInt(item.dataset.userId);
+        if (commentUserId !== CURRENT_USER_ID) return;
+        // tránh add trùng
+        if (item.querySelector('.comment-more')) return;
 
+        item.style.position = 'relative'; 
+
+        const contentP = item.querySelector('p');
+        if (!contentP) return;
+
+        const commentId = item.dataset.id;
+        const oldText = contentP.innerText;
+
+        // nút ...
+        const moreBtn = document.createElement('span');
+        moreBtn.innerText = '...';
+        moreBtn.classList.add('comment-more');
+        moreBtn.style.cursor = 'pointer';
+        moreBtn.style.float = 'right';
+        moreBtn.style.fontWeight = 'bold';
+
+        contentP.parentElement.prepend(moreBtn);
+
+        // menu nhỏ
+        const menu = document.createElement('div');
+        menu.style.position = 'absolute';
+        menu.style.right = '10px';
+        menu.style.top = '25px';
+        menu.style.background = '#fff';
+        menu.style.border = '1px solid #ccc';
+        menu.style.padding = '5px';
+        menu.style.display = 'none';
+        menu.style.zIndex = '1000';
+
+        const editBtn = document.createElement('div');
+        editBtn.innerText = 'Chỉnh sửa';
+        editBtn.style.cursor = 'pointer';
+
+        menu.appendChild(editBtn);
+        item.appendChild(menu);
+
+        // click ...
+        moreBtn.onclick = function (e) {
+            e.stopPropagation();
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        };
+
+        // click chỉnh sửa
+        editBtn.onclick = function () {
+            menu.style.display = 'none';
+
+            contentP.innerHTML = `
+                <textarea class="form-control mb-2">${oldText}</textarea>
+                <button class="btn btn-sm btn-primary">Send</button>
+            `;
+
+            contentP.querySelector('button').onclick = function () {
+                const newContent = contentP.querySelector('textarea').value;
+
+                fetch('/Task/UpdateComment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        commentId: commentId,
+                        content: newContent
+                    })
+                })
+                .then(r => {
+                    if (r.ok) {
+                        const taskId = document.getElementById('commentTaskId').value;
+                        loadComments(taskId);
+                        setTimeout(enhanceCommentsForEdit, 300);
+                    } else {
+                        alert('Update failed');
+                    }
+                });
+            };
+        };
+
+        // click ra ngoài thì đóng menu
+        document.addEventListener('click', function () {
+            menu.style.display = 'none';
+        });
+    });
+}
+</script>
+<script>
+    const CURRENT_USER_ID = @(
+        Context.Session.GetInt32("UserId") ?? 0
+    );
 </script>

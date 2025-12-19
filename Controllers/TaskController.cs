@@ -558,5 +558,25 @@ namespace PorjectManagement.Controllers
             var comments = await _commentService.GetCommentsByTaskIdAsync(taskId);
             return Json(comments);
         }
+        [HttpPost]
+        public IActionResult UpdateComment([FromBody] UpdateCommentVM model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized();
+
+            var comment = _context.Comments
+                .FirstOrDefault(c => c.CommentId == model.CommentId);
+
+            if (comment == null) return NotFound();
+
+            if (comment.UserId != userId)
+                return Forbid();
+
+            comment.Content = model.Content;
+            _context.SaveChanges();
+
+            return Json(new { success = true });
+        }
+
     }
 }
