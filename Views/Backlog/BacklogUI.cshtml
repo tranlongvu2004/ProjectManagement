@@ -826,6 +826,7 @@
             const taskName = this.dataset.taskName;
 
             document.getElementById('commentTaskId').value = taskId;
+            document.getElementById('commentTaskIdForm').value = taskId; // ⭐ THIẾU DÒNG NÀY
             document.getElementById('commentTaskName').innerText = taskName;
 
             // Load comments
