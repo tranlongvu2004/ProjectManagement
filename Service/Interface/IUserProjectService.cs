@@ -15,7 +15,7 @@ namespace PorjectManagement.Service.Interface
         Task<List<Project>> GetAllProjectsAsync();
         Task<List<User>> GetUsersByProjectIdAsync(int projectId);
 
-
+        Task<List<User>> GetUsersByProjectIdNoMentorAsync(int projectId);
 
     }
 }

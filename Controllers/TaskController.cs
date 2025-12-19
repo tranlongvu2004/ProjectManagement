@@ -62,7 +62,7 @@ namespace PorjectManagement.Controllers
                 return View(vm);
             }
             vm.ProjectId = projectId.Value;
-            vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(projectId.Value);
+            vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdNoMentorAsync(projectId.Value);
             ViewBag.HideProjectDropdown = true;
             var parentTasks = await _taskService.GetParentTasksByProjectAsync(projectId.Value);
             vm.ParentTasks = parentTasks.Select(t => new SelectListItem

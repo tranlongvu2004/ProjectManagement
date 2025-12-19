@@ -50,11 +50,18 @@ namespace PorjectManagement.Repository
                 .ToListAsync();
         }
 
-        public async Task<List<User>> GetUsersByProjectIdAsync(int projectId)
+        public async Task<List<User>> GetUsersByProjectIdNoMentorAsync(int projectId)
         {
             return await _context.UserProjects
                 .Where(up => up.ProjectId == projectId
                  && up.User.RoleId != 1)
+                .Select(up => up.User)
+                .ToListAsync();
+        }
+        public async Task<List<User>> GetUsersByProjectIdAsync(int projectId)
+        {
+            return await _context.UserProjects
+                .Where(up => up.ProjectId == projectId)
                 .Select(up => up.User)
                 .ToListAsync();
         }
