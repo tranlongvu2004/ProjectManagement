@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
 using PorjectManagement.Service.Interface;
@@ -346,6 +347,20 @@ namespace PorjectManagement.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
                 return Unauthorized();
+
+            var hasAttachment = await _context.TaskAttachments
+        .AnyAsync(a => a.TaskId == taskId);
+
+            if (hasAttachment)
+            {
+                TempData["Error"] =
+                    "This task already has an attachment. Please delete it before uploading a new one.";
+                return RedirectToAction("BacklogUI", "Backlog", new { projectId = _context.Tasks
+        .Where(t => t.TaskId == taskId)
+        .Select(t => t.ProjectId)
+        .First()
+                });
+            }
 
             // 📁 tạo thư mục
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");

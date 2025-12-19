@@ -7,6 +7,12 @@
         @TempData["SuccessMessage"]
     </div>
 }
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
 
 @{
     ViewData["Title"] = "Main Table";
@@ -201,7 +207,7 @@
         }
 
         <a href="/Timeline/Timeline?projectId=@projectId" class="dashboard-btn">
-            <i class="fa fa-chart-line"></i> Timeline
+            <i class="fa fa-chart-line"></i> Calendar
         </a>
 
         <a href="/RecycleBin/RecycleBin" class="dashboard-btn">
@@ -342,26 +348,27 @@
                                 </small>
                             }
                         </div>
+                            @if (roleId == 2)
+                            {
+                                <!-- Delete -->
+                                <form asp-controller="Task"
+                                asp-action="DeleteAttachment"
+                                method="post"
+                                class="d-inline">
+                                    <input type="hidden" name="taskId" value="@parent.TaskId" />
 
-                        <!-- Delete -->
-                             <form asp-controller="Task"
-                                  asp-action="DeleteAttachment"
-                                  method="post"
-                                  class="d-inline">
-                                <input type="hidden" name="taskId" value="@parent.TaskId" />
-
-                                <button type="submit"
-                                        class="btn btn-sm btn-outline-danger"
-                                        title="Delete attachment"
-                                        onclick="return confirm('Delete attachment?');">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </form>
+                                    <button type="submit"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Delete attachment"
+                                    onclick="return confirm('Delete attachment?');">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
 
 
-                            <!-- Replace -->
-                            <form asp-controller="Task"
-                                  asp-action="ReplaceAttachment"
+                                <!-- Replace -->
+                                <form asp-controller="Task"
+                                asp-action="ReplaceAttachment"
                                   method="post"
                                   enctype="multipart/form-data"
                                   class="d-inline">
@@ -375,7 +382,7 @@
                                            onchange="this.form.submit()" />
                                 </label>
                             </form>
-
+                            }
                     }
                     else
                     {
@@ -685,17 +692,28 @@
                     <p class="text-center text-muted">Loading comments...</p>
                 </div>
 
-                <!-- Add Comment Form -->
-                <form asp-controller="Task" asp-action="AddComment" method="post">
-                    <input type="hidden" name="taskId" id="commentTaskId" />
-                    <div class="input-group">
-                        <textarea name="content" class="form-control" rows="2"
+                <input type="hidden" id="commentTaskId" />
+
+                @if (roleId == 2)
+                {
+                    <form asp-controller="Task" asp-action="AddComment" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="taskId" id="commentTaskIdForm" />
+                        <div class="input-group">
+                            <textarea name="content" class="form-control" rows="2"
                                   placeholder="Write a comment..." required></textarea>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send-fill"></i> Send
-                        </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send-fill"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-info mb-0">
+                        View comments
                     </div>
-                </form>
+                }
             </div>
         </div>
     </div>
