@@ -33,7 +33,18 @@ namespace PorjectManagement.Tests.Controllers
         public void Remove(string key) => _store.Remove(key);
 
         public void Set(string key, byte[] value) => _store[key] = value;
-        public bool TryGetValue(string key, out byte[] value) => _store.TryGetValue(key, out value);
+
+        // Avoid nullable assignment warning by ensuring non-null out value
+        public bool TryGetValue(string key, out byte[] value)
+        {
+            if (_store.TryGetValue(key, out var tmp) && tmp != null)
+            {
+                value = tmp;
+                return true;
+            }
+            value = Array.Empty<byte>();
+            return false;
+        }
     }
 
     public class TaskControllerTests
@@ -72,6 +83,16 @@ namespace PorjectManagement.Tests.Controllers
                 RoleId = 2
             });
 
+            // Also seed an additional user (used in assign tests)
+            _context.Users.Add(new User
+            {
+                UserId = 2,
+                FullName = "Assigned User",
+                Email = "assigned@example.com",
+                PasswordHash = "hash2",
+                RoleId = 2
+            });
+
             // Seed project (for validations in Create/Edit)
             _context.Projects.Add(new Project
             {
@@ -99,8 +120,9 @@ namespace PorjectManagement.Tests.Controllers
                 .Setup(x => x.GetAllProjectsAsync())
                 .ReturnsAsync(new List<Project> { new Project { ProjectId = 1, ProjectName = "P1" } });
 
+            // Use the NoMentor variant used by the controller
             _userProjectServiceMock
-                .Setup(x => x.GetUsersByProjectIdAsync(It.IsAny<int>()))
+                .Setup(x => x.GetUsersByProjectIdNoMentorAsync(It.IsAny<int>()))
                 .ReturnsAsync(new List<User>());
 
             _controller = new TaskController(
@@ -179,7 +201,7 @@ namespace PorjectManagement.Tests.Controllers
             };
 
             _userProjectServiceMock
-                .Setup(x => x.GetUsersByProjectIdAsync(projectId))
+                .Setup(x => x.GetUsersByProjectIdNoMentorAsync(projectId))
                 .ReturnsAsync(users);
 
             _taskServiceMock
@@ -202,7 +224,7 @@ namespace PorjectManagement.Tests.Controllers
             var users = new List<User> { new User { UserId = 1, FullName = "User A" } };
 
             _userProjectServiceMock
-                .Setup(x => x.GetUsersByProjectIdAsync(1))
+                .Setup(x => x.GetUsersByProjectIdNoMentorAsync(1))
                 .ReturnsAsync(users);
 
             _taskServiceMock
@@ -267,7 +289,7 @@ namespace PorjectManagement.Tests.Controllers
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("BacklogUI", redirect.ActionName);
             Assert.Equal("Backlog", redirect.ControllerName);
-            Assert.Equal(1, redirect.RouteValues["projectId"]);
+            Assert.Equal(1, Convert.ToInt32(redirect.RouteValues?["projectId"]));
         }
 
         [Fact]
@@ -615,7 +637,7 @@ namespace PorjectManagement.Tests.Controllers
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("BacklogUI", redirect.ActionName);
             Assert.Equal("Backlog", redirect.ControllerName);
-            Assert.Equal(1, redirect.RouteValues["projectId"]);
+            Assert.Equal(1, Convert.ToInt32(redirect.RouteValues?["projectId"]));
             Assert.Equal("Cant update task.", _controller.TempData["Error"]);
         }
 
@@ -646,8 +668,9 @@ namespace PorjectManagement.Tests.Controllers
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("BacklogUI", redirect.ActionName);
             Assert.Equal("Backlog", redirect.ControllerName);
-            Assert.Equal(1, redirect.RouteValues["projectId"]);
+            Assert.Equal(1, Convert.ToInt32(redirect.RouteValues?["projectId"]));
             Assert.Equal("Update task successful!", _controller.TempData["Success"]);
+
 
             _taskServiceMock.Verify(x => x.UpdateTaskAsync(model, 1), Times.Once);
         }
@@ -686,8 +709,10 @@ namespace PorjectManagement.Tests.Controllers
             var result = await _controller.Edit(1, model);
 
             var viewResult = Assert.IsType<ViewResult>(result);
-            Assert.False(_controller.ModelState.IsValid);
-            Assert.Contains("Error: Database error", _controller.ModelState[""].Errors[0].ErrorMessage);
+
+            var errMsg = _controller.ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage;
+            Assert.NotNull(errMsg);
+            Assert.Contains("Error: Database error", errMsg);
         }
 
         #endregion
