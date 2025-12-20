@@ -72,12 +72,12 @@ namespace PorjectManagement.Controllers
                 return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
 
-            var task = _context.Tasks
+            var task = await _context.Tasks
                 .Include(t => t.TaskAssignments)
                     .ThenInclude(ta => ta.User)
                 .Include(t => t.TaskAttachments)
                 .Include(t => t.Comments)
-                .FirstOrDefault(t => t.TaskId == request.TaskId);
+                .FirstOrDefaultAsync(t => t.TaskId == request.TaskId);
 
             if (task == null) return NotFound();
 

@@ -1,108 +1,108 @@
 ﻿@model List<PorjectManagement.ViewModels.RecyclebinVM>
 <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <style>
-/* ===============================
-   TRASH PAGE – THEME AWARE
-================================ */
+    /* ===============================
+       TRASH PAGE – THEME AWARE
+    ================================ */
 
-.trash-page {
-    background: var(--bg-color);
-    color: var(--text-color);
-    padding: 30px;
-    min-height: 100vh;
-    font-family: Inter, sans-serif;
-}
+    .trash-page {
+        background: var(--bg-color);
+        color: var(--text-color);
+        padding: 30px;
+        min-height: 100vh;
+        font-family: Inter, sans-serif;
+    }
 
-.subtitle {
-    color: var(--muted-text);
-}
+    .subtitle {
+        color: var(--muted-text);
+    }
 
-/* Toolbar */
-.toolbar {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 15px;
-}
+    /* Toolbar */
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
 
-.search-box {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    padding: 8px 12px;
-    border-radius: 6px;
-    width: 240px;
-}
+    .search-box {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        padding: 8px 12px;
+        border-radius: 6px;
+        width: 240px;
+    }
 
-.search-box::placeholder {
-    color: var(--muted-text);
-}
+        .search-box::placeholder {
+            color: var(--muted-text);
+        }
 
-.filter-btn {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    padding: 8px 14px;
-    border-radius: 6px;
-}
+    .filter-btn {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        padding: 8px 14px;
+        border-radius: 6px;
+    }
 
-.filter-btn:hover {
-    background: var(--hover-bg);
-}
+        .filter-btn:hover {
+            background: var(--hover-bg);
+        }
 
-/* Table */
-.trash-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--card-bg);
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-}
+    /* Table */
+    .trash-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--card-bg);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
 
-.trash-table th,
-.trash-table td {
-    padding: 14px;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 14px;
-}
+        .trash-table th,
+        .trash-table td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
 
-.trash-table th {
-    background: var(--hover-bg);
-    color: var(--text-color);
-    font-weight: 600;
-}
+        .trash-table th {
+            background: var(--hover-bg);
+            color: var(--text-color);
+            font-weight: 600;
+        }
 
-.trash-table tr:hover {
-    background: var(--hover-bg);
-}
+        .trash-table tr:hover {
+            background: var(--hover-bg);
+        }
 
-/* Action */
-.btn-ellipsis {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-}
+    /* Action */
+    .btn-ellipsis {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+    }
 
-.btn-ellipsis:hover {
-    background: var(--hover-bg);
-}
+        .btn-ellipsis:hover {
+            background: var(--hover-bg);
+        }
 
-/* Dropdown */
-.dropdown-menu {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
+    /* Dropdown */
+    .dropdown-menu {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
 
-.dropdown-item {
-    color: var(--text-color);
-}
+    .dropdown-item {
+        color: var(--text-color);
+    }
 
-.dropdown-item:hover {
-    background: var(--hover-bg);
-}
+        .dropdown-item:hover {
+            background: var(--hover-bg);
+        }
 </style>
 
 <div class="trash-page">
@@ -152,9 +152,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach(var item in Model)
+            @foreach (var item in Model)
             {
-                
+
                 <tr class="trash-row"
                     data-name="@item.Name.ToLower()"
                     data-type="@item.EntityType"

@@ -12,60 +12,68 @@ namespace PorjectManagement.Controllers
         {
             _context = context;
         }
-        public IActionResult RecycleBin()
+        public async Task<IActionResult> RecycleBin()
         {
-            var data = _context.RecycleBins
-                .Where(rb => rb.EntityType == "Task")
-                .OrderByDescending(rb => rb.DeletedAt)
-                .Select(x => new
-            {
-                Recycle = x,
-                DeletedUser = _context.Users.FirstOrDefault(u => u.UserId == x.DeletedBy)
-            })
-            .AsEnumerable()
-            .Select(x =>
-        {
-        var task = System.Text.Json.JsonSerializer.Deserialize<DTOTaskSnapshot>(x.Recycle.DataSnapshot);
+            var recycleBins = await _context.RecycleBins
+                    .Where(rb => rb.EntityType == "Task")
+                    .OrderByDescending(rb => rb.DeletedAt)
+                    .ToListAsync();
 
-        return new RecyclebinVM
-        {
-            RecycleId = x.Recycle.RecycleId,
-            EntityType = "Task",
-            Name = task?.TaskName ?? "(Unknown Task)",  
-            Owner = task?.Owner ?? "Unassigned",
-            Status = task?.Status ?? "Unknown",
-            DeletedBy = x.DeletedUser?.FullName ?? "Unknown",
-            DeletedAt = x.Recycle.DeletedAt ?? DateTime.MinValue,
-            ProjectId = task?.ProjectId ?? 0
-        };
-        })
-        .ToList();
+            var userIds = recycleBins
+                .Select(x => x.DeletedBy)
+                .Distinct()
+                .ToList();
+
+            var users = await _context.Users
+                .Where(u => userIds.Contains(u.UserId))
+                .ToDictionaryAsync(u => u.UserId);
+
+            var data = recycleBins.Select(x =>
+            {
+                var task = System.Text.Json.JsonSerializer
+                    .Deserialize<DTOTaskSnapshot>(x.DataSnapshot);
+
+                users.TryGetValue(x.DeletedBy ?? 0, out var deletedUser);
+
+                return new RecyclebinVM
+                {
+                    RecycleId = x.RecycleId,
+                    EntityType = "Task",
+                    Name = task?.TaskName ?? "(Unknown Task)",
+                    Owner = task?.Owner ?? "Unassigned",
+                    Status = task?.Status ?? "Unknown",
+                    DeletedBy = deletedUser?.FullName ?? "Unknown",
+                    DeletedAt = x.DeletedAt ?? DateTime.MinValue,
+                    ProjectId = task?.ProjectId ?? 0
+                };
+            }).ToList();
+
 
             return View(data);
         }
 
         [HttpPost]
-        public IActionResult DeletePermanent([FromBody] RestoreRequest request)
+        public async Task<IActionResult> DeletePermanent([FromBody] RestoreRequest request)
         {
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
                 return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
-            var item = _context.RecycleBins.FirstOrDefault(x => x.RecycleId == request.RecycleId);
+            var item = await _context.RecycleBins.FirstOrDefaultAsync(x => x.RecycleId == request.RecycleId);
             if (item == null) return NotFound();
 
 
-            var task = _context.Tasks
+            var task = await _context.Tasks
                 .Include(t => t.TaskAssignments)
                 .Include(t => t.Comments)
                 .Include(t => t.TaskAttachments)
                 .Include(t => t.ActivityLogs)
                 .Include(t => t.TaskHistories)
-                .FirstOrDefault(t => t.TaskId == item.EntityId);
+                .FirstOrDefaultAsync(t => t.TaskId == item.EntityId);
 
-            if(task == null) return NotFound();
-            
+            if (task == null) return NotFound();
+
 
             _context.TaskAssignments.RemoveRange(task.TaskAssignments);
             _context.Comments.RemoveRange(task.Comments);
@@ -75,27 +83,27 @@ namespace PorjectManagement.Controllers
 
             _context.Tasks.Remove(task);
             _context.RecycleBins.Remove(item);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok();
         }
 
         [HttpPost]
-        public IActionResult Restore([FromBody] RestoreRequest request)
+        public async Task<IActionResult> Restore([FromBody] RestoreRequest request)
         {
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
             {
                 return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
             }
-            var item = _context.RecycleBins.FirstOrDefault(x => x.RecycleId == request.RecycleId);
+            var item = await _context.RecycleBins.FirstOrDefaultAsync(x => x.RecycleId == request.RecycleId);
             if (item == null) return NotFound();
 
-            var task = _context.Tasks.FirstOrDefault(t => t.TaskId == item.EntityId);
+            var task = await _context.Tasks.FirstOrDefaultAsync(t => t.TaskId == item.EntityId);
             if (task == null) return NotFound();
 
             if (task.ParentId != null)
             {
-                bool parentStillDeleted = _context.RecycleBins.Any(rb =>
+                bool parentStillDeleted = await _context.RecycleBins.AnyAsync(rb =>
                     rb.EntityType == "Task" &&
                     rb.EntityId == task.ParentId);
 
@@ -103,17 +111,18 @@ namespace PorjectManagement.Controllers
                 {
                     return BadRequest("You must restore parent task first.");
                 }
-            };
+            }
+            ;
 
             _context.RecycleBins.Remove(item);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok();
         }
 
-        
+
     }
     public class RestoreRequest
-        {
-            public int RecycleId { get; set; }
-        }
+    {
+        public int RecycleId { get; set; }
+    }
 }

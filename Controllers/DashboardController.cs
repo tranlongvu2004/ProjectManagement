@@ -16,7 +16,7 @@ namespace PorjectManagement.Controllers
         {
             _context = context;
         }
-        public IActionResult Dashboard(int projectId, int userId)
+        public async Task<IActionResult> Dashboard(int projectId, int userId)
         { 
             int currentUserId = HttpContext.Session.GetInt32("UserId") ?? 0;
             if (currentUserId == 0)
@@ -24,19 +24,19 @@ namespace PorjectManagement.Controllers
                 return RedirectToAction("Login", "User");
             }
 
-            var usersInProject = _context.UserProjects
+            var usersInProject = await _context.UserProjects
         .Include(up => up.User)
         .Where(up => up.ProjectId == projectId)
         .Select(up => up.User)
-        .ToList();
+        .ToListAsync();
 
-            var taskAssignments = _context.TaskAssignments
+            var taskAssignments = await _context.TaskAssignments
        .Include(ta => ta.Task)
        .Where(ta =>
            ta.Task.ProjectId == projectId &&
            !_context.RecycleBins.Any(rb =>
                rb.EntityType == "Task" && rb.EntityId == ta.TaskId))
-       .ToList();
+       .ToListAsync();
 
 
             var tasksForChart = usersInProject.SelectMany(u =>
@@ -56,7 +56,7 @@ namespace PorjectManagement.Controllers
             }).ToList();
 
 
-            var tasks = _context.Tasks
+            var tasks = await _context.Tasks
                 .Include(t => t.TaskAssignments)
                 .ThenInclude(ta => ta.User)
                 .Include(t => t.CreatedByNavigation)
@@ -72,11 +72,11 @@ namespace PorjectManagement.Controllers
                         .Select(ta => ta.User.FullName)
                         .FirstOrDefault() ?? "Unassigned"
                 })
-                .ToList();
+                .ToListAsync();
 
            
 
-            var ownerTasks = _context.Tasks
+            var ownerTasks = await _context.Tasks
                 .Where(t => t.ProjectId == projectId 
                 && t.TaskAssignments.Any(ta => ta.UserId == userId)
                 && !_context.RecycleBins.Any(rb => rb.EntityType == "Task" && rb.EntityId == t.TaskId))
@@ -86,7 +86,7 @@ namespace PorjectManagement.Controllers
                     t.Title,
                     Status = t.Status.ToString() ?? "Not_Started"
                 })
-                .ToList();
+                .ToListAsync();
 
             int totalTasks = tasks.Count;
             int completedTasks = tasks.Count(t => t.Status == "Completed");
@@ -107,9 +107,9 @@ namespace PorjectManagement.Controllers
             return View();
         }
         [HttpGet]
-        public IActionResult GetTasks(int projectId)
+        public async Task<IActionResult> GetTasks(int projectId)
         {
-            var tasks = _context.TaskAssignments
+            var tasks = await _context.TaskAssignments
                 .Include(ta => ta.User)
                 .Include(ta => ta.Task)
                 .Where(ta => ta.Task.ProjectId == projectId)
@@ -119,23 +119,23 @@ namespace PorjectManagement.Controllers
                     Status = ta.Task.Status.ToString(),
                     Owner = ta.User.FullName
                 })
-                .ToList();
+                .ToListAsync();
 
             return Json(tasks);
         }
 
 
         [HttpGet]
-        public IActionResult GetTasksByUserId(int projectId, int userId)
+        public async Task<IActionResult> GetTasksByUserId(int projectId, int userId)
         {
-            var tasks = _context.TaskAssignments
+            var tasks = await _context.TaskAssignments
                 .Where(ta => ta.Task.ProjectId == projectId && ta.UserId == userId)
                 .Include(ta => ta.Task)
                 .Select(a => new {
                     a.Task.Title,
                     Status = a.Task.Status.ToString()
                 })
-                .ToList();
+                .ToListAsync();
 
             return Json(tasks);
         }

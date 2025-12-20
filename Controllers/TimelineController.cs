@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
 
 namespace PorjectManagement.Controllers
@@ -10,9 +11,9 @@ namespace PorjectManagement.Controllers
         {
             _context = context;
         }
-        public IActionResult Timeline(int projectId)
+        public async Task<IActionResult> Timeline(int projectId)
         {
-            var task = _context.Tasks
+            var task = await _context.Tasks
                 .Where(t => t.ProjectId == projectId)
                 .Select(t => new
                 {
@@ -27,7 +28,7 @@ namespace PorjectManagement.Controllers
                     Status = t.Status.ToString() ?? "Not_Started",
                     Owner = t.TaskAssignments.FirstOrDefault() != null ? t.TaskAssignments.FirstOrDefault()!.User.FullName : "Unassigned"
                 })
-                .ToList();
+                .ToListAsync();
             ViewBag.Tasks = System.Text.Json.JsonSerializer.Serialize(task);
             ViewBag.ProjectId = projectId;
 
