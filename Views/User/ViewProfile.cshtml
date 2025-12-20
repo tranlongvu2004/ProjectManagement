@@ -24,5 +24,15 @@
                    value="@Model.CreatedAt?.ToString("yyyy/MM/dd")"
                    readonly />
         </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Projects</label>
+            <ul class="list-group">
+                @foreach (var up in Model.UserProjects)
+                {
+                    <li class="list-group-item">@up.Project.ProjectName</li>
+                }
+            </ul>
+        </div>
+
     </div>
 </div>

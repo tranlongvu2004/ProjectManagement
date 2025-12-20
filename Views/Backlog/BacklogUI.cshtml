@@ -128,7 +128,7 @@
     </div>
 
     <!-- Tool bar -->
-    <div class="d-flex gap-2 my-3">
+    <div class="d-flex gap-2 my-3 align-items-center">
         <div>
             <button id="btnSearch" class="btn btn-light border">
                 <i class="fa fa-search"></i>Search
@@ -165,7 +165,7 @@
     </div>
 
     <table class="table align-middle shadow-sm">
-        <thead class="table-light">
+        <thead>
             <tr>
                 <th>Task</th>
                 <th>Owner</th>
@@ -494,28 +494,40 @@
                     </tr>   
                 }
 
-                <div class="modal fade" id="uploadModal" tabindex="-1">
+                <div class="modal fade dark-modal" id="uploadModal" tabindex="-1">
                     <div class="modal-dialog">
                         <form id="uploadForm" enctype="multipart/form-data" method="post"
                               asp-controller="Task" asp-action="UploadAttachment">
+
                             <div class="modal-content">
+
                                 <div class="modal-header">
                                     <h5 class="modal-title">Upload Attachment</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    <button type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="modal"></button>
                                 </div>
+
                                 <div class="modal-body">
                                     <input type="hidden" name="TaskId" id="uploadTaskId" />
-                                    <input type="file" name="file" class="form-control" required />
+
+                                    <input type="file"
+                                           name="file"
+                                           class="form-control"
+                                           required />
                                 </div>
+
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-primary">
                                         Upload
                                     </button>
                                 </div>
+
                             </div>
                         </form>
                     </div>
                 </div>
+
             }
 
             <tr>
@@ -598,13 +610,17 @@
 </div>
 
 <!-- POP UP DELETE NOTI -->
-<div class="modal fade" id="deleteTaskModal" tabindex="-1">
+<div class="modal fade dark-modal" id="deleteTaskModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
+
             <div class="modal-header">
                 <h5 class="modal-title">Delete task?</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
             </div>
+
             <div class="modal-body">
                 <p>
                     <strong id="deleteTaskName"></strong>
@@ -613,6 +629,7 @@
                     We'll keep it in your trash for 30 days, and then permanently delete it.
                 </p>
             </div>
+
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">
                     Cancel
@@ -621,23 +638,31 @@
                     Delete
                 </button>
             </div>
+
         </div>
     </div>
 </div>
 
+
 <!-- 🆕 COMMENT MODAL -->
-<div class="modal fade" id="commentModal" tabindex="-1">
+<div class="modal fade dark-modal" id="commentModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
+
+            <div class="modal-header modal-header-info">
                 <h5 class="modal-title">
-                    <i class="bi bi-chat-dots-fill"></i> Comments - <span id="commentTaskName"></span>
+                    <i class="bi bi-chat-dots-fill"></i>
+                    Comments - <span id="commentTaskName"></span>
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
             </div>
+
             <div class="modal-body">
-                <div id="commentsList" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
-                    <!-- Comments will be loaded here -->
+
+                <div id="commentsList"
+                     class="comment-list">
                     <p class="text-center text-muted">Loading comments...</p>
                 </div>
 
@@ -645,13 +670,25 @@
 
                 @if (roleId == 2)
                 {
-                    <form asp-controller="Task" asp-action="AddComment" method="post">
+                    <form asp-controller="Task"
+                          asp-action="AddComment"
+                          method="post">
+
                         @Html.AntiForgeryToken()
-                        <input type="hidden" name="taskId" id="commentTaskIdForm" />
+
+                        <input type="hidden"
+                               name="taskId"
+                               id="commentTaskIdForm" />
+
                         <div class="input-group">
-                            <textarea name="content" class="form-control" rows="2"
-                                  placeholder="Write a comment..." required></textarea>
-                            <button type="submit" class="btn btn-primary">
+                            <textarea name="content"
+                                  class="form-control"
+                                  rows="2"
+                                  placeholder="Write a comment..."
+                                  required></textarea>
+
+                            <button type="submit"
+                                    class="btn btn-primary">
                                 <i class="bi bi-send-fill"></i> Send
                             </button>
                         </div>
@@ -663,10 +700,12 @@
                         View comments
                     </div>
                 }
+
             </div>
         </div>
     </div>
 </div>
+
 
 <div class="mt-5">
     <h3>📊 Dashboard</h3>

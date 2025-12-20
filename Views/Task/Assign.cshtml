@@ -1,4 +1,5 @@
 ﻿@model PorjectManagement.ViewModels.TaskAssignViewModel
+
 @if (ViewBag.Success == true)
 {
     <div class="alert alert-success">
@@ -8,127 +9,50 @@
 
 @Html.ValidationSummary(false, "", new { @class = "text-danger mb-3" })
 
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
-<style>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" / >
-    /* ---- CARD ---- */
-    .assign-card {
-        width: 520px;
-        margin: 50px auto;
-        border-radius: 16px;
-        overflow: hidden;
-        background: #ffffff;
-        border: 1px solid #eaeaea;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-        transition: 0.25s ease;
-    }
+<div class="assign-page">
 
-        .assign-card:hover {
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
-            transform: translateY(-2px);
-        }
+    <div class="assign-card">
 
-    /* ---- HEADER ---- */
-    .assign-header {
-        background: #1a73e8;
-        padding: 18px 26px;
-        color: #fff;
-        font-size: 20px;
-        font-weight: 600;
-        letter-spacing: 0.4px;
-    }
+        <div class="assign-header">
+            Assign Task
+        </div>
 
-    /* ---- BODY ---- */
-    .assign-body {
-        padding: 30px;
-        font-size: 15px;
-        color: #333;
-    }
+        <div class="assign-body">
+            <form method="post">
 
-    /* ---- SELECT ---- */
-    .form-select-custom {
-        height: 48px;
-        border-radius: 12px;
-        padding: 10px 14px;
-        border: 1px solid #d0d7de;
-        background: #fafafa;
-        transition: border 0.2s;
-    }
+                <input type="hidden" asp-for="TaskId" />
 
-        .form-select-custom:focus {
-            border: 1px solid #1a73e8;
-            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.15);
-            background: white;
-        }
+                <label class="form-label fw-semibold mb-2">
+                    Select Member
+                </label>
 
-    /* ---- BUTTONS ---- */
-    .btn-cancel {
-        background: #fff;
-        border: 1px solid #d6d6d6;
-        padding: 9px 22px;
-        border-radius: 10px;
-        font-weight: 500;
-        color: #444;
-        transition: 0.2s;
-    }
+                <select asp-for="SelectedUserId"
+                        class="form-select assign-select mb-4">
+                    <option value="">-- Select Member --</option>
+                    @foreach (var u in Model.Users)
+                    {
+                        <option value="@u.UserId">
+                            @u.FullName (@u.Email)
+                        </option>
+                    }
+                </select>
 
-        .btn-cancel:hover {
-            background: #f2f2f2;
-            border-color: #c8c8c8;
-        }
+                <div class="d-flex justify-content-between">
+                    <a asp-controller="Backlog"
+                       asp-action="BacklogUI"
+                       asp-route-projectId="@Model.ProjectId"
+                       class="btn btn-assign-cancel">
+                        Hủy
+                    </a>
 
-    .btn-assign {
-        background: #1a73e8;
-        color: #fff;
-        padding: 10px 26px;
-        border-radius: 10px;
-        border: none;
-        font-weight: 600;
-        transition: 0.2s;
-    }
+                    <button class="btn btn-assign-submit">
+                        Assign Task
+                    </button>
+                </div>
 
-        .btn-assign:hover {
-            background: #145fc4;
-        }
-</style>
-
-
-<div class="assign-card">
-
-    <div class="assign-header">
-        Assign Task
-    </div>
-
-    <div class="assign-body">
-
-        <form method="post">
-
-            <input type="hidden" asp-for="TaskId" />
-
-            <label class="form-label fw-semibold mb-2">Select Member</label>
-
-            <select asp-for="SelectedUserId" class="form-select form-select-custom mb-4">
-                <option value="">-- Select Member --</option>
-                @foreach (var u in Model.Users)
-                {
-                    <option value="@u.UserId">@u.FullName (@u.Email)</option>
-                }
-            </select>
-
-            <div class="d-flex justify-content-between">
-
-                <a asp-controller="Backlog"
-                   asp-action="BacklogUI"
-                   asp-route-projectId="@Model.ProjectId"
-                   class="btn-cancel">
-                    Hủy
-                </a>
-
-                <button class="btn-assign">
-                    Assign Task
-                </button>
-            </div>
-
-        </form>
+            </form>
+        </div>
     </div>
 </div>

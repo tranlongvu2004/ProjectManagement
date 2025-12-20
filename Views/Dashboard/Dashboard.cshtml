@@ -11,9 +11,10 @@
 
 <style>
     body {
-        background: #ffff;
-        color: black;
+        background: var(--bg-main);
+        color: var(--text-main);
     }
+
 
     .dashboard-header {
         font-size: 28px;
@@ -22,18 +23,18 @@
     }
 
     .dash-toolbar button {
-        background: #ffff;
-        border: 1px solid #333;
-        color: black;
-    }
+        background: var(--card-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        }
 
     .stat-card {
-        background: #ffff;
+        background: var(--card-bg);
         border-radius: 12px;
         padding: 20px;
         min-height: 160px;
         text-align: center;
-        border: 1px solid #2f3146;
+        border: 1px solid var(--border-color);
     }
 
     .stat-number {
@@ -328,6 +329,27 @@
     }
 
 </script>
+<script>
+    (function () {
+        // 1️⃣ Load lần đầu
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+
+        // 2️⃣ Nghe toggle từ trang cha
+        window.addEventListener("message", function (event) {
+            if (!event.data || !event.data.theme) return;
+
+            if (event.data.theme === "dark") {
+                document.documentElement.setAttribute("data-theme", "dark");
+            } else {
+                document.documentElement.removeAttribute("data-theme");
+            }
+        });
+    })();
+</script>
+
 
 
 

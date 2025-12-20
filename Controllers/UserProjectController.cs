@@ -25,14 +25,26 @@ namespace PorjectManagement.Controllers
             }
             var project = await _userProjectService.GetProjectByIdAsync(projectId);
             if (project == null) return NotFound();
-            var usersInProject = await _userProjectService.GetUsersByProjectIdNoMentorAsync(projectId);
-            var userIdsInProject = usersInProject.Select(u => u.UserId).ToHashSet();
+            // 1. Lấy user đã ở trong project
+            var usersInProject = await _userProjectService
+                .GetUsersByProjectIdNoMentorAsync(projectId);
 
+            // 2. Lấy ID của họ
+            var userIdsInProject = usersInProject
+                .Select(u => u.UserId)
+                .ToHashSet();
+
+            // 3. Lấy toàn bộ user
             var allUsers = await _userProjectService.GetAllUsersAsync();
 
+            // 4. Chỉ lấy user CHƯA ở trong project
             var availableUsers = allUsers
-                .Where(u => u.RoleId != 1)
+                .Where(u =>
+                    u.RoleId != 1 &&
+                    !userIdsInProject.Contains(u.UserId)
+                )
                 .ToList();
+
 
             var vm = new AddMembersViewModel
             {
@@ -90,7 +102,6 @@ namespace PorjectManagement.Controllers
 
                 return View(model);
             }
-
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
             {
                 var result = await _userProjectService
@@ -98,6 +109,8 @@ namespace PorjectManagement.Controllers
 
                 TempData["AddResults"] =
                     System.Text.Json.JsonSerializer.Serialize(result);
+
+                TempData["Success"] = "Add member to project successfully";
             }
             else
             {
@@ -105,6 +118,7 @@ namespace PorjectManagement.Controllers
             }
 
             return RedirectToAction("AddMembers", new { projectId = model.ProjectId });
+
         }
 
     }
