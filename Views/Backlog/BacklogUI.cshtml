@@ -144,12 +144,11 @@
                 <i class="fa fa-user-plus"></i> Add Member
             </a>
         }
-
-        @if (ViewBag.isLeader == true)
-        {
             <a class="btn btn-success" href="@Url.Action("CreateTask", "Task", new { id = ViewBag.ProjectId })">
                 <i class="bi bi-plus-circle"></i> Create Task
             </a>
+        @if (ViewBag.isLeader == true)
+        {
             <a href="/Report/ViewReport?projectId=@projectId" class="dashboard-btn">
                 <i class="fa fa-chart-line"></i> View Report
             </a>
