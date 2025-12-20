@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Controllers;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace PorjectManagement.Tests.Controllers
@@ -25,12 +27,22 @@ namespace PorjectManagement.Tests.Controllers
             _context = new LabProjectManagementContext(options);
             _controller = new RecycleBinController(_context);
 
+            var httpContext = new DefaultHttpContext();
+            httpContext.Session = new TestSession();
+            httpContext.Session.SetInt32("UserId", 1);
+            httpContext.Session.SetInt32("RoleId", 2);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
             SeedData();
         }
 
         private void SeedData()
         {
-            var user = new User
+            var user = new PorjectManagement.Models.User
             {
                 UserId = 1,
                 FullName = "Mentor A",
@@ -79,10 +91,10 @@ namespace PorjectManagement.Tests.Controllers
         // =====================================================
 
         [Fact]
-        public void RecycleBin_ReturnsViewResult_WithRecyclebinVMList()
+        public async System.Threading.Tasks.Task RecycleBin_ReturnsViewResult_WithRecyclebinVMList()
         {
             // Act
-            var result = _controller.RecycleBin();
+            var result = await _controller.RecycleBin(); // ✅ await
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
@@ -101,16 +113,13 @@ namespace PorjectManagement.Tests.Controllers
         // =====================================================
 
         [Fact]
-        public void Restore_RemovesRecycleItem_ReturnsOk()
+        public async System.Threading.Tasks.Task Restore_RemovesRecycleItem_ReturnsOk()
         {
             // Arrange
-            var request = new RestoreRequest
-            {
-                RecycleId = 1
-            };
+            var request = new RestoreRequest { RecycleId = 1 };
 
             // Act
-            var result = _controller.Restore(request);
+            var result = await _controller.Restore(request); // ✅ await
 
             // Assert
             Assert.IsType<OkResult>(result);
@@ -122,16 +131,13 @@ namespace PorjectManagement.Tests.Controllers
         // =====================================================
 
         [Fact]
-        public void DeletePermanent_RemovesTaskAndRecycleBin_ReturnsOk()
+        public async System.Threading.Tasks.Task DeletePermanent_RemovesTaskAndRecycleBin_ReturnsOk()
         {
             // Arrange
-            var request = new RestoreRequest
-            {
-                RecycleId = 1
-            };
+            var request = new RestoreRequest { RecycleId = 1 };
 
             // Act
-            var result = _controller.DeletePermanent(request);
+            var result = await _controller.DeletePermanent(request); // ✅ await
 
             // Assert
             Assert.IsType<OkResult>(result);
@@ -140,16 +146,13 @@ namespace PorjectManagement.Tests.Controllers
         }
 
         [Fact]
-        public void DeletePermanent_ItemNotFound_ReturnsNotFound()
+        public async System.Threading.Tasks.Task DeletePermanent_ItemNotFound_ReturnsNotFound()
         {
             // Arrange
-            var request = new RestoreRequest
-            {
-                RecycleId = 999
-            };
+            var request = new RestoreRequest { RecycleId = 999 };
 
             // Act
-            var result = _controller.DeletePermanent(request);
+            var result = await _controller.DeletePermanent(request); // ✅ await
 
             // Assert
             Assert.IsType<NotFoundResult>(result);

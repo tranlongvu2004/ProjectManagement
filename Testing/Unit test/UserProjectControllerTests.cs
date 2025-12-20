@@ -8,11 +8,10 @@ using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
-using Microsoft.AspNetCore.Mvc.Routing;
-
 
 namespace PorjectManagement.Tests.Controllers
 {
@@ -24,25 +23,12 @@ namespace PorjectManagement.Tests.Controllers
         public UserProjectControllerTests()
         {
             _userProjectServiceMock = new Mock<IUserProjectService>();
-
             _controller = new UserProjectController(_userProjectServiceMock.Object);
 
             var httpContext = new DefaultHttpContext();
-
             httpContext.Session = new TestSession();
             httpContext.Session.SetInt32("UserId", 1);
             httpContext.Session.SetInt32("RoleId", 2);
-
-            var urlHelperMock = new Mock<IUrlHelper>();
-            urlHelperMock
-                .Setup(x => x.Action(It.IsAny<UrlActionContext>()))
-                .Returns("mocked-url");
-
-            var urlHelperFactoryMock = new Mock<IUrlHelperFactory>();
-            urlHelperFactoryMock
-                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
-                .Returns(urlHelperMock.Object);
-
 
             httpContext.User = new ClaimsPrincipal(
                 new ClaimsIdentity(
@@ -51,32 +37,23 @@ namespace PorjectManagement.Tests.Controllers
                 )
             );
 
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider
-                .Setup(x => x.GetService(typeof(IProjectServices)))
-                .Returns(Mock.Of<IProjectServices>());
-
-            serviceProvider
-                .Setup(x => x.GetService(typeof(IUrlHelperFactory)))
-                .Returns(urlHelperFactoryMock.Object);
-
-
-            httpContext.RequestServices = serviceProvider.Object;
-
             _controller.ControllerContext = new ControllerContext
             {
                 HttpContext = httpContext
             };
 
-            // ✅ TempData
             _controller.TempData = new TempDataDictionary(
                 httpContext,
                 Mock.Of<ITempDataProvider>()
             );
         }
 
+        // =====================================================
+        // GET AddMembers
+        // =====================================================
+
         [Fact]
-        public async System.Threading.Tasks.Task AddMembers_Get_NoRole_RedirectsToHome()
+        public async System.Threading.Tasks.Task AddMembers_Get_InvalidRole_RedirectsToAccessDeny_Error()
         {
             // Arrange
             _controller.HttpContext.Session.SetInt32("RoleId", 1);
@@ -86,28 +63,8 @@ namespace PorjectManagement.Tests.Controllers
 
             // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("Index", redirect.ActionName);
-            Assert.Equal("Home", redirect.ControllerName);
-        }
-
-        [Fact]
-        public async System.Threading.Tasks.Task AddMembers_Get_NullId_ReturnsEmptyViewModel()
-        {
-            // Arrange
-            _userProjectServiceMock
-                .Setup(x => x.GetAllProjectsAsync())
-                .ReturnsAsync(new List<Project>());
-
-            // Act
-            var result = await _controller.AddMembers((null));
-
-            // Assert
-            var view = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsType<AddMembersViewModel>(view.Model);
-
-            Assert.Equal(0, model.ProjectId);
-            Assert.Equal("Chưa chọn", model.ProjectName);
-            Assert.NotNull(model.AllProjects);
+            Assert.Equal("AccessDeny", redirect.ActionName);
+            Assert.Equal("Error", redirect.ControllerName);
         }
 
         [Fact]
@@ -126,13 +83,9 @@ namespace PorjectManagement.Tests.Controllers
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task AddMembers_Get_ValidProject_ReturnsViewWithUsers()
+        public async System.Threading.Tasks.Task AddMembers_Get_ValidProject_ReturnsViewWithFilteredUsers()
         {
             // Arrange
-            _userProjectServiceMock
-                .Setup(x => x.GetAllProjectsAsync())
-                .ReturnsAsync(new List<Project>());
-
             _userProjectServiceMock
                 .Setup(x => x.GetProjectByIdAsync(1))
                 .ReturnsAsync(new Project
@@ -141,17 +94,27 @@ namespace PorjectManagement.Tests.Controllers
                     ProjectName = "Test Project"
                 });
 
+            // Users already in project (NoMentor list)
+            _userProjectServiceMock
+                .Setup(x => x.GetUsersByProjectIdNoMentorAsync(1))
+                .ReturnsAsync(new List<User>
+                {
+                    new User { UserId = 10, FullName = "Already In Project", Email = "a@a.com" }
+                });
+
+            // All users
             _userProjectServiceMock
                 .Setup(x => x.GetAllUsersAsync())
                 .ReturnsAsync(new List<User>
                 {
-                    new User
-                    {
-                        UserId = 1,
-                        FullName = "Test User",
-                        Email = "test@mail.com",
-                        CreatedAt = DateTime.Now
-                    }
+                    // this one is already in project -> should be filtered out
+                    new User { UserId = 10, FullName = "Already In Project", Email = "a@a.com", RoleId = 2, CreatedAt = DateTime.Now },
+
+                    // this one has RoleId=1 -> should be filtered out by controller (u.RoleId != 1)
+                    new User { UserId = 11, FullName = "Mentor", Email = "m@m.com", RoleId = 1, CreatedAt = DateTime.Now },
+
+                    // this one is valid -> should remain
+                    new User { UserId = 12, FullName = "Valid User", Email = "v@v.com", RoleId = 2, CreatedAt = DateTime.Now }
                 });
 
             // Act
@@ -163,47 +126,62 @@ namespace PorjectManagement.Tests.Controllers
 
             Assert.Equal(1, model.ProjectId);
             Assert.Equal("Test Project", model.ProjectName);
+
+            // Only "Valid User" remains
             Assert.Single(model.Users);
+            Assert.Equal(12, model.Users[0].UserId);
+            Assert.Equal("Valid User", model.Users[0].FullName);
         }
 
+        // =====================================================
+        // POST AddMembers
+        // =====================================================
+
         [Fact]
-        public async System.Threading.Tasks.Task AddMembers_Post_InvalidRole_RedirectsHome()
+        public async System.Threading.Tasks.Task AddMembers_Post_InvalidRole_RedirectsToAccessDeny_User()
         {
             // Arrange
             _controller.HttpContext.Session.SetInt32("RoleId", 1);
 
             // Act
-            var result = await _controller.AddMembers(new AddMembersViewModel());
+            var result = await _controller.AddMembers(new AddMembersViewModel { ProjectId = 1 });
 
             // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("Index", redirect.ActionName);
-            Assert.Equal("Home", redirect.ControllerName);
+            Assert.Equal("AccessDeny", redirect.ActionName);
+            Assert.Equal("User", redirect.ControllerName);
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task AddMembers_Post_InvalidModel_ReturnsView()
+        public async System.Threading.Tasks.Task AddMembers_Post_InvalidModel_ReturnsViewWithUsers()
         {
             // Arrange
             var model = new AddMembersViewModel
             {
-                ProjectId = 0 // invalid
+                ProjectId = 0 // invalid -> controller adds ModelError
             };
 
             _userProjectServiceMock
-                .Setup(x => x.GetAllProjectsAsync())
-                .ReturnsAsync(new List<Project>());
+                .Setup(x => x.GetUsersByProjectIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(new List<User>());
 
             _userProjectServiceMock
                 .Setup(x => x.GetAllUsersAsync())
-                .ReturnsAsync(new List<User>());
+                .ReturnsAsync(new List<User>
+                {
+                    new User { UserId = 12, FullName = "Valid User", Email = "v@v.com", RoleId = 2, CreatedAt = DateTime.Now }
+                });
 
             // Act
             var result = await _controller.AddMembers(model);
 
             // Assert
             var view = Assert.IsType<ViewResult>(result);
+            var returnedModel = Assert.IsType<AddMembersViewModel>(view.Model);
+
             Assert.False(_controller.ModelState.IsValid);
+            Assert.NotNull(returnedModel.Users);
+            Assert.Single(returnedModel.Users);
         }
 
         [Fact]
@@ -222,10 +200,12 @@ namespace PorjectManagement.Tests.Controllers
             // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("AddMembers", redirect.ActionName);
+            Assert.Null(_controller.TempData["AddResults"]);
+            Assert.Equal("No member is selected.", _controller.TempData["Info"]);
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task AddMembers_Post_ValidUsers_RedirectsAndCallsService()
+        public async System.Threading.Tasks.Task AddMembers_Post_ValidUsers_RedirectsAndCallsService_SetsTempData()
         {
             // Arrange
             var model = new AddMembersViewModel
@@ -234,9 +214,15 @@ namespace PorjectManagement.Tests.Controllers
                 SelectedUserIds = new List<int> { 1, 2 }
             };
 
+            var serviceResult = new Dictionary<int, string>
+            {
+                { 1, "Added" },
+                { 2, "Added" }
+            };
+
             _userProjectServiceMock
                 .Setup(x => x.AddUsersToProjectAsync(1, model.SelectedUserIds))
-                .ReturnsAsync(new Dictionary<int, string>());
+                .ReturnsAsync(serviceResult);
 
             // Act
             var result = await _controller.AddMembers(model);
@@ -249,6 +235,9 @@ namespace PorjectManagement.Tests.Controllers
                 x => x.AddUsersToProjectAsync(1, model.SelectedUserIds),
                 Times.Once
             );
+
+            Assert.NotNull(_controller.TempData["AddResults"]);
+            Assert.Equal("Add member to project successfully", _controller.TempData["Success"]);
         }
     }
 }

@@ -1,8 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Controllers;
 using PorjectManagement.Models;
+using System;
+using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Xunit;
 
 public class TimelineControllerTest
@@ -17,7 +20,7 @@ public class TimelineControllerTest
     }
 
     [Fact]
-    public void Timeline_WithValidProjectId_ReturnsViewAndTasks()
+    public async System.Threading.Tasks.Task Timeline_WithValidProjectId_ReturnsViewAndTasks()
     {
         // Arrange
         var context = GetDbContext();
@@ -42,7 +45,8 @@ public class TimelineControllerTest
             {
                 new TaskAssignment
                 {
-                    User = user
+                    User = user,
+                    UserId = user.UserId
                 }
             }
         };
@@ -54,7 +58,7 @@ public class TimelineControllerTest
         var controller = new TimelineController(context);
 
         // Act
-        var result = controller.Timeline(100);
+        var result = await controller.Timeline(100); 
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -69,14 +73,14 @@ public class TimelineControllerTest
     }
 
     [Fact]
-    public void Timeline_WithNoTasks_ReturnsEmptyList()
+    public async System.Threading.Tasks.Task Timeline_WithNoTasks_ReturnsEmptyList()
     {
         // Arrange
         var context = GetDbContext();
         var controller = new TimelineController(context);
 
         // Act
-        var result = controller.Timeline(999);
+        var result = await controller.Timeline(999); 
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);

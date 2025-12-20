@@ -43,6 +43,7 @@ namespace PorjectManagement.Tests.Controllers
             var httpContext = new DefaultHttpContext();
             httpContext.Session = new TestSession();
             httpContext.Session.SetInt32("UserId", 1);
+            httpContext.Session.SetInt32("RoleId", 2);
 
             _controller.ControllerContext = new ControllerContext
             {
@@ -53,21 +54,22 @@ namespace PorjectManagement.Tests.Controllers
         // BacklogUI TESTS
 
         [Fact]
-        public void BacklogUI_UserNotLoggedIn_RedirectsToLogin()
+        public async System.Threading.Tasks.Task BacklogUI_UserNotLoggedIn_RedirectsToLogin()
         {
             // Arrange
             _controller.ControllerContext.HttpContext.Session.Clear();
 
             // Act
-            var result = _controller.BacklogUI(1);
+            var result = await _controller.BacklogUI(1);
 
             // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Login", redirect.ActionName);
+            Assert.Equal("User", redirect.ControllerName);
         }
 
         [Fact]
-        public void BacklogUI_ReturnsView_WithParentAndSubTasks()
+        public async System.Threading.Tasks.Task BacklogUI_ReturnsView_WithParentAndSubTasks()
         {
             // Arrange
             _mockUserProjectService
@@ -94,50 +96,45 @@ namespace PorjectManagement.Tests.Controllers
                     CreatedAt = DateTime.Now
                 }
             );
-
             _context.SaveChanges();
 
             // Act
-            var result = _controller.BacklogUI(1);
+            var result = await _controller.BacklogUI(1);
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
 
-            var parentTasks = Assert.IsAssignableFrom<List<PorjectManagement.Models.Task>>(
-                viewResult.ViewData["ParentTasks"]
-            );
-
-            var subTasks = Assert.IsAssignableFrom<List<PorjectManagement.Models.Task>>(
-                viewResult.ViewData["SubTasks"]
-            );
+            var parentTasks = Assert.IsAssignableFrom<List<PorjectManagement.Models.Task>>(viewResult.ViewData["ParentTasks"]);
+            var subTasks = Assert.IsAssignableFrom<List<PorjectManagement.Models.Task>>(viewResult.ViewData["SubTasks"]);
 
             Assert.Single(parentTasks);
             Assert.Single(subTasks);
         }
 
-
         // DeleteTask TESTS
 
         [Fact]
-        public void DeleteTask_TaskNotFound_ReturnsNotFound()
+        public async System.Threading.Tasks.Task DeleteTask_TaskNotFound_ReturnsNotFound()
         {
             // Arrange
-            var request = new DeleteTaskRequest
-            {
-                TaskId = 999
-            };
+            var request = new DeleteTaskRequest { TaskId = 999 };
 
             // Act
-            var result = _controller.DeleteTask(request);
+            var result = await _controller.DeleteTask(request);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
         }
 
+
         [Fact]
-        public void DeleteTask_ValidTask_AddsToRecycleBin_ReturnsOk()
+        public async System.Threading.Tasks.Task DeleteTask_ValidTask_AddsToRecycleBin_ReturnsOk()
         {
             // Arrange
+            _mockProjectService
+                .Setup(x => x.UpdateProjectStatusAsync(It.IsAny<int>()))
+                .Returns(System.Threading.Tasks.Task.CompletedTask);
+
             _context.Tasks.Add(new PorjectManagement.Models.Task
             {
                 TaskId = 1,
@@ -146,23 +143,21 @@ namespace PorjectManagement.Tests.Controllers
                 Status = Models.TaskStatus.Doing,
                 CreatedAt = DateTime.Now
             });
-
             _context.SaveChanges();
 
-            var request = new DeleteTaskRequest
-            {
-                TaskId = 1
-            };
+            var request = new DeleteTaskRequest { TaskId = 1 };
 
             // Act
-            var result = _controller.DeleteTask(request);
+            var result = await _controller.DeleteTask(request);
 
             // Assert
             Assert.IsType<OkResult>(result);
 
-            var recycleItem = _context.RecycleBins.FirstOrDefault(r => r.EntityId == 1);
+            var recycleItem = _context.RecycleBins
+                .FirstOrDefault(r => r.EntityType == "Task" && r.EntityId == 1);
+
             Assert.NotNull(recycleItem);
-            Assert.Equal("Task", recycleItem.EntityType);
         }
+
     }
 }

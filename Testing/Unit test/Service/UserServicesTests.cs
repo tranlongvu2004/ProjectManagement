@@ -1,25 +1,24 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+﻿using Moq;
 using PorjectManagement.Models;
 using PorjectManagement.Repository.Interface;
 using PorjectManagement.Service;
 using System;
+using Xunit;
 
 namespace Testing.UnitTest
 {
-    [TestClass]
     public class UserServicesTests
     {
-        private Mock<IUserRepo> _mockRepo = null!;
-        private UserServices _service = null!;
+        private readonly Mock<IUserRepo> _mockRepo;
+        private readonly UserServices _service;
 
-        [TestInitialize]
-        public void Setup()
+        public UserServicesTests()
         {
             _mockRepo = new Mock<IUserRepo>();
             _service = new UserServices(_mockRepo.Object);
         }
-        [TestMethod]
+
+        [Fact]
         public void CreateAccount_ValidUser_ReturnUser()
         {
             var user = new User { Email = "a@gmail.com" };
@@ -29,11 +28,12 @@ namespace Testing.UnitTest
 
             var result = _service.CreateAccount(user);
 
-            Assert.IsNotNull(result);
-            Assert.AreEqual("a@gmail.com", result.Email);
+            Assert.NotNull(result);
+            Assert.Equal("a@gmail.com", result!.Email);
             _mockRepo.Verify(r => r.CreateAccount(user), Times.Once);
         }
-        [TestMethod]
+
+        [Fact]
         public void GetUser_EmailExists_ReturnUser()
         {
             _mockRepo.Setup(r => r.GetUserByEmail("test@gmail.com"))
@@ -41,10 +41,11 @@ namespace Testing.UnitTest
 
             var result = _service.GetUser("test@gmail.com");
 
-            Assert.IsNotNull(result);
-            Assert.AreEqual("test@gmail.com", result.Email);
+            Assert.NotNull(result);
+            Assert.Equal("test@gmail.com", result!.Email);
         }
-        [TestMethod]
+
+        [Fact]
         public void GetUserById_ValidId_ReturnUser()
         {
             _mockRepo.Setup(r => r.getUserById(1))
@@ -52,10 +53,11 @@ namespace Testing.UnitTest
 
             var result = _service.GetUserById(1);
 
-            Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.UserId);
+            Assert.NotNull(result);
+            Assert.Equal(1, result!.UserId);
         }
-        [TestMethod]
+
+        [Fact]
         public void IsLoginValid_CorrectCredentials_ReturnTrue()
         {
             _mockRepo.Setup(r => r.IsloginValid("a", "123"))
@@ -63,9 +65,10 @@ namespace Testing.UnitTest
 
             var result = _service.IsLoginValid("a", "123");
 
-            Assert.IsTrue(result);
+            Assert.True(result);
         }
-        [TestMethod]
+
+        [Fact]
         public void IsLoginValid_WrongCredentials_ReturnFalse()
         {
             _mockRepo.Setup(r => r.IsloginValid("a", "wrong"))
@@ -73,9 +76,10 @@ namespace Testing.UnitTest
 
             var result = _service.IsLoginValid("a", "wrong");
 
-            Assert.IsFalse(result);
+            Assert.False(result);
         }
-        [TestMethod]
+
+        [Fact]
         public void UpdateProfile_CallRepoOnce()
         {
             var user = new User { UserId = 1 };
@@ -84,7 +88,8 @@ namespace Testing.UnitTest
 
             _mockRepo.Verify(r => r.UpdateProfile(user), Times.Once);
         }
-        [TestMethod]
+
+        [Fact]
         public void UpdateUser_CallRepoOnce()
         {
             var user = new User { UserId = 1 };

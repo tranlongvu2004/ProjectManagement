@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OfficeOpenXml;
 using PorjectManagement.Controllers;
 using PorjectManagement.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace PorjectManagement.Tests.Controllers
@@ -25,7 +25,6 @@ namespace PorjectManagement.Tests.Controllers
             _context = new LabProjectManagementContext(options);
             _controller = new DashboardController(_context);
 
-            // Fake HttpContext + Session
             var httpContext = new DefaultHttpContext();
             httpContext.Session = new TestSession();
             httpContext.Session.SetInt32("UserId", 1);
@@ -40,12 +39,26 @@ namespace PorjectManagement.Tests.Controllers
 
         private void SeedData()
         {
-            var user = new User
+            // User (phải có Email + PasswordHash do model required)
+            var user = new PorjectManagement.Models.User
             {
                 UserId = 1,
-                FullName = "Mentor A"
+                FullName = "Mentor A",
+                Email = "mentora@test.com",
+                PasswordHash = "fake_hash"
             };
 
+            _context.Users.Add(user);
+
+            // UserProjects (Dashboard() lấy usersInProject từ đây)
+            _context.UserProjects.Add(new UserProject
+            {
+                UserId = 1,
+                ProjectId = 1,
+                User = user
+            });
+
+            // Tasks
             var task1 = new PorjectManagement.Models.Task
             {
                 TaskId = 1,
@@ -64,15 +77,25 @@ namespace PorjectManagement.Tests.Controllers
                 CreatedByNavigation = user
             };
 
-            _context.Users.Add(user);
             _context.Tasks.AddRange(task1, task2);
 
-            _context.TaskAssignments.Add(new TaskAssignment
-            {
-                TaskId = 1,
-                UserId = 1,
-                Task = task1
-            });
+            // TaskAssignments 
+            _context.TaskAssignments.AddRange(
+                new TaskAssignment
+                {
+                    TaskId = 1,
+                    UserId = 1,
+                    Task = task1,
+                    User = user
+                },
+                new TaskAssignment
+                {
+                    TaskId = 2,
+                    UserId = 1,
+                    Task = task2,
+                    User = user
+                }
+            );
 
             _context.SaveChanges();
         }
@@ -80,10 +103,10 @@ namespace PorjectManagement.Tests.Controllers
         // Dashboard
 
         [Fact]
-        public void Dashboard_ReturnsViewResult_WithStatistics()
+        public async System.Threading.Tasks.Task Dashboard_ReturnsViewResult_WithStatistics()
         {
             // Act
-            var result = _controller.Dashboard(1, 1);
+            var result = await _controller.Dashboard(1, 1);
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
@@ -97,10 +120,10 @@ namespace PorjectManagement.Tests.Controllers
         // GetTasks
 
         [Fact]
-        public void GetTasks_ReturnsJson_WithTasksByProject()
+        public async System.Threading.Tasks.Task GetTasks_ReturnsJson_WithTasksByProject()
         {
             // Act
-            var result = _controller.GetTasks(1);
+            var result = await _controller.GetTasks(1);
 
             // Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
@@ -112,16 +135,16 @@ namespace PorjectManagement.Tests.Controllers
         // GetTasksByUserId
 
         [Fact]
-        public void GetTasksByUserId_ReturnsJson_WithUserTasks()
+        public async System.Threading.Tasks.Task GetTasksByUserId_ReturnsJson_WithUserTasks()
         {
             // Act
-            var result = _controller.GetTasksByUserId(1, 1);
+            var result = await _controller.GetTasksByUserId(1, 1);
 
             // Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
             var data = Assert.IsAssignableFrom<IEnumerable<object>>(jsonResult.Value);
 
-            Assert.Single(data);
+            Assert.Equal(2, data.Count());
         }
     }
 }
