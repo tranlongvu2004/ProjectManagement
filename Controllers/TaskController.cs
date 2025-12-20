@@ -18,6 +18,7 @@ namespace PorjectManagement.Controllers
         private readonly IProjectServices _projectServices;
         private readonly LabProjectManagementContext _context;
         private readonly IActivityLogService _activityLogService;
+        private readonly ITaskHistoryService _taskHistoryService;
 
         public TaskController(
             ITaskService taskService,
@@ -25,7 +26,8 @@ namespace PorjectManagement.Controllers
             ICommentService commentService,
             IProjectServices projectServices,
             LabProjectManagementContext context,
-            IActivityLogService activityLogService)
+            IActivityLogService activityLogService,
+            ITaskHistoryService taskHistoryService)
         {
             _taskService = taskService;
             _userProjectService = userProjectService;
@@ -33,6 +35,7 @@ namespace PorjectManagement.Controllers
             _projectServices = projectServices;
             _context = context;
             _activityLogService = activityLogService;
+            _taskHistoryService = taskHistoryService;
         }
 
         [HttpGet]
@@ -212,6 +215,12 @@ namespace PorjectManagement.Controllers
                     createdAt: DateTime.Now,
                     targetUserId: assignedUser.UserId
                 );
+                await _taskHistoryService.AddAsync(
+        task.TaskId,
+        currentUserId,
+        "TASK_ASSIGNED",
+        $"assign task for {assignedUser.FullName}"
+    );
 
                 await _context.SaveChangesAsync();
 
@@ -340,6 +349,7 @@ namespace PorjectManagement.Controllers
                 return View(model);
             }
 
+
             try
             {
                 var userEmail = HttpContext.Session.GetString("UserEmail");
@@ -350,6 +360,37 @@ namespace PorjectManagement.Controllers
                     .FirstAsync(t => t.TaskId == model.TaskId);
 
                 bool success = await _taskService.UpdateTaskAsync(model, currentUser.UserId);
+                //Trung Hieu
+                var newTask1 = await _context.Tasks
+    .FirstAsync(t => t.TaskId == model.TaskId);
+                
+                if (oldTask.Status != newTask1.Status)
+                {
+                    await _taskHistoryService.AddAsync(
+                        newTask1.TaskId,
+                        currentUser.UserId,
+                        "STATUS_CHANGED",
+                        $"change status from {oldTask.Status} → {newTask1.Status}"
+                    );
+                }
+                if (oldTask.Title != newTask1.Title)
+                {
+                    await _taskHistoryService.AddAsync(
+                        newTask1.TaskId,
+                        currentUser.UserId,
+                        "TITLE_CHANGED",
+                        $"change title from \"{oldTask.Title}\" → \"{newTask1.Title}\""
+                    );
+                }
+                if (oldTask.Deadline != newTask1.Deadline)
+                {
+                    await _taskHistoryService.AddAsync(
+                        newTask1.TaskId,
+                        currentUser.UserId,
+                        "DEADLINE_CHANGED",
+                        $"change deadline from {oldTask.Deadline:dd/MM/yyyy} → {newTask1.Deadline:dd/MM/yyyy}"
+                    );
+                }
 
 
                 if (!success)
@@ -482,6 +523,15 @@ namespace PorjectManagement.Controllers
             _context.TaskAttachments.Add(attachment);
             await _context.SaveChangesAsync();
 
+            await _taskHistoryService.AddAsync(
+                taskId,
+                userId.Value,
+                "ATTACHMENT_ADDED",
+                $"has add new attachment \"{file.FileName}\""
+            );
+
+
+
             TempData["SuccessMessage"] = "Upload file successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new
             {
@@ -495,6 +545,9 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteAttachment(int taskId)
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized();
+
             var attachment = await _context.TaskAttachments
                 .FirstOrDefaultAsync(a => a.TaskId == taskId);
 
@@ -518,6 +571,13 @@ namespace PorjectManagement.Controllers
 
             _context.TaskAttachments.Remove(attachment);
             await _context.SaveChangesAsync();
+            await _taskHistoryService.AddAsync(
+      attachment.TaskId,
+      userId.Value,
+      "ATTACHMENT_DELETED",
+      $"has deleted \"{attachment.FileName}\""
+  );
+
 
             TempData["SuccessMessage"] = "Delete attachment successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new
@@ -591,6 +651,12 @@ namespace PorjectManagement.Controllers
             _context.TaskAttachments.Add(attachment);
             await _context.SaveChangesAsync();
 
+            await _taskHistoryService.AddAsync(
+    attachment.TaskId,
+    userId.Value,
+    "ATTACHMENT_REPLACED",
+    $"has replace file \"{attachment.FileName}\""
+);
             TempData["SuccessMessage"] = "Replace attachment successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new
             {
@@ -628,6 +694,13 @@ namespace PorjectManagement.Controllers
 
             if (success)
             {
+                await _taskHistoryService.AddAsync(
+      taskId,
+      userId,
+      "COMMENT_ADDED",
+      "added comment"
+  );
+
                 TempData["Success"] = "Comment added successfully!";
             }
             else
@@ -684,6 +757,7 @@ namespace PorjectManagement.Controllers
 
             _context.Comments.Remove(comment);
             _context.SaveChanges();
+
 
             return Ok();
         }
