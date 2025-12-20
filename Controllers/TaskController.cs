@@ -42,7 +42,7 @@ namespace PorjectManagement.Controllers
         public async Task<IActionResult> CreateTask(int? projectId)
         {
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
-            if (roleId != 2)
+            if (roleId != 2 )
             {
                 return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
@@ -53,7 +53,9 @@ namespace PorjectManagement.Controllers
 
                 if (!string.IsNullOrEmpty(referer))
                 {
+                    // Thử lấy projectId từ URL trước đó (Referer)
                     var uri = new Uri(referer);
+                    // Parse query string để tìm projectId
                     var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
 
                     if (query.TryGetValue("projectId", out var value))
@@ -64,6 +66,7 @@ namespace PorjectManagement.Controllers
             }
             if (!projectId.HasValue)
             {
+                // Lấy danh sách tất cả project để người dùng chọn
                 var projectList = await _userProjectService.GetAllProjectsAsync();
                 ViewBag.ProjectList = new SelectList(projectList, "ProjectId", "ProjectName");
                 vm.ProjectMembers = new List<PorjectManagement.Models.User>();
@@ -71,6 +74,7 @@ namespace PorjectManagement.Controllers
             }
             vm.ProjectId = projectId.Value;
             vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdNoMentorAsync(projectId.Value);
+           // Ẩn dropdown chọn project vì project đã được xác định
             ViewBag.HideProjectDropdown = true;
             var parentTasks = await _taskService.GetParentTasksByProjectAsync(projectId.Value);
             vm.ParentTasks = parentTasks.Select(t => new SelectListItem
