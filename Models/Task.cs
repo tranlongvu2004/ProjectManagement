@@ -40,6 +40,8 @@ public partial class Task
     public DateTime? UpdatedAt { get; set; }
 
     // Navigation properties
+
+    public virtual ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public virtual User CreatedByNavigation { get; set; } = null!;
 

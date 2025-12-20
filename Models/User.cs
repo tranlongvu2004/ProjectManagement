@@ -27,6 +27,10 @@ public partial class User
 
     public DateTime? CreatedAt { get; set; }
 
+    public virtual ICollection<ActivityLog> ActivityLogTargetUsers { get; set; } = new List<ActivityLog>();
+
+    public virtual ICollection<ActivityLog> ActivityLogUsers { get; set; } = new List<ActivityLog>();
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
