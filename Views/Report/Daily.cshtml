@@ -41,7 +41,7 @@
             @for (int i = 0; i < members.Count; i++)
             {
                 <td>
-                    <textarea class="form-control" name="Tasks[@i].Plan"></textarea>
+                    <textarea class="form-control" name="Tasks[@i].Plan" required></textarea>
                 </td>
             }
         </tr>
@@ -52,7 +52,7 @@
             @for (int i = 0; i < members.Count; i++)
             {
                 <td>
-                    <textarea class="form-control" name="Tasks[@i].Actual"></textarea>
+                    <textarea class="form-control" name="Tasks[@i].Actual" required></textarea>
                 </td>
             }
         </tr>
@@ -63,7 +63,7 @@
             @for (int i = 0; i < members.Count; i++)
             {
                 <td>
-                    <input type="number" class="form-control" min="0" max="100" name="Tasks[@i].ProgressPercent" />
+                    <input type="number" class="form-control" min="0" max="100" name="Tasks[@i].ProgressPercent" required />
                 </td>
             }
         </tr>
@@ -74,7 +74,7 @@
             @for (int i = 0; i < members.Count; i++)
             {
                 <td>
-                    <textarea class="form-control" name="Tasks[@i].Output"></textarea>
+                    <textarea class="form-control" name="Tasks[@i].Output" required></textarea>
                 </td>
             }
         </tr>
@@ -85,7 +85,7 @@
             @for (int i = 0; i < members.Count; i++)
             {
                 <td>
-                    <textarea class="form-control" name="Tasks[@i].Issue"></textarea>
+                    <textarea class="form-control" name="Tasks[@i].Issue" required></textarea>
                 </td>
             }
         </tr>
@@ -96,7 +96,7 @@
             @for (int i = 0; i < members.Count; i++)
             {
                 <td>
-                    <textarea class="form-control" name="Tasks[@i].Action"></textarea>
+                    <textarea class="form-control" name="Tasks[@i].Action" required></textarea>
                 </td>
             }
         </tr>
@@ -107,7 +107,7 @@
             @for (int i = 0; i < members.Count; i++)
             {
                 <td>
-                    <textarea class="form-control" name="Tasks[@i].NextPlan"></textarea>
+                    <textarea class="form-control" name="Tasks[@i].NextPlan" required></textarea>
                 </td>
             }
         </tr>
@@ -116,7 +116,7 @@
         <tr>
             <th>Status and % execute / plan Team</th>
             <td colspan="@members.Count">
-                <input type="number" class="form-control" min="0" max="100" name="TeamExecutePercent" />
+                <input type="number" class="form-control" min="0" max="100" name="TeamExecutePercent" required />
             </td>
         </tr>
 
@@ -124,7 +124,7 @@
         <tr>
             <th>Team Next Plan</th>
             <td colspan="@members.Count">
-                <textarea class="form-control" name="TeamNextPlan"></textarea>
+                <textarea class="form-control" name="TeamNextPlan" required></textarea>
             </td>
         </tr>
     </table>
@@ -138,6 +138,31 @@
 
 <script>
     function submitDaily() {
+
+        let isValid = true;
+
+        // lấy toàn bộ input + textarea trong form
+        const fields = document.querySelectorAll(
+            "#dailyForm textarea, #dailyForm input[type='number']"
+        );
+
+        fields.forEach(f => {
+            // reset trạng thái cũ
+            f.classList.remove("is-invalid");
+
+            // check rỗng
+            if (!f.value || f.value.trim() === "") {
+                f.classList.add("is-invalid");
+                isValid = false;
+            }
+        });
+
+        // nếu còn ô lỗi → dừng
+        if (!isValid) {
+            return;
+        }
+
+        // ====== SUBMIT NHƯ CŨ ======
         const form = document.getElementById("dailyForm");
         const formData = new FormData(form);
 
@@ -150,36 +175,22 @@
             return res.json();
         })
         .then(data => {
-            if (!data.success) throw new Error();
-
             const alertBox = document.getElementById("dailyAlert");
-
             alertBox.classList.remove("d-none", "alert-danger");
             alertBox.classList.add("alert-success");
-
             alertBox.innerHTML = `
-                <strong>✅ Upload daily report thành công!</strong><br/>
-                <div class="mt-2">
-                    <button class="btn btn-sm btn-primary"
-                            onclick="viewReport(${data.projectId})">
-                        📄 View Report
-                    </button>
-                </div>
+                <strong> Upload daily report success!</strong>
             `;
-
             window.scrollTo({ top: 0, behavior: "smooth" });
         })
         .catch(() => {
             const alertBox = document.getElementById("dailyAlert");
-
             alertBox.classList.remove("d-none", "alert-success");
             alertBox.classList.add("alert-danger");
-            alertBox.innerText = "❌ Upload daily report thất bại";
+            alertBox.innerText = " Upload daily report failed";
         });
     }
-
-    function viewReport(projectId) {
-        window.location.href = `/Report/ViewReport?projectId=${projectId}`;
-    }
 </script>
+
+
 
