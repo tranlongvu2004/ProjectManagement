@@ -7,6 +7,7 @@ using PorjectManagement.Models;
 using PorjectManagement.Service;
 using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
+using System.ComponentModel.Design;
 
 namespace PorjectManagement.Controllers
 {
@@ -42,7 +43,7 @@ namespace PorjectManagement.Controllers
         public async Task<IActionResult> CreateTask(int? projectId)
         {
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
-            if (roleId != 2 )
+            if (roleId != 2)
             {
                 return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
             }
@@ -74,7 +75,7 @@ namespace PorjectManagement.Controllers
             }
             vm.ProjectId = projectId.Value;
             vm.ProjectMembers = await _userProjectService.GetUsersByProjectIdNoMentorAsync(projectId.Value);
-           // Ẩn dropdown chọn project vì project đã được xác định
+            // Ẩn dropdown chọn project vì project đã được xác định
             ViewBag.HideProjectDropdown = true;
             var parentTasks = await _taskService.GetParentTasksByProjectAsync(projectId.Value);
             vm.ParentTasks = parentTasks.Select(t => new SelectListItem
@@ -83,7 +84,7 @@ namespace PorjectManagement.Controllers
                 Text = t.Title
             }).ToList();
 
-            
+
 
             return View(vm);
         }
@@ -153,7 +154,7 @@ namespace PorjectManagement.Controllers
 
             //Duc Nghiem
             _activityLogService.Log(
-            
+
                 userId: userId,
                 projectId: model.ProjectId,
                 taskId: newTaskId,
@@ -228,10 +229,10 @@ namespace PorjectManagement.Controllers
                     targetUserId: assignedUser.UserId
                 );
                 await _taskHistoryService.AddAsync(
-        task.TaskId,
-        currentUserId,
-        "TASK_ASSIGNED",
-        $"assign task for {assignedUser.FullName}"
+                task.TaskId,
+                currentUserId,
+                "TASK_ASSIGNED",
+                 $"assign task for {assignedUser.FullName}"
     );
 
                 await _context.SaveChangesAsync();
@@ -389,7 +390,7 @@ namespace PorjectManagement.Controllers
                 //Trung Hieu
                 var newTask1 = await _context.Tasks
     .FirstAsync(t => t.TaskId == model.TaskId);
-                
+
                 if (oldTask.Status != newTask1.Status)
                 {
                     await _taskHistoryService.AddAsync(
@@ -498,7 +499,9 @@ namespace PorjectManagement.Controllers
         public async Task<IActionResult> UploadAttachment(int taskId, IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return RedirectToAction("BacklogUI","Backlog", new { projectId = _context.Tasks
+                return RedirectToAction("BacklogUI", "Backlog", new
+                {
+                    projectId = _context.Tasks
         .Where(t => t.TaskId == taskId)
         .Select(t => t.ProjectId)
         .First()
@@ -515,7 +518,9 @@ namespace PorjectManagement.Controllers
             {
                 TempData["Error"] =
                     "This task already has an attachment. Please delete it before uploading a new one.";
-                return RedirectToAction("BacklogUI", "Backlog", new { projectId = _context.Tasks
+                return RedirectToAction("BacklogUI", "Backlog", new
+                {
+                    projectId = _context.Tasks
         .Where(t => t.TaskId == taskId)
         .Select(t => t.ProjectId)
         .First()
@@ -751,7 +756,7 @@ namespace PorjectManagement.Controllers
             return Json(comments);
         }
         [HttpPost]
-        public IActionResult UpdateComment([FromBody] UpdateCommentVM model)
+        public async Task<IActionResult> UpdateComment([FromBody] UpdateCommentVM model)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return Unauthorized();
@@ -765,13 +770,18 @@ namespace PorjectManagement.Controllers
                 return Forbid();
 
             comment.Content = model.Content;
-            _context.SaveChanges();
-
+             _context.SaveChanges();
+            await _taskHistoryService.AddAsync(
+     comment.TaskId,
+     userId.Value,
+     "COMMENT_UPDATED",
+     "has updated a comment"
+ );
             return Json(new { success = true });
         }
 
         [HttpPost]
-        public IActionResult DeleteComment([FromBody] DeleteCommentRequest req)
+        public async Task<IActionResult> DeleteComment([FromBody] DeleteCommentRequest req)
         {
             var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
@@ -783,7 +793,12 @@ namespace PorjectManagement.Controllers
 
             _context.Comments.Remove(comment);
             _context.SaveChanges();
-
+            await _taskHistoryService.AddAsync(
+            comment.TaskId,
+            userId,
+            "COMMENT_DELETED",
+             "has deleted a comment"
+  );
 
             return Ok();
         }
