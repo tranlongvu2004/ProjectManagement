@@ -1,9 +1,9 @@
 ﻿@model PorjectManagement.Models.User
-
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <div class="container mt-4" style="max-width: 700px;">
-    <h2 class="mb-4 text-primary">User profile</h2>
+    <h2 class="mb-4 fw-bold">User profile</h2>
 
-    <div class="border p-4 rounded shadow-sm">
+    <div class="border p-4 rounded shadow-sm user-profile-card">
         <div class="text-center mb-4">
             <img src="@(string.IsNullOrEmpty(Model.AvatarUrl)
                      ? Url.Content("~/images/default-avatar.png")

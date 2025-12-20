@@ -1,163 +1,108 @@
 ﻿@model List<PorjectManagement.ViewModels.RecyclebinVM>
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <style>
+/* ===============================
+   TRASH PAGE – THEME AWARE
+================================ */
 
-    .trash-page {
-        background: #ffffff;
-        color: #172b4d;
-        padding: 30px;
-        min-height: 100vh;
-        font-family: Inter, sans-serif;
-    }
+.trash-page {
+    background: var(--bg-color);
+    color: var(--text-color);
+    padding: 30px;
+    min-height: 100vh;
+    font-family: Inter, sans-serif;
+}
 
-    .subtitle {
-        color: #6b778c;
-        margin-bottom: 20px;
-    }
+.subtitle {
+    color: var(--muted-text);
+}
 
-    /* Toolbar */
-    .toolbar {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 15px;
-    }
+/* Toolbar */
+.toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+}
 
-    .search-box {
-        background: #ffffff;
-        border: 1px solid #dfe1e6;
-        color: #172b4d;
-        padding: 8px 12px;
-        border-radius: 6px;
-        width: 240px;
-    }
+.search-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    width: 240px;
+}
 
-        .search-box::placeholder {
-            color: #97a0af;
-        }
+.search-box::placeholder {
+    color: var(--muted-text);
+}
 
-    .filter-btn {
-        background: #ffffff;
-        border: 1px solid #dfe1e6;
-        color: #172b4d;
-        padding: 8px 14px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
+.filter-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 8px 14px;
+    border-radius: 6px;
+}
 
-        .filter-btn:hover {
-            background: #f4f5f7;
-        }
+.filter-btn:hover {
+    background: var(--hover-bg);
+}
 
-    /* Table */
-    .trash-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: #ffffff;
-        border-radius: 8px;
-        overflow: visible;
-        border: 1px solid #dfe1e6;
-    }
+/* Table */
+.trash-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
 
-        .trash-table th,
-        .trash-table td {
-            padding: 14px;
-            border-bottom: 1px solid #f0f1f3;
-            text-align: left;
-            font-size: 14px;
-        }
+.trash-table th,
+.trash-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+}
 
-        .trash-table th {
-            color: #6b778c;
-            font-weight: 500;
-            background: #fafbfc;
-        }
+.trash-table th {
+    background: var(--hover-bg);
+    color: var(--text-color);
+    font-weight: 600;
+}
 
-        .trash-table tr:hover {
-            background: #f7f8fa;
-        }
+.trash-table tr:hover {
+    background: var(--hover-bg);
+}
 
-    /* Action */
-    .action-btn {
-        background: transparent;
-        border: none;
-        color: #6b778c;
-        font-size: 20px;
-        cursor: pointer;
-    }
+/* Action */
+.btn-ellipsis {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+}
 
-        .action-btn:hover {
-            color: #172b4d;
-        }
+.btn-ellipsis:hover {
+    background: var(--hover-bg);
+}
 
+/* Dropdown */
+.dropdown-menu {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
 
-    /* Action cell */
-    .action-cell {
-        position: relative;
-    }
+.dropdown-item {
+    color: var(--text-color);
+}
 
-    /* Nút 3 chấm */
-    .btn-ellipsis {
-        background: #ffffff;
-        border: 1px solid #dfe1e6;
-        color: #42526e;
-        font-size: 20px;
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        cursor: pointer;
-        line-height: 1;
-    }
-
-        .btn-ellipsis:hover {
-            background: #f4f5f7;
-        }
-
-    /* Dropdown */
-    .dropdown-menu {
-        position: absolute;
-        right: 0;
-        top: 38px;
-        background: #ffffff;
-        border-radius: 8px;
-        width: 200px;
-        display: none;
-        box-shadow: 0 8px 24px rgba(9, 30, 66, 0.15);
-        border: 1px solid #dfe1e6;
-        z-index: 999;
-        padding: 6px 0;
-    }
-
-    /* Item */
-    .dropdown-item {
-        width: 100%;
-        padding: 10px 14px;
-        background: none;
-        border: none;
-        color: #172b4d;
-        text-align: left;
-        cursor: pointer;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-        .dropdown-item:hover {
-            background: #f4f5f7;
-        }
-
-        /* Danger */
-        .dropdown-item.text-danger {
-            color: #de350b;
-        }
-
-            .dropdown-item.text-danger:hover {
-                background: #ffebe6;
-            }
-
-
-
-
-
+.dropdown-item:hover {
+    background: var(--hover-bg);
+}
 </style>
 
 <div class="trash-page">

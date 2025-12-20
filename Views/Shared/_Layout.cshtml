@@ -16,7 +16,6 @@
         body {
             background: #f5f7fb;
             font-family: 'Segoe UI', sans-serif;
-            color: #333;
         }
 
         a {
@@ -28,7 +27,6 @@
         ============================ */
         .navbar {
             height: 60px;
-            background: #ffffff !important;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
@@ -74,7 +72,6 @@
         ============================ */
         .sidebar {
             width: 240px;
-            background: white;
             height: calc(100vh - 60px);
             position: fixed;
             top: 60px;
@@ -107,7 +104,7 @@
             font-size: 15px;
             margin-bottom: 6px;
             transition: 0.2s;
-            color: #333;
+
         }
 
             .menu-item a {
@@ -291,7 +288,9 @@
                     </form>
                     <!-- RIGHT ICONS -->
                     <div class="d-flex align-items-center gap-2">
-
+                        <button id="themeToggle" class="btn btn-outline-secondary ms-2">
+                            🌙
+                        </button>
                         <a href="/User/Profile?userId=@roleId" class="btn-profile">
                             <i class="bi bi-person-circle me-1"></i> Profile
                         </a>
@@ -310,6 +309,9 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
+        <a asp-controller="HistoryLog" asp-action="HistoryLog" class="menu-item">
+            For you
+        </a>
 
         <a asp-controller="Home" asp-action="Index" class="menu-item">
             Overview
@@ -370,5 +372,29 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        const toggleBtn = document.getElementById("themeToggle");
+        const currentTheme = localStorage.getItem("theme");
+
+        if (currentTheme === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+            toggleBtn.innerText = "☀";
+        }
+
+        toggleBtn?.addEventListener("click", () => {
+            let theme = document.documentElement.getAttribute("data-theme");
+
+            if (theme === "dark") {
+                document.documentElement.removeAttribute("data-theme");
+                localStorage.setItem("theme", "light");
+                toggleBtn.innerText = "🌙";
+            } else {
+                document.documentElement.setAttribute("data-theme", "dark");
+                localStorage.setItem("theme", "dark");
+                toggleBtn.innerText = "☀";
+            }
+        });
+    </script>
 </body>
 </html>
+
