@@ -48,6 +48,7 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IActivityLogService ,ActivityLogService>();
 
+builder.Services.AddScoped<ITaskHistoryService, TaskHistoryService>();
 
 
 var app = builder.Build();

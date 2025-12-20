@@ -124,9 +124,20 @@
 
     <!-- Toolbar -->
     <div class="toolbar">
-        <input type="text" placeholder="Search..." class="search-box" />
-        <button class="filter-btn">Filters</button>
+        <input type="text" placeholder="Search..." class="search-box" id="searchInput" />
+
+        <select class="filter-btn" id="typeFilter">
+            <option value="">All types</option>
+            <option value="Task">Task</option>
+            <option value="Resource">Resource</option>
+        </select>
+
+        <select class="filter-btn" id="sortDate">
+            <option value="desc">Newest first</option>
+            <option value="asc">Oldest first</option>
+        </select>
     </div>
+
 
     <!-- Table -->
     <table class="trash-table">
@@ -144,7 +155,11 @@
             @foreach(var item in Model)
             {
                 
-                <tr>
+                <tr class="trash-row"
+                    data-name="@item.Name.ToLower()"
+                    data-type="@item.EntityType"
+                    data-date="@item.DeletedAt.Ticks">
+
                     <td><input type="checkbox" /></td>
                     <td>@item.Name</td>
                     <td>@item.EntityType</td>
@@ -170,6 +185,7 @@
                             </div>
                         </div>
                     </td>
+
 
                 </tr>
             }
@@ -237,4 +253,42 @@
         });
 
     });
+</script>
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const sortDate = document.getElementById('sortDate');
+    const rows = Array.from(document.querySelectorAll('.trash-row'));
+    const tbody = document.querySelector('.trash-table tbody');
+
+    function applyFilters() {
+        const keyword = searchInput.value.toLowerCase();
+        const type = typeFilter.value;
+
+        rows.forEach(row => {
+            const matchName = row.dataset.name.includes(keyword);
+            const matchType = !type || row.dataset.type === type;
+            row.style.display = (matchName && matchType) ? '' : 'none';
+        });
+
+        sortRows();
+    }
+
+    function sortRows() {
+        const order = sortDate.value;
+
+        const visibleRows = rows.filter(r => r.style.display !== 'none');
+
+        visibleRows.sort((a, b) => {
+            const dateA = parseInt(a.dataset.date);
+            const dateB = parseInt(b.dataset.date);
+            return order === 'asc' ? dateA - dateB : dateB - dateA;
+        });
+
+        visibleRows.forEach(row => tbody.appendChild(row));
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    typeFilter.addEventListener('change', applyFilters);
+    sortDate.addEventListener('change', sortRows);
 </script>

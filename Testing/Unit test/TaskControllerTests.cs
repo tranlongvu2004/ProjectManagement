@@ -25,6 +25,8 @@ namespace PorjectManagement.Tests.Controllers
         private readonly LabProjectManagementContext _context;
         private readonly TaskController _controller;
         private readonly Mock<IActivityLogService> _activityServiceMock;
+        private readonly Mock<ITaskHistoryService> _taskHistoryServiceMock;
+
 
         public TaskControllerTests()
         {
@@ -33,6 +35,7 @@ namespace PorjectManagement.Tests.Controllers
             _commentServiceMock = new Mock<ICommentService>();
             _projectServicesMock = new Mock<IProjectServices>();
             _activityServiceMock = new Mock<IActivityLogService>();
+             _taskHistoryServiceMock = new Mock<ITaskHistoryService>();
 
             // ✅ Setup InMemory Database
             var options = new DbContextOptionsBuilder<LabProjectManagementContext>()
@@ -57,8 +60,10 @@ namespace PorjectManagement.Tests.Controllers
                 _commentServiceMock.Object,
                 _projectServicesMock.Object,
                 
+                
                 _context,
-                _activityServiceMock.Object
+                _activityServiceMock.Object,
+                 _taskHistoryServiceMock.Object
             );
 
             var httpContext = new DefaultHttpContext();
