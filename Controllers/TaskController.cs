@@ -770,8 +770,7 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateComment([FromBody] UpdateCommentVM model)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized();
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
             var comment = _context.Comments
                 .FirstOrDefault(c => c.CommentId == model.CommentId);
@@ -784,11 +783,25 @@ namespace PorjectManagement.Controllers
             comment.Content = model.Content;
             _context.SaveChanges();
             await _taskHistoryService.AddAsync(
-     comment.TaskId,
-     userId.Value,
-     "COMMENT_UPDATED",
-     "has updated a comment"
- );
+                 comment.TaskId,
+                 userId,
+                 "COMMENT_UPDATED",
+                 "has updated a comment"
+             );
+
+
+            _activityLogService.Log(
+                userId: userId,
+                projectId: await _context.Tasks
+                    .Where(t => t.TaskId == comment.TaskId)
+                    .Select(t => t.ProjectId)
+                    .FirstOrDefaultAsync(),
+                taskId: comment.TaskId,
+                actionType: "COMMENT_EDITED",
+                message: $"Update a comment",
+                createdAt: DateTime.Now
+                );
+
             return Json(new { success = true });
         }
 
@@ -811,6 +824,19 @@ namespace PorjectManagement.Controllers
             "COMMENT_DELETED",
              "has deleted a comment"
   );
+
+            _activityLogService.Log(
+                userId: userId,
+                projectId: await _context.Tasks
+                    .Where(t => t.TaskId == comment.TaskId)
+                    .Select(t => t.ProjectId)
+                    .FirstOrDefaultAsync(),
+                taskId: comment.TaskId,
+                actionType: "COMMENT_DELETED",
+                message: $"Delete a comment",
+                createdAt: DateTime.Now
+                );
+
 
             return Ok();
         }

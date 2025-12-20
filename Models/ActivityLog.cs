@@ -42,5 +42,7 @@ public static class ActivityAction
     public const string STATUS_CHANGED = "STATUS_CHANGED";
     public const string ATTACHMENT_UPLOADED = "ATTACHMENT_UPLOADED";
     public const string COMMENT_ADDED = "COMMENT_ADDED";
+    public const string COMMENT_EDITED = "COMMENT_EDITED";
+    public const string COMMENT_DELETED = "COMMENT_DELETED";
 }
 
