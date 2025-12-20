@@ -329,6 +329,20 @@ namespace PorjectManagement.Controllers
                     ModelState.AddModelError("SelectedUserIds", "Cannot assign task to Mentor.");
                 }
             }
+            // Validate: Parent task cant Complete nếu còn subtask chưa hoàn thành
+            var currentTask = await _context.Tasks
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.TaskId == id);
+
+            if (currentTask != null && currentTask.IsParent == true && model.Status == Models.TaskStatus.Completed)
+            {
+                var hasIncompleteSubTasks = await _taskService.HasIncompleteSubTasksAsync(id);
+                if (hasIncompleteSubTasks)
+                {
+                    ModelState.AddModelError("Status",
+                        "Cannot mark parent task as Completed while there are incomplete subtasks.");
+                }
+            }
 
             if (!ModelState.IsValid)
             {

@@ -207,6 +207,12 @@ namespace PorjectManagement.Service
                     )
                    .ToListAsync();
         }
+        public async Task<bool> HasIncompleteSubTasksAsync(int taskId)
+        {
+            return await _context.Tasks
+                .AnyAsync(t => t.ParentId == taskId
+                            && t.Status != Models.TaskStatus.Completed);
+        }
 
     }
 }

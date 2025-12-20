@@ -1,4 +1,4 @@
-﻿using PorjectManagement.Models;
+﻿//using PorjectManagement.Models;
 using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Service.Interface
@@ -11,10 +11,11 @@ namespace PorjectManagement.Service.Interface
         Task<bool> AssignTaskAsync(int taskId, int userId);
         Task<TaskAssignViewModel> GetAssignTaskDataAsync(int taskId);
 
-        // ✅ Methods mới cho Edit Task
+        // Methods mới cho Edit Task
         Task<TaskEditViewModel?> GetTaskForEditAsync(int taskId, int currentUserId);
         Task<bool> UpdateTaskAsync(TaskEditViewModel model, int updatedByUserId);
         Task<List<Models.Task>> GetParentTasksByProjectAsync(int projectId);
 
+        Task<bool> HasIncompleteSubTasksAsync(int taskId);
     }
 }
