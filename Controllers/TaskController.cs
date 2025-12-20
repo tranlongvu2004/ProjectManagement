@@ -726,11 +726,23 @@ namespace PorjectManagement.Controllers
             if (success)
             {
                 await _taskHistoryService.AddAsync(
-      taskId,
-      userId,
-      "COMMENT_ADDED",
-      "added comment"
-  );
+                  taskId,
+                  userId,
+                  "COMMENT_ADDED",
+                  "added comment"
+                );
+
+                _activityLogService.Log(
+                    userId: userId,
+                    projectId: await _context.Tasks
+                        .Where(t => t.TaskId == taskId)
+                        .Select(t => t.ProjectId)
+                        .FirstOrDefaultAsync(),
+                    taskId: taskId,
+                    actionType: "COMMENT_ADDED",
+                    message: $"Added a comment: {content}",
+                    createdAt: DateTime.Now
+                    );
 
                 TempData["Success"] = "Comment added successfully!";
             }
@@ -770,7 +782,7 @@ namespace PorjectManagement.Controllers
                 return Forbid();
 
             comment.Content = model.Content;
-             _context.SaveChanges();
+            _context.SaveChanges();
             await _taskHistoryService.AddAsync(
      comment.TaskId,
      userId.Value,
