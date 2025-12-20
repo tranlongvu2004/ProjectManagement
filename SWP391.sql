@@ -225,3 +225,7 @@ VALUES
 (N'Trần Long Vũ', 'tlv04102004@gmail.com', '123', 2),
 (N'Nghiêm Minh Đức', 'nghiemducls123@gmail.com', '123', 2),
 (N'Nguyễn Huy Nghĩa', 'intern3@example.com', '123', 2);
+
+INSERT INTO Projects(ProjectId, ProjectName, Description, Deadline, Status, CreatedBy, CreatedAt, UpdatedAt)
+VALUES
+(1, 'Lab Management System', 'Project about manage lab', '2026-01-20 00:00:00.000', 'InProgress', 1, '2025-12-20 21:43:40.700', '2025-12-20 21:43:40.700')
