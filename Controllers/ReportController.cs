@@ -61,6 +61,14 @@ namespace PorjectManagement.Controllers
 
             if (!_reportService.IsLeaderOfProject(leaderId.Value, model.ProjectId))
                 return Forbid();
+            if (!ModelState.IsValid)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = " Please fill in all required fields."
+                });
+            }
 
             var report = await _reportService.CreateDailyReportAsync(model, leaderId.Value);
 
