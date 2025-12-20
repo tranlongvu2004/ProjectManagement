@@ -125,7 +125,7 @@ namespace PorjectManagement.Controllers
                     "ProjectId",
                     "ProjectName"
                 );
-                model.ProjectMembers = await _userProjectService.GetUsersByProjectIdAsync(model.ProjectId);
+                model.ProjectMembers = await _userProjectService.GetUsersByProjectIdNoMentorAsync(model.ProjectId);
 
                 return View(model);
             }
