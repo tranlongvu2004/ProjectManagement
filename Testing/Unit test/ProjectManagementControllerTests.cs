@@ -8,7 +8,6 @@ using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -34,6 +33,11 @@ namespace PorjectManagement.Tests.Controllers
             _httpContext = new DefaultHttpContext();
             _httpContext.Session = new TestSession();
 
+            // Default: logged in as Mentor
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
+
             _controller.ControllerContext = new ControllerContext
             {
                 HttpContext = _httpContext
@@ -46,88 +50,72 @@ namespace PorjectManagement.Tests.Controllers
         }
 
         // ============================================================
-        // CREATE - GET TESTS
+        // CREATE - GET
         // ============================================================
 
         [Fact]
         public async System.Threading.Tasks.Task Create_Get_NotLoggedIn_RedirectsToLogin()
         {
-            // Arrange
             _httpContext.Session.Clear();
 
-            // Act
             var result = await _controller.Create();
 
-            // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Login", redirect.ActionName);
             Assert.Equal("User", redirect.ControllerName);
         }
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Create_Get_NoUserEmail_RedirectsToProject()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    // No UserEmail set
+        [Fact]
+        public async System.Threading.Tasks.Task Create_Get_NotMentor_RedirectsToAccessDeny()
+        {
+            _httpContext.Session.SetInt32("UserId", 2);
+            _httpContext.Session.SetInt32("RoleId", 2);
+            _httpContext.Session.SetString("UserEmail", "intern@example.com");
 
-        //    // Act
-        //    var result = await _controller.Create();
+            var result = await _controller.Create();
 
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Index", redirect.ActionName);
-        //    Assert.Equal("Project", redirect.ControllerName);
-        //    Assert.Equal("No information login.", _controller.TempData["Error"]);
-        //}
+            var redirect = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("AccessDeny", redirect.ActionName);
+            Assert.Equal("Error", redirect.ControllerName);
+        }
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Create_Get_UserIsNull_RedirectsToProject()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "test@example.com");
+        [Fact]
+        public async System.Threading.Tasks.Task Create_Get_NoUserEmail_ReturnsContentWithLoginInfoNotFound()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.Remove("UserEmail");
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("test@example.com"))
-        //        .Returns((User?)null);
+            var result = await _controller.Create();
 
-        //    // Act
-        //    var result = await _controller.Create();
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("Login information not found.", content.Content);
+            Assert.Contains("window.location.href='/Project/Index'", content.Content);
+        }
 
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Index", redirect.ActionName);
-        //    Assert.Equal("Project", redirect.ControllerName);
-        //    Assert.Equal("Only Mentor can create project.", _controller.TempData["Error"]);
-        //}
+        [Fact]
+        public async System.Threading.Tasks.Task Create_Get_CurrentUserNull_ReturnsContentOnlyMentorCanCreate()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Create_Get_UserNotMentor_RedirectsToProject()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "intern@example.com");
+            _userServicesMock
+                .Setup(x => x.GetUser("mentor@example.com"))
+                .Returns((User?)null);
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("intern@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 2, Email = "intern@example.com" });
+            var result = await _controller.Create();
 
-        //    // Act
-        //    var result = await _controller.Create();
-
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Index", redirect.ActionName);
-        //    Assert.Equal("Project", redirect.ControllerName);
-        //    Assert.Equal("Only Mentor can create project.", _controller.TempData["Error"]);
-        //}
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("Only mentors can create projects", content.Content);
+            Assert.Contains("window.location.href='/Project/Index'", content.Content);
+        }
 
         [Fact]
         public async System.Threading.Tasks.Task Create_Get_ValidMentor_ReturnsViewWithModel()
         {
-            // Arrange
             _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
             _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
             _userServicesMock
@@ -143,10 +131,8 @@ namespace PorjectManagement.Tests.Controllers
                 .Setup(x => x.GetAvailableUsersAsync())
                 .ReturnsAsync(availableUsers);
 
-            // Act
             var result = await _controller.Create();
 
-            // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsType<ProjectCreateViewModel>(viewResult.Model);
 
@@ -156,53 +142,54 @@ namespace PorjectManagement.Tests.Controllers
         }
 
         // ============================================================
-        // CREATE - POST TESTS
+        // CREATE - POST
         // ============================================================
 
         [Fact]
-        public async System.Threading.Tasks.Task Create_Post_NotLoggedIn_RedirectsToLogin()
+        public async System.Threading.Tasks.Task Create_Post_NotLoggedIn_ReturnsContent_LoginInfoNotFound()
         {
-            // Arrange
+            // Controller POST does NOT check UserId; it checks UserEmail.
             _httpContext.Session.Clear();
+
             var model = new ProjectCreateViewModel();
 
-            // Act
             var result = await _controller.Create(model);
 
-            // Assert
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("Login", redirect.ActionName);
-            Assert.Equal("User", redirect.ControllerName);
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("Login information not found.", content.Content);
+            Assert.Contains("window.location.href='/Project/Index'", content.Content);
         }
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Create_Post_UserNotMentor_RedirectsToProject()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "intern@example.com");
+        [Fact]
+        public async System.Threading.Tasks.Task Create_Post_UserNotMentor_ReturnsContent_NoPermission()
+        {
+            _httpContext.Session.SetInt32("UserId", 2);
+            _httpContext.Session.SetInt32("RoleId", 2);
+            _httpContext.Session.SetString("UserEmail", "intern@example.com");
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("intern@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 2 });
+            _userServicesMock
+                .Setup(x => x.GetUser("intern@example.com"))
+                .Returns(new User { UserId = 2, RoleId = 2, Email = "intern@example.com" });
 
-        //    var model = new ProjectCreateViewModel();
+            var model = new ProjectCreateViewModel
+            {
+                Deadline = DateTime.Now.AddDays(10),
+                SelectedUserIds = new List<int> { 3 },
+                LeaderId = 3
+            };
 
-        //    // Act
-        //    var result = await _controller.Create(model);
+            var result = await _controller.Create(model);
 
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Index", redirect.ActionName);
-        //    Assert.Equal("Project", redirect.ControllerName);
-        //    Assert.Equal("No permission to create a project.", _controller.TempData["Error"]);
-        //}
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("No permission to create project.", content.Content);
+            Assert.Contains("window.location.href='/Project/Index'", content.Content);
+        }
 
         [Fact]
         public async System.Threading.Tasks.Task Create_Post_DeadlineInPast_ReturnsViewWithError()
         {
-            // Arrange
             _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
             _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
             _userServicesMock
@@ -220,10 +207,8 @@ namespace PorjectManagement.Tests.Controllers
                 .Setup(x => x.GetAvailableUsersAsync())
                 .ReturnsAsync(new List<AvailableUserItem>());
 
-            // Act
             var result = await _controller.Create(model);
 
-            // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.False(_controller.ModelState.IsValid);
             Assert.True(_controller.ModelState.ContainsKey("Deadline"));
@@ -232,8 +217,8 @@ namespace PorjectManagement.Tests.Controllers
         [Fact]
         public async System.Threading.Tasks.Task Create_Post_NoMembers_ReturnsViewWithError()
         {
-            // Arrange
             _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
             _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
             _userServicesMock
@@ -251,10 +236,8 @@ namespace PorjectManagement.Tests.Controllers
                 .Setup(x => x.GetAvailableUsersAsync())
                 .ReturnsAsync(new List<AvailableUserItem>());
 
-            // Act
             var result = await _controller.Create(model);
 
-            // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.False(_controller.ModelState.IsValid);
             Assert.True(_controller.ModelState.ContainsKey("SelectedUserIds"));
@@ -263,8 +246,8 @@ namespace PorjectManagement.Tests.Controllers
         [Fact]
         public async System.Threading.Tasks.Task Create_Post_NoLeader_ReturnsViewWithError()
         {
-            // Arrange
             _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
             _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
             _userServicesMock
@@ -282,10 +265,8 @@ namespace PorjectManagement.Tests.Controllers
                 .Setup(x => x.GetAvailableUsersAsync())
                 .ReturnsAsync(new List<AvailableUserItem>());
 
-            // Act
             var result = await _controller.Create(model);
 
-            // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.False(_controller.ModelState.IsValid);
             Assert.True(_controller.ModelState.ContainsKey("LeaderId"));
@@ -294,8 +275,8 @@ namespace PorjectManagement.Tests.Controllers
         [Fact]
         public async System.Threading.Tasks.Task Create_Post_LeaderNotInMembers_ReturnsViewWithError()
         {
-            // Arrange
             _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
             _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
             _userServicesMock
@@ -306,169 +287,203 @@ namespace PorjectManagement.Tests.Controllers
             {
                 Deadline = DateTime.Now.AddDays(10),
                 SelectedUserIds = new List<int> { 2, 3 },
-                LeaderId = 4 // Not in SelectedUserIds
+                LeaderId = 4
             };
 
             _projectServicesMock
                 .Setup(x => x.GetAvailableUsersAsync())
                 .ReturnsAsync(new List<AvailableUserItem>());
 
-            // Act
             var result = await _controller.Create(model);
 
-            // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.False(_controller.ModelState.IsValid);
             Assert.True(_controller.ModelState.ContainsKey("LeaderId"));
         }
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Create_Post_ValidModel_RedirectsToWorkspace()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "mentor@example.com");
+        [Fact]
+        public async System.Threading.Tasks.Task Create_Post_LeaderIsMentor_ReturnsViewWithError()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("mentor@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 1 });
+            _userServicesMock
+                .Setup(x => x.GetUser("mentor@example.com"))
+                .Returns(new User { UserId = 1, RoleId = 1 });
 
-        //    var model = new ProjectCreateViewModel
-        //    {
-        //        ProjectName = "New Project",
-        //        Description = "Test Description",
-        //        Deadline = DateTime.Now.AddDays(30),
-        //        SelectedUserIds = new List<int> { 2, 3 },
-        //        LeaderId = 2
-        //    };
+            _userServicesMock
+                .Setup(x => x.GetUserById(2))
+                .Returns(new User { UserId = 2, RoleId = 1 });
 
-        //    _projectServicesMock
-        //        .Setup(x => x.CreateProjectWithTeamAsync(model, 1))
-        //        .ReturnsAsync(10);
+            var model = new ProjectCreateViewModel
+            {
+                Deadline = DateTime.Now.AddDays(10),
+                SelectedUserIds = new List<int> { 2, 3 },
+                LeaderId = 2
+            };
 
-        //    // Act
-        //    var result = await _controller.Create(model);
+            _projectServicesMock
+                .Setup(x => x.GetAvailableUsersAsync())
+                .ReturnsAsync(new List<AvailableUserItem>());
 
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Details", redirect.ActionName);
-        //    Assert.Equal("Workspace", redirect.ControllerName);
-        //    Assert.Equal(10, redirect.RouteValues["id"]);
-        //    Assert.Equal("Create project sucessfully!", _controller.TempData["Success"]);
+            var result = await _controller.Create(model);
 
-        //    _projectServicesMock.Verify(
-        //        x => x.CreateProjectWithTeamAsync(model, 1),
-        //        Times.Once
-        //    );
-        //}
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.False(_controller.ModelState.IsValid);
+            Assert.True(_controller.ModelState.ContainsKey("LeaderId"));
+        }
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Create_Post_ServiceThrowsException_ReturnsViewWithError()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "mentor@example.com");
+        [Fact]
+        public async System.Threading.Tasks.Task Create_Post_ValidModel_ReturnsContent_SuccessRedirectWorkspace()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("mentor@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 1 });
+            _userServicesMock
+                .Setup(x => x.GetUser("mentor@example.com"))
+                .Returns(new User { UserId = 1, RoleId = 1 });
 
-        //    var model = new ProjectCreateViewModel
-        //    {
-        //        ProjectName = "New Project",
-        //        Deadline = DateTime.Now.AddDays(30),
-        //        SelectedUserIds = new List<int> { 2 },
-        //        LeaderId = 2
-        //    };
+            var model = new ProjectCreateViewModel
+            {
+                ProjectName = "New Project",
+                Description = "Test Description",
+                Deadline = DateTime.Now.AddDays(30),
+                SelectedUserIds = new List<int> { 2, 3, 1 },
+                LeaderId = 2
+            };
 
-        //    _projectServicesMock
-        //        .Setup(x => x.CreateProjectWithTeamAsync(model, 1))
-        //        .ThrowsAsync(new Exception("Database error"));
+            _userServicesMock
+                .Setup(x => x.GetUserById(2))
+                .Returns(new User { UserId = 2, RoleId = 2 });
 
-        //    _projectServicesMock
-        //        .Setup(x => x.GetAvailableUsersAsync())
-        //        .ReturnsAsync(new List<AvailableUserItem>());
+            _projectServicesMock
+                .Setup(x => x.CreateProjectWithTeamAsync(model, 1))
+                .ReturnsAsync(10);
 
-        //    // Act
-        //    var result = await _controller.Create(model);
+            var result = await _controller.Create(model);
 
-        //    // Assert
-        //    var viewResult = Assert.IsType<ViewResult>(result);
-        //    Assert.False(_controller.ModelState.IsValid);
-        //    Assert.Contains("error when create project: Database error", 
-        //        _controller.ModelState[""].Errors[0].ErrorMessage);
-        //}
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("Create project sucessfully!", content.Content);
+            Assert.Contains("window.location.href='/Workspace/Details/10'", content.Content);
+        }
+
+        [Fact]
+        public async System.Threading.Tasks.Task Create_Post_ServiceThrowsException_ReturnsViewWithError()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
+
+            _userServicesMock
+                .Setup(x => x.GetUser("mentor@example.com"))
+                .Returns(new User { UserId = 1, RoleId = 1 });
+
+            var model = new ProjectCreateViewModel
+            {
+                ProjectName = "New Project",
+                Deadline = DateTime.Now.AddDays(30),
+                SelectedUserIds = new List<int> { 2, 1 },
+                LeaderId = 2
+            };
+
+            _userServicesMock
+                .Setup(x => x.GetUserById(2))
+                .Returns(new User { UserId = 2, RoleId = 2 });
+
+            _projectServicesMock
+                .Setup(x => x.CreateProjectWithTeamAsync(model, 1))
+                .ThrowsAsync(new Exception("Database error"));
+
+            _projectServicesMock
+                .Setup(x => x.GetAvailableUsersAsync())
+                .ReturnsAsync(new List<AvailableUserItem>());
+
+            var result = await _controller.Create(model);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.False(_controller.ModelState.IsValid);
+            Assert.Contains("Error when create project: Database error",
+                _controller.ModelState[""].Errors[0].ErrorMessage);
+        }
 
         // ============================================================
-        // EDIT - GET TESTS
+        // EDIT - GET
         // ============================================================
 
         [Fact]
-        public async System.Threading.Tasks.Task Edit_Get_NotLoggedIn_RedirectsToLogin()
+        public async System.Threading.Tasks.Task Edit_Get_NotLoggedIn_RedirectsToAccessDeny()
         {
-            // Arrange
+            // Current controller Edit(GET) checks RoleId first (no userId check)
             _httpContext.Session.Clear();
 
-            // Act
             var result = await _controller.Edit(1);
 
-            // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("Login", redirect.ActionName);
-            Assert.Equal("User", redirect.ControllerName);
+            Assert.Equal("AccessDeny", redirect.ActionName);
+            Assert.Equal("Error", redirect.ControllerName);
         }
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Edit_Get_UserNotMentor_RedirectsToProject()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "intern@example.com");
+        [Fact]
+        public async System.Threading.Tasks.Task Edit_Get_NoUserEmail_ReturnsContent_LoginInfoNotFound()
+        {
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.Remove("UserEmail");
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("intern@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 2 });
+            var result = await _controller.Edit(1);
 
-        //    // Act
-        //    var result = await _controller.Edit(1);
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("Login information not found.", content.Content);
+            Assert.Contains("window.location.href='/Project/Index'", content.Content);
+        }
 
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Index", redirect.ActionName);
-        //    Assert.Equal("Project", redirect.ControllerName);
-        //    Assert.Equal("Only Mentor have permission create project.", _controller.TempData["Error"]);
-        //}
+        [Fact]
+        public async System.Threading.Tasks.Task Edit_Get_UserNotMentor_ReturnsContent_OnlyMentorCanUpdate()
+        {
+            _httpContext.Session.SetInt32("UserId", 2);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "intern@example.com");
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Edit_Get_ProjectNotFound_RedirectsToProject()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "mentor@example.com");
+            _userServicesMock
+                .Setup(x => x.GetUser("intern@example.com"))
+                .Returns(new User { UserId = 2, RoleId = 2 });
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("mentor@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 1 });
+            var result = await _controller.Edit(1);
 
-        //    _projectServicesMock
-        //        .Setup(x => x.GetProjectForUpdateAsync(1, 1))
-        //        .ReturnsAsync((ProjectUpdateViewModel?)null);
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("Only Mentor can update project.", content.Content);
+            Assert.Contains("window.location.href='/Project/Index'", content.Content);
+        }
 
-        //    // Act
-        //    var result = await _controller.Edit(1);
+        [Fact]
+        public async System.Threading.Tasks.Task Edit_Get_ProjectNotFound_ReturnsContent_ProjectNotFound()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Index", redirect.ActionName);
-        //    Assert.Equal("Project", redirect.ControllerName);
-        //    Assert.Equal("Project not found, or you do not have editing permissions..", _controller.TempData["Error"]);
-        //}
+            _userServicesMock
+                .Setup(x => x.GetUser("mentor@example.com"))
+                .Returns(new User { UserId = 1, RoleId = 1 });
+
+            _projectServicesMock
+                .Setup(x => x.GetProjectForUpdateAsync(1, 1))
+                .ReturnsAsync((ProjectUpdateViewModel?)null);
+
+            var result = await _controller.Edit(1);
+
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("Project not found", content.Content);
+            Assert.Contains("window.location.href='/Project/Index'", content.Content);
+        }
 
         [Fact]
         public async System.Threading.Tasks.Task Edit_Get_ValidProject_ReturnsViewWithModel()
         {
-            // Arrange
             _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
             _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
             _userServicesMock
@@ -480,7 +495,7 @@ namespace PorjectManagement.Tests.Controllers
                 ProjectId = 1,
                 ProjectName = "Test Project",
                 Deadline = DateTime.Now.AddDays(30),
-                SelectedUserIds = new List<int> { 2, 3 },
+                SelectedUserIds = new List<int> { 2, 3, 1 },
                 LeaderId = 2
             };
 
@@ -488,48 +503,24 @@ namespace PorjectManagement.Tests.Controllers
                 .Setup(x => x.GetProjectForUpdateAsync(1, 1))
                 .ReturnsAsync(projectModel);
 
-            // Act
             var result = await _controller.Edit(1);
 
-            // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsType<ProjectUpdateViewModel>(viewResult.Model);
+
             Assert.Equal(1, model.ProjectId);
             Assert.Equal("Test Project", model.ProjectName);
         }
 
         // ============================================================
-        // EDIT - POST TESTS
+        // EDIT - POST
         // ============================================================
-
-        //[Fact]
-        //public async System.Threading.Tasks.Task Edit_Post_IdMismatch_RedirectsToProject()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "mentor@example.com");
-
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("mentor@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 1 });
-
-        //    var model = new ProjectUpdateViewModel { ProjectId = 5 };
-
-        //    // Act
-        //    var result = await _controller.Edit(1, model); // id = 1, but model.ProjectId = 5
-
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Index", redirect.ActionName);
-        //    Assert.Equal("Project", redirect.ControllerName);
-        //    Assert.Equal("Data not valid.", _controller.TempData["Error"]);
-        //}
 
         [Fact]
         public async System.Threading.Tasks.Task Edit_Post_DeadlineInPast_ReturnsViewWithError()
         {
-            // Arrange
             _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
             _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
             _userServicesMock
@@ -540,9 +531,13 @@ namespace PorjectManagement.Tests.Controllers
             {
                 ProjectId = 1,
                 Deadline = DateTime.Now.AddDays(-5),
-                SelectedUserIds = new List<int> { 2 },
+                SelectedUserIds = new List<int> { 1, 2 },
                 LeaderId = 2
             };
+
+            _userServicesMock
+                .Setup(x => x.GetUserById(2))
+                .Returns(new User { UserId = 2, RoleId = 2 });
 
             _projectServicesMock
                 .Setup(x => x.GetAvailableUsersAsync())
@@ -552,129 +547,163 @@ namespace PorjectManagement.Tests.Controllers
                 .Setup(x => x.GetProjectMembersAsync(1))
                 .ReturnsAsync(new List<ProjectMemberItem>());
 
-            // Act
             var result = await _controller.Edit(1, model);
 
-            // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.False(_controller.ModelState.IsValid);
             Assert.True(_controller.ModelState.ContainsKey("Deadline"));
         }
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Edit_Post_ValidModel_UpdateSuccess_RedirectsToWorkspace()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "mentor@example.com");
+        [Fact]
+        public async System.Threading.Tasks.Task Edit_Post_MentorRemoved_ReturnsViewWithError()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("mentor@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 1 });
+            _userServicesMock
+                .Setup(x => x.GetUser("mentor@example.com"))
+                .Returns(new User { UserId = 1, RoleId = 1 });
 
-        //    var model = new ProjectUpdateViewModel
-        //    {
-        //        ProjectId = 1,
-        //        ProjectName = "Updated Project",
-        //        Deadline = DateTime.Now.AddDays(30),
-        //        SelectedUserIds = new List<int> { 2, 3 },
-        //        LeaderId = 2
-        //    };
+            var model = new ProjectUpdateViewModel
+            {
+                ProjectId = 1,
+                Deadline = DateTime.Now.AddDays(10),
+                SelectedUserIds = new List<int> { 2, 3 }, // missing mentor id 1
+                LeaderId = 2
+            };
 
-        //    _projectServicesMock
-        //        .Setup(x => x.UpdateProjectWithTeamAsync(model, 1))
-        //        .ReturnsAsync(true);
+            _userServicesMock
+                .Setup(x => x.GetUserById(2))
+                .Returns(new User { UserId = 2, RoleId = 2 });
 
-        //    // Act
-        //    var result = await _controller.Edit(1, model);
+            _projectServicesMock
+                .Setup(x => x.GetAvailableUsersAsync())
+                .ReturnsAsync(new List<AvailableUserItem>());
 
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Details", redirect.ActionName);
-        //    Assert.Equal("Workspace", redirect.ControllerName);
-        //    Assert.Equal(1, redirect.RouteValues["id"]);
-        //    Assert.Equal("Update project sucessfully!", _controller.TempData["Success"]);
+            _projectServicesMock
+                .Setup(x => x.GetProjectMembersAsync(1))
+                .ReturnsAsync(new List<ProjectMemberItem>());
 
-        //    _projectServicesMock.Verify(
-        //        x => x.UpdateProjectWithTeamAsync(model, 1),
-        //        Times.Once
-        //    );
-        //}
+            var result = await _controller.Edit(1, model);
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Edit_Post_UpdateFails_RedirectsToProject()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "mentor@example.com");
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.False(_controller.ModelState.IsValid);
+            Assert.True(_controller.ModelState.ContainsKey("SelectedUserIds"));
+        }
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("mentor@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 1 });
+        [Fact]
+        public async System.Threading.Tasks.Task Edit_Post_ValidModel_UpdateSuccess_ReturnsContent_SuccessRedirectWorkspace()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
-        //    var model = new ProjectUpdateViewModel
-        //    {
-        //        ProjectId = 1,
-        //        ProjectName = "Updated Project",
-        //        Deadline = DateTime.Now.AddDays(30),
-        //        SelectedUserIds = new List<int> { 2 },
-        //        LeaderId = 2
-        //    };
+            _userServicesMock
+                .Setup(x => x.GetUser("mentor@example.com"))
+                .Returns(new User { UserId = 1, RoleId = 1 });
 
-        //    _projectServicesMock
-        //        .Setup(x => x.UpdateProjectWithTeamAsync(model, 1))
-        //        .ReturnsAsync(false);
+            var model = new ProjectUpdateViewModel
+            {
+                ProjectId = 1,
+                ProjectName = "Updated Project",
+                Deadline = DateTime.Now.AddDays(30),
+                SelectedUserIds = new List<int> { 1, 2, 3 },
+                LeaderId = 2
+            };
 
-        //    // Act
-        //    var result = await _controller.Edit(1, model);
+            _userServicesMock
+                .Setup(x => x.GetUserById(2))
+                .Returns(new User { UserId = 2, RoleId = 2 });
 
-        //    // Assert
-        //    var redirect = Assert.IsType<RedirectToActionResult>(result);
-        //    Assert.Equal("Index", redirect.ActionName);
-        //    Assert.Equal("Project", redirect.ControllerName);
-        //    Assert.Equal("Cannt update project.", _controller.TempData["Error"]);
-        //}
+            _projectServicesMock
+                .Setup(x => x.UpdateProjectWithTeamAsync(model, 1))
+                .ReturnsAsync(true);
 
-        //[Fact]
-        //public async System.Threading.Tasks.Task Edit_Post_ServiceThrowsException_ReturnsViewWithError()
-        //{
-        //    // Arrange
-        //    _httpContext.Session.SetInt32("UserId", 1);
-        //    _httpContext.Session.SetString("UserEmail", "mentor@example.com");
+            var result = await _controller.Edit(1, model);
 
-        //    _userServicesMock
-        //        .Setup(x => x.GetUser("mentor@example.com"))
-        //        .Returns(new User { UserId = 1, RoleId = 1 });
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("Update project sucessfully!", content.Content);
+            Assert.Contains("window.location.href='/Workspace/Details/1'", content.Content);
+        }
 
-        //    var model = new ProjectUpdateViewModel
-        //    {
-        //        ProjectId = 1,
-        //        ProjectName = "Updated Project",
-        //        Deadline = DateTime.Now.AddDays(30),
-        //        SelectedUserIds = new List<int> { 2 },
-        //        LeaderId = 2
-        //    };
+        [Fact]
+        public async System.Threading.Tasks.Task Edit_Post_UpdateFails_ReturnsContent_CantUpdateProject()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
 
-        //    _projectServicesMock
-        //        .Setup(x => x.UpdateProjectWithTeamAsync(model, 1))
-        //        .ThrowsAsync(new Exception("Update failed"));
+            _userServicesMock
+                .Setup(x => x.GetUser("mentor@example.com"))
+                .Returns(new User { UserId = 1, RoleId = 1 });
 
-        //    _projectServicesMock
-        //        .Setup(x => x.GetAvailableUsersAsync())
-        //        .ReturnsAsync(new List<AvailableUserItem>());
+            var model = new ProjectUpdateViewModel
+            {
+                ProjectId = 1,
+                ProjectName = "Updated Project",
+                Deadline = DateTime.Now.AddDays(30),
+                SelectedUserIds = new List<int> { 1, 2 },
+                LeaderId = 2
+            };
 
-        //    _projectServicesMock
-        //        .Setup(x => x.GetProjectMembersAsync(1))
-        //        .ReturnsAsync(new List<ProjectMemberItem>());
+            _userServicesMock
+                .Setup(x => x.GetUserById(2))
+                .Returns(new User { UserId = 2, RoleId = 2 });
 
-        //    // Act
-        //    var result = await _controller.Edit(1, model);
+            _projectServicesMock
+                .Setup(x => x.UpdateProjectWithTeamAsync(model, 1))
+                .ReturnsAsync(false);
 
-        //    // Assert
-        //    var viewResult = Assert.IsType<ViewResult>(result);
-        //    Assert.False(_controller.ModelState.IsValid);
-        //    Assert.Contains("Error when update project: Update failed",
-        //        _controller.ModelState[""].Errors[0].ErrorMessage);
-        //}
+            var result = await _controller.Edit(1, model);
+
+            var content = Assert.IsType<ContentResult>(result);
+            Assert.Contains("Cant update project.", content.Content);
+            Assert.Contains("window.location.href='/Project/Index'", content.Content);
+        }
+
+        [Fact]
+        public async System.Threading.Tasks.Task Edit_Post_ServiceThrowsException_ReturnsViewWithError()
+        {
+            _httpContext.Session.SetInt32("UserId", 1);
+            _httpContext.Session.SetInt32("RoleId", 1);
+            _httpContext.Session.SetString("UserEmail", "mentor@example.com");
+
+            _userServicesMock
+                .Setup(x => x.GetUser("mentor@example.com"))
+                .Returns(new User { UserId = 1, RoleId = 1 });
+
+            var model = new ProjectUpdateViewModel
+            {
+                ProjectId = 1,
+                ProjectName = "Updated Project",
+                Deadline = DateTime.Now.AddDays(30),
+                SelectedUserIds = new List<int> { 1, 2 },
+                LeaderId = 2
+            };
+
+            _userServicesMock
+                .Setup(x => x.GetUserById(2))
+                .Returns(new User { UserId = 2, RoleId = 2 });
+
+            _projectServicesMock
+                .Setup(x => x.UpdateProjectWithTeamAsync(model, 1))
+                .ThrowsAsync(new Exception("Update failed"));
+
+            _projectServicesMock
+                .Setup(x => x.GetAvailableUsersAsync())
+                .ReturnsAsync(new List<AvailableUserItem>());
+
+            _projectServicesMock
+                .Setup(x => x.GetProjectMembersAsync(1))
+                .ReturnsAsync(new List<ProjectMemberItem>());
+
+            var result = await _controller.Edit(1, model);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.False(_controller.ModelState.IsValid);
+            Assert.Contains("Error when update project: Update failed",
+                _controller.ModelState[""].Errors[0].ErrorMessage);
+        }
     }
 }
