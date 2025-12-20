@@ -403,5 +403,36 @@ a {
     .container h2 {
         color: var(--text-color);
     }
+/* ===== FIX TOOLBAR BUTTON ALIGN ===== */
+.dashboard-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    color: #212529;
+    text-decoration: none;
+    border: 1px solid #dee2e6;
+    font-size: 14px;
+    line-height: 1;
+}
+
+    .dashboard-btn i {
+        font-size: 14px;
+        line-height: 1;
+    }
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+#btnSearch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
 
 
