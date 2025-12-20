@@ -223,5 +223,5 @@ INSERT INTO Users (FullName, Email, PasswordHash, RoleId)
 VALUES
 (N'Trần Bình Dương', 'DuongTB@fe.edu.vn', '123', 1),
 (N'Trần Long Vũ', 'tlv04102004@gmail.com', '123', 2),
-(N'Nghiêm Minh Đức', 'intern2@example.com', '123', 2),
+(N'Nghiêm Minh Đức', 'nghiemducls123@gmail.com', '123', 2),
 (N'Nguyễn Huy Nghĩa', 'intern3@example.com', '123', 2);

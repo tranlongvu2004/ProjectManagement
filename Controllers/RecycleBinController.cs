@@ -60,6 +60,8 @@ namespace PorjectManagement.Controllers
                 .Include(t => t.TaskAssignments)
                 .Include(t => t.Comments)
                 .Include(t => t.TaskAttachments)
+                .Include(t => t.ActivityLogs)
+                .Include(t => t.TaskHistories)
                 .FirstOrDefault(t => t.TaskId == item.EntityId);
 
             if(task == null) return NotFound();
@@ -68,6 +70,8 @@ namespace PorjectManagement.Controllers
             _context.TaskAssignments.RemoveRange(task.TaskAssignments);
             _context.Comments.RemoveRange(task.Comments);
             _context.TaskAttachments.RemoveRange(task.TaskAttachments);
+            _context.ActivityLogs.RemoveRange(task.ActivityLogs);
+            _context.TaskHistories.RemoveRange(task.TaskHistories);
 
             _context.Tasks.Remove(task);
             _context.RecycleBins.Remove(item);
