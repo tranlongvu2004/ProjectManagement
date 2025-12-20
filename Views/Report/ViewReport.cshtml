@@ -1,5 +1,5 @@
 ﻿@model List<CreateReportViewModel>
-
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <h2 class="mb-4">📊 Team Performance Reports</h2>
 
 @if (!Model.Any())
@@ -41,7 +41,7 @@ else
                     <div class="accordion-body">
 
                         <table class="table table-bordered text-center">
-                            <tr class="table-light">
+                            <tr class="fw-semibold">
                                 <th>Members</th>
                                 @foreach (var m in report.TeamMembers)
                                 {

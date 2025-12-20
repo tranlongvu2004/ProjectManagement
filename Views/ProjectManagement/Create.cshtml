@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Create new Project";
 }
-
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <div class="container-fluid">
     <div class="row">
         <div class="col-lg-8 mx-auto">
@@ -64,7 +64,7 @@
                             <label class="form-label fw-semibold">
                                 <i class="bi bi-people-fill text-success"></i> Choose member <span class="text-danger">*</span>
                             </label>
-                            <div class="card border-0 bg-light p-3" style="max-height: 300px; overflow-y: auto;">
+                            <div class="card border-0 member-list p-3">
                                 @if (Model.AvailableUsers != null && Model.AvailableUsers.Any())
                                 {
                                     @foreach (var user in Model.AvailableUsers)

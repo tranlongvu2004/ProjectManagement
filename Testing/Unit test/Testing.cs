@@ -11,7 +11,7 @@ using PorjectManagement.Service.Interface;
 using System;
 using System.Collections.Generic;
 
-namespace Testing
+namespace PorjectManagement.Testing.UnitTest
 {
     public class MockHttpSession : ISession
     {

@@ -59,14 +59,12 @@ namespace PorjectManagement.Controllers
                     MemberCount = p.UserProjects.Count
                 });
 
-            // 🔎 Filter
             if (!string.IsNullOrEmpty(keyword))
-                query = query.Where(x => x.ProjectName.Contains(keyword));
+                query = query.Where(x => x.ProjectName.ToLower().Contains(keyword.ToLower()));
 
             if (status.HasValue)
                 query = query.Where(x => x.Status == status);
 
-            // ↕ Sort
             query = (sortBy, sortDir) switch
             {
                 ("deadline", "asc") => query.OrderBy(x => x.Deadline),

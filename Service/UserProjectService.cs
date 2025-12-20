@@ -102,6 +102,10 @@ namespace PorjectManagement.Service
         {
             return await _repo.GetUsersByProjectIdAsync(projectId);
         }
+        public async Task<List<User>> GetUsersByProjectIdNoMentorAsync(int projectId)
+        {
+            return await _repo.GetUsersByProjectIdNoMentorAsync(projectId);
+        }
 
     }
 }

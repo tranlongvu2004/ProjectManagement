@@ -25,13 +25,13 @@ namespace PorjectManagement.Controllers
             }
             var project = await _userProjectService.GetProjectByIdAsync(projectId);
             if (project == null) return NotFound();
-            var usersInProject = await _userProjectService.GetUsersByProjectIdAsync(projectId);
+            var usersInProject = await _userProjectService.GetUsersByProjectIdNoMentorAsync(projectId);
             var userIdsInProject = usersInProject.Select(u => u.UserId).ToHashSet();
 
             var allUsers = await _userProjectService.GetAllUsersAsync();
 
             var availableUsers = allUsers
-                .Where(u => !userIdsInProject.Contains(u.UserId))
+                .Where(u => u.RoleId != 1)
                 .ToList();
 
             var vm = new AddMembersViewModel

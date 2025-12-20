@@ -151,6 +151,52 @@ CREATE TABLE RecycleBin (
     DeletedBy INT NULL,                       -- Id người xoá (nhưng không FK)
     DeletedAt DATETIME DEFAULT GETDATE()
 );
+
+CREATE TABLE ActivityLog (
+    ActivityLogId INT IDENTITY(1,1) PRIMARY KEY,
+
+    UserId INT NOT NULL,              -- người thực hiện
+    TargetUserId INT NULL,             -- người bị ảnh hưởng
+
+    ProjectId INT NOT NULL,
+    TaskId INT NULL,
+
+    ActionType NVARCHAR(50) NOT NULL,  -- STATUS_CHANGED, COMMENT_ADDED...
+    OldValue NVARCHAR(MAX) NULL,
+    NewValue NVARCHAR(MAX) NULL,
+    Message NVARCHAR(500) NOT NULL,
+
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_ActivityLog_User
+        FOREIGN KEY (UserId) REFERENCES Users(UserId),
+
+    CONSTRAINT FK_ActivityLog_TargetUser
+        FOREIGN KEY (TargetUserId) REFERENCES Users(UserId),
+
+    CONSTRAINT FK_ActivityLog_Project
+        FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
+
+    CONSTRAINT FK_ActivityLog_Task
+        FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId)
+);
+
+CREATE TABLE TaskHistory (
+    TaskHistoryId INT IDENTITY(1,1) PRIMARY KEY,
+    TaskId INT NULL,
+    UserId INT NOT NULL,
+    Action NVARCHAR(50) NOT NULL,
+    Description NVARCHAR(255) NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_TaskHistory_Task
+        FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
+
+    CONSTRAINT FK_TaskHistory_User
+        FOREIGN KEY (UserId) REFERENCES [Users](UserId)
+);
+
+
 ALTER TABLE TaskAttachments
 ALTER COLUMN FileType NVARCHAR(255);
 
@@ -171,7 +217,8 @@ VALUES
 ('Nguyen Thanh Mentor', 'mentor@example.com', '123', 1),
 ('Tran Van Intern 1', 'intern1@example.com', '123', 2),
 ('Tran Van Intern 2', 'intern2@example.com', '123', 2),
-('Tran Van Intern 3', 'intern3@example.com', '123', 2);
+('Tran Van Intern 3', 'intern3@example.com', '123', 2),
+('Nghiem Minh Duc', 'nghiemducls123@gmail.com', '123', 2);
 
 
 -- Projects

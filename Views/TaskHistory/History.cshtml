@@ -1,0 +1,36 @@
+﻿@model List<TaskHistoryVM>
+
+@{
+    ViewData["Title"] = "Task History";
+}
+
+<h3>Task History</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Action</th>
+            <th>Description</th>
+            <th>Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var h in Model)
+        {
+            <tr>
+                <td>@h.UserName</td>
+                <td>@h.Action</td>
+                <td>@h.Description</td>
+                <td>@h.CreatedAt.ToString("HH:mm dd/MM/yyyy")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="BacklogUI"
+   asp-controller="Backlog"
+   asp-route-projectId="@Context.Request.Query["projectId"]"
+   class="btn btn-secondary">
+    Back
+</a>

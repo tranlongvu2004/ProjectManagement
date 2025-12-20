@@ -1,7 +1,7 @@
 ﻿<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-<style>
-
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<style>    
     .jira-legend-item {
         display: flex;
         align-items: center;
@@ -49,7 +49,7 @@
                     id: t.TaskId,
                     title: t.Title,
                     owner: t.Owner,
-                    start: t.Start,
+                    start: toDateOnly(t.Start),
                     end: addOneDay(t.End),
                     status: t.Status,
                     backgroundColor: status[t.Status] || "#607d8b",
@@ -60,12 +60,21 @@
             initialView: 'dayGridMonth',
             events: events,
             eventDidMount(info) {
+
+                 const start = info.event.start;
+
+                let end = info.event.end;
+                if (end) {
+                    end = new Date(end);
+                    end.setDate(end.getDate() - 1);
+                }
+
                 info.el.title =
                     info.event.title +
                     " | " +
-                    info.event.start.toLocaleDateString() +
+                    start.toLocaleDateString() +
                     " → " +
-                    info.event.end.toLocaleDateString();
+                    (end ? end.toLocaleDateString() : "");
             }
 
         });
@@ -89,10 +98,26 @@
             legend.appendChild(item);
         });
 
+            function toDateOnly(dateStr) {
+        return dateStr.split('T')[0];
+    }
+
         function addOneDay(dateStr) {
         const d = new Date(dateStr);
         d.setDate(d.getDate() + 1);
         return d.toISOString().split('T')[0];
     }
+
+    console.table(events.map(e => ({
+        title: e.title,
+        start: e.start,
+        end: e.end,
+        status: e.status
+    })));
+
     });
+
+        
+
+
 </script>

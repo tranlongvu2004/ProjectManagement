@@ -2,9 +2,9 @@
 @{
     ViewData["Title"] = "User profile";
 }
-
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <div class="container mt-4" style="max-width: 700px;">
-    <h2 class="mb-4 text-primary">User profile</h2>
+    <h2 class="mb-4 fw-bold">User profile</h2>
 
     @* Thông báo lỗi *@
     @if (ViewBag.Error != null)
@@ -18,7 +18,7 @@
         <div class="alert alert-success">@ViewBag.Message</div>
     }
 
-    <form method="post" enctype="multipart/form-data" class="border p-4 rounded shadow-sm">
+    <form method="post" enctype="multipart/form-data" class="border p-4 rounded shadow-sm user-profile-card">
 
         <div class="text-center mb-3">
             <img id="avatarPreview" src="@Model.AvatarUrl"

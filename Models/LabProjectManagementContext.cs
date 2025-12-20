@@ -14,6 +14,7 @@ public partial class LabProjectManagementContext : DbContext
         : base(options)
     {
     }
+    public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
 
     public virtual DbSet<Comment> Comments { get; set; }
 
@@ -35,8 +36,41 @@ public partial class LabProjectManagementContext : DbContext
 
     public virtual DbSet<TaskAttachment> TaskAttachments { get; set; }
 
+    public virtual DbSet<TaskHistory> TaskHistories { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ActivityLog>(entity =>
+        {
+            entity.HasKey(e => e.ActivityLogId).HasName("PK__Activity__19A9B7AFBE8436EB");
+
+            entity.ToTable("ActivityLog");
+
+            entity.Property(e => e.ActionType).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Message).HasMaxLength(500);
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ActivityLogs)
+                .HasForeignKey(d => d.ProjectId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ActivityLog_Project");
+
+            entity.HasOne(d => d.TargetUser).WithMany(p => p.ActivityLogTargetUsers)
+                .HasForeignKey(d => d.TargetUserId)
+                .HasConstraintName("FK_ActivityLog_TargetUser");
+
+            entity.HasOne(d => d.Task).WithMany(p => p.ActivityLogs)
+                .HasForeignKey(d => d.TaskId)
+                .HasConstraintName("FK_ActivityLog_Task");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ActivityLogUsers)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ActivityLog_User");
+        });
+
         modelBuilder.Entity<Comment>(entity =>
         {
             entity.HasKey(e => e.CommentId).HasName("PK__Comments__C3B4DFCAE4D013E3");
@@ -226,6 +260,28 @@ public partial class LabProjectManagementContext : DbContext
                 .HasForeignKey(d => d.UploadedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__TaskAttac__Uploa__5BE2A6F2");
+        });
+
+        modelBuilder.Entity<TaskHistory>(entity =>
+        {
+            entity.HasKey(e => e.TaskHistoryId).HasName("PK__TaskHist__2F15B73C95D53FE0");
+
+            entity.ToTable("TaskHistory");
+
+            entity.Property(e => e.Action).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Description).HasMaxLength(255);
+
+            entity.HasOne(d => d.Task).WithMany(p => p.TaskHistories)
+                .HasForeignKey(d => d.TaskId)
+                .HasConstraintName("FK_TaskHistory_Task");
+
+            entity.HasOne(d => d.User).WithMany(p => p.TaskHistories)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TaskHistory_User");
         });
 
         modelBuilder.Entity<User>(entity =>

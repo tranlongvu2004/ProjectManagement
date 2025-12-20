@@ -27,6 +27,10 @@ public partial class User
 
     public DateTime? CreatedAt { get; set; }
 
+    public virtual ICollection<ActivityLog> ActivityLogTargetUsers { get; set; } = new List<ActivityLog>();
+
+    public virtual ICollection<ActivityLog> ActivityLogUsers { get; set; } = new List<ActivityLog>();
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
@@ -38,6 +42,8 @@ public partial class User
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = new List<TaskAssignment>();
 
     public virtual ICollection<TaskAttachment> TaskAttachments { get; set; } = new List<TaskAttachment>();
+
+    public virtual ICollection<TaskHistory> TaskHistories { get; set; } = new List<TaskHistory>();
 
     public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
 

@@ -10,7 +10,7 @@
     </div>
 }
 
-
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <style>
     .page-title {
         font-size: 30px;
@@ -22,7 +22,7 @@
     }
 
     .card {
-        background: #fff;
+        background: var(--card-bg);
         border-radius: 14px;
         padding: 25px;
         box-shadow: 0 4px 18px rgba(0,0,0,0.08);
@@ -36,10 +36,12 @@
     .input-custom {
         border-radius: 10px;
         padding: 10px 14px;
+        background: var(--card-bg);
+        color: var(--text-color);
+        border: 1px solid #d1d5db;
     }
 
-    /* ----------- MEMBER LIST ĐẸP NHƯ YÊU CẦU ----------- */
-
+    /* MEMBER LIST */
     .member-list {
         display: flex;
         flex-direction: column;
@@ -52,23 +54,22 @@
         align-items: center;
         gap: 14px;
         padding: 14px 16px;
-        background: #fff;
+        background: var(--card-bg);
         border-radius: 14px;
         cursor: pointer;
         transition: 0.2s ease;
         border: 1px solid #e5e7eb;
     }
 
-    .member-item:hover {
-        background: #f3f4ff;
-        transform: translateX(4px);
-    }
+        .member-item:hover {
+            background: #f3f4ff;
+            transform: translateX(4px);
+        }
 
     .member-checkbox {
         width: 18px;
         height: 18px;
         cursor: pointer;
-        margin-top: 0; /* chống lệch dòng */
     }
 
     .avatar {
@@ -94,12 +95,12 @@
     .member-name {
         font-size: 15px;
         font-weight: 600;
-        color: #111;
+        color: var(--text-color);
     }
 
     .member-email {
         font-size: 13px;
-        color: #666;
+        color: #6b7280;
     }
 
     .btn-primary-custom {
@@ -108,12 +109,14 @@
         padding: 10px 18px;
         border-radius: 10px;
         font-weight: 600;
+        color: white;
         transition: 0.2s;
     }
 
-    .btn-primary-custom:hover {
-        background: #3154b4;
-    }
+        .btn-primary-custom:hover {
+            background: #3154b4;
+        }
+
 </style>
 
 

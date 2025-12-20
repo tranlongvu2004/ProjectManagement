@@ -26,6 +26,8 @@ public partial class Project
 
     public DateTime? UpdatedAt { get; set; }
 
+    public virtual ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
+
     public virtual User CreatedByNavigation { get; set; } = null!;
 
     public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
