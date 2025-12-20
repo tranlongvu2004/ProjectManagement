@@ -1,40 +1,44 @@
 ﻿@model PorjectManagement.ViewModels.HistoryLogViewModel
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<div class="history-log-page">
 
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#worked">
+                Worked on
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#assigned">
+                Assigned to me
+            </a>
+        </li>
+    </ul>
 
-<ul class="nav nav-tabs">
-    <li class="nav-item">
-        <a class="nav-link active" data-bs-toggle="tab" href="#worked">
-            Worked on
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" href="#assigned">
-            Assigned to me
-        </a>
-    </li>
-</ul>
+    <div class="tab-content mt-3">
+        <div class="tab-pane fade show active" id="worked">
+            @foreach (var log in Model.WorkedOn)
+            {
+                <a class="for-you-item"
+                   href="/Backlog/BacklogUI?projectId=@log.ProjectId&taskId=@log.TaskId">
+                    @log.Message - @log.Project.ProjectName -
+                    <small class="text-muted">@log.CreatedAt.ToString("dd/MM HH:mm")</small>
+                </a>
+                <br />
+            }
+        </div>
 
-<div class="tab-content mt-3">
-    <div class="tab-pane fade show active" id="worked">
-        @foreach (var log in Model.WorkedOn)
-        {
-            <a class="for-you-item"
-               href="/Backlog/BacklogUI?projectId=@log.ProjectId&taskId=@log.TaskId">
-                @log.Message - @log.Project.ProjectName - 
-                <small class="text-muted">@log.CreatedAt.ToString("dd/MM HH:mm")</small>
-            </a><br/>
-        }
-
+        <div class="tab-pane fade" id="assigned">
+            @foreach (var task in Model.AssignedToMe)
+            {
+                <a class="for-you-item"
+                   href="/Backlog/BacklogUI?projectId=@task.ProjectId&taskId=@task.TaskId">
+                    <strong>@task.TaskTitle</strong>
+                    <span class="text-muted">(@task.ProjectName)</span>
+                </a>
+                <br />
+            }
+        </div>
     </div>
 
-    <div class="tab-pane fade" id="assigned">
-        @foreach (var task in Model.AssignedToMe)
-        {
-            <a class="for-you-item"
-               href="/Backlog/BacklogUI?projectId=@task.ProjectId&taskId=@task.TaskId">
-                <strong>@task.TaskTitle</strong>
-                <span class="text-muted">(@task.ProjectName)</span>
-            </a><br/>
-        }
-    </div>
 </div>

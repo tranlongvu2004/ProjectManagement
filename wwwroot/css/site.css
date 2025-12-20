@@ -1,4 +1,4 @@
-/* ===============================
+﻿/* ===============================
    BASE
 ================================ */
 html {
@@ -434,5 +434,396 @@ a {
     align-items: center;
     gap: 6px;
 }
+/* ===============================
+   ASSIGN TASK PAGE
+================================ */
+.assign-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 60px;
+    background: var(--bg-main);
+    color: var(--text-main);
+}
+
+/* ===============================
+   ASSIGN CARD
+================================ */
+.assign-card {
+    width: 520px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    transition: 0.25s ease;
+}
+
+    .assign-card:hover {
+        transform: translateY(-2px);
+    }
+
+/* ===============================
+   HEADER
+================================ */
+.assign-header {
+    padding: 18px 26px;
+    font-size: 20px;
+    font-weight: 600;
+    background: #1a73e8;
+    color: #fff;
+}
+
+/* ===============================
+   BODY
+================================ */
+.assign-body {
+    padding: 30px;
+}
+
+/* ===============================
+   SELECT
+================================ */
+.assign-select {
+    height: 48px;
+    border-radius: 12px;
+    padding: 10px 14px;
+    background: var(--bg-main);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+    .assign-select:focus {
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+
+/* ===============================
+   BUTTONS
+================================ */
+.btn-assign-cancel {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 9px 22px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+    .btn-assign-cancel:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+.btn-assign-submit {
+    background: #1a73e8;
+    color: #fff;
+    padding: 10px 26px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+}
+
+    .btn-assign-submit:hover {
+        background: #145fc4;
+    }
+.assign-select option {
+    background-color: #1e1e1e;
+    color: #eaeaea;
+}
+/* ===============================
+   DARK MODAL (UPLOAD ATTACHMENT)
+================================ */
+
+/* Modal background */
+.dark-modal .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+
+/* Header */
+.dark-modal .modal-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Footer */
+.dark-modal .modal-footer {
+    border-top: 1px solid var(--border-color);
+}
+
+/* Title */
+.dark-modal .modal-title {
+    color: var(--text-main);
+}
+
+/* Close button */
+.dark-modal .btn-close {
+    filter: invert(1);
+}
+
+/* File input */
+.dark-modal .form-control {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+    .dark-modal .form-control::file-selector-button {
+        background: #2a2a2a;
+        color: #eaeaea;
+        border: none;
+    }
+
+    .dark-modal .form-control:focus {
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.25);
+    }
+/* ===============================
+   DARK MODAL - GLOBAL
+================================ */
+
+.dark-modal .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+
+.dark-modal .modal-header,
+.dark-modal .modal-footer {
+    border-color: var(--border-color);
+}
+
+.dark-modal .modal-title {
+    color: var(--text-main);
+}
+
+/* Close button */
+.dark-modal .btn-close {
+    filter: invert(1);
+}
+
+/* ===============================
+   DELETE MODAL
+================================ */
+
+.dark-modal .modal-body p {
+    color: var(--text-main);
+}
+
+.dark-modal .modal-body .text-muted {
+    color: #9aa0a6 !important;
+}
+
+/* ===============================
+   COMMENT MODAL
+================================ */
+
+.modal-header-info {
+    background: #1a73e8;
+    color: #fff;
+}
+
+    .modal-header-info .btn-close {
+        filter: invert(1);
+    }
+
+/* Comment list */
+.comment-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px;
+}
+
+/* Input / textarea */
+.dark-modal textarea.form-control,
+.dark-modal input.form-control {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+    .dark-modal textarea.form-control::placeholder {
+        color: #9aa0a6;
+    }
+
+    .dark-modal textarea.form-control:focus,
+    .dark-modal input.form-control:focus {
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.25);
+    }
+/* ===============================
+   HISTORY LOG PAGE (DARK/LIGHT)
+================================ */
+
+.history-log-page {
+    color: var(--text-color);
+    padding: 15px;
+}
+
+    /* Tabs */
+    .history-log-page .nav-tabs {
+        border-bottom: none;
+        margin-bottom: 10px;
+    }
+
+        .history-log-page .nav-tabs .nav-link {
+            color: var(--muted-text);
+            background: transparent !important;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 10px 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+            .history-log-page .nav-tabs .nav-link:hover {
+                color: var(--text-color);
+                background: rgba(0,0,0,0.05);
+            }
+
+            .history-log-page .nav-tabs .nav-link.active {
+                color: var(--text-color);
+                background: transparent !important;
+                border-bottom: 3px solid #4dabf7;
+            }
+
+/* Fix Bootstrap white background for dark mode */
+[data-theme="dark"] .history-log-page .nav-tabs .nav-link.active {
+    background-color: transparent !important;
+}
+
+/* Item link */
+.history-log-page .for-you-item {
+    display: block;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid transparent;
+}
+
+    .history-log-page .for-you-item:hover {
+        background: var(--hover-bg);
+    }
+
+/* Dark-only effect */
+[data-theme="dark"] .history-log-page .for-you-item {
+    box-shadow: inset 0 0 0 1px var(--border-color);
+}
+
+/* Muted text */
+.history-log-page .text-muted {
+    color: var(--muted-text) !important;
+}
+
+/* Small spacing between elements */
+.history-log-page .tab-pane a.for-you-item + a.for-you-item {
+    margin-top: 6px;
+}
+
+
+/* ===============================
+   TASK HISTORY PAGE (DARK/LIGHT)
+================================ */
+
+.task-history-page {
+    color: var(--text-color);
+    padding: 15px;
+}
+
+    /* Table base */
+    .task-history-page table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: var(--card-bg);
+        color: var(--text-color);
+        border-radius: 10px;
+        overflow: hidden;
+        --bs-table-bg: var(--card-bg);
+        --bs-table-color: var(--text-color);
+        --bs-table-border-color: var(--border-color);
+    }
+
+        .task-history-page table th,
+        .task-history-page table td {
+            padding: 12px;
+            vertical-align: middle;
+            border-color: var(--border-color);
+        }
+
+        /* Header */
+        .task-history-page table thead th {
+            background: var(--hover-bg);
+            font-weight: 600;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        /* Remove Bootstrap striped default */
+        .task-history-page table tbody tr:nth-child(odd),
+        .task-history-page table tbody tr:nth-child(even) {
+            background: var(--card-bg);
+        }
+
+        /* Hover effect */
+        .task-history-page table tbody tr:hover {
+            background: var(--hover-bg);
+        }
+
+/* Dark mode overrides */
+[data-theme="dark"] .task-history-page table {
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+
+    [data-theme="dark"] .task-history-page table th,
+    [data-theme="dark"] .task-history-page table td {
+        color: var(--text-color);
+    }
+
+    [data-theme="dark"] .task-history-page table tbody tr:nth-child(odd),
+    [data-theme="dark"] .task-history-page table tbody tr:nth-child(even) {
+        background: var(--card-bg); /* all rows same dark background */
+    }
+
+    [data-theme="dark"] .task-history-page table tbody tr:hover {
+        background: var(--hover-bg);
+    }
+
+/* Button styling */
+.task-history-page .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--hover-bg);
+    color: var(--text-color);
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+    .task-history-page .btn:hover {
+        background: var(--card-bg);
+    }
+
+
+
+
 
 
