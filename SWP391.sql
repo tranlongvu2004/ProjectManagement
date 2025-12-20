@@ -1,28 +1,30 @@
-﻿IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'LabProjectManagement')
+﻿/* =====================================================
+   RESET DATABASE
+===================================================== */
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'LabProjectManagement')
 BEGIN
     ALTER DATABASE LabProjectManagement SET MULTI_USER WITH ROLLBACK IMMEDIATE;
     DROP DATABASE LabProjectManagement;
 END
 GO
+
 CREATE DATABASE LabProjectManagement;
 GO
 USE LabProjectManagement;
 GO
 
 
-/* ================================
+/* =====================================================
    A. ROLES & USERS
-=================================*/
+===================================================== */
 
--- 1. Roles
 CREATE TABLE Roles (
-    RoleId INT IDENTITY(1,1) PRIMARY KEY,
-    RoleName NVARCHAR(50) NOT NULL   -- Mentor / Intern
+    RoleId INT IDENTITY PRIMARY KEY,
+    RoleName NVARCHAR(50) NOT NULL
 );
 
--- 2. Users
 CREATE TABLE Users (
-    UserId INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT IDENTITY PRIMARY KEY,
     FullName NVARCHAR(100) NOT NULL,
     Email NVARCHAR(100) NOT NULL UNIQUE,
     PasswordHash NVARCHAR(255) NOT NULL,
@@ -30,17 +32,18 @@ CREATE TABLE Users (
     AvatarUrl NVARCHAR(MAX),
     Status NVARCHAR(20) DEFAULT 'active',
     CreatedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (RoleId) REFERENCES Roles(RoleId)
+
+    CONSTRAINT FK_User_Role
+        FOREIGN KEY (RoleId) REFERENCES Roles(RoleId)
 );
 
 
-/* ================================
+/* =====================================================
    B. PROJECT MANAGEMENT
-=================================*/
+===================================================== */
 
--- 3. Projects
 CREATE TABLE Projects (
-    ProjectId INT IDENTITY(1,1) PRIMARY KEY,
+    ProjectId INT IDENTITY PRIMARY KEY,
     ProjectName NVARCHAR(200) NOT NULL,
     Description NVARCHAR(MAX),
     Deadline DATETIME NOT NULL,
@@ -48,240 +51,177 @@ CREATE TABLE Projects (
     CreatedBy INT NOT NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (CreatedBy) REFERENCES Users(UserId)
+
+    CONSTRAINT FK_Project_Creator
+        FOREIGN KEY (CreatedBy) REFERENCES Users(UserId)
 );
 
--- 4. UserProject
 CREATE TABLE UserProject (
-    UserProjectId INT IDENTITY(1,1) PRIMARY KEY,
+    UserProjectId INT IDENTITY PRIMARY KEY,
     UserId INT NOT NULL,
     ProjectId INT NOT NULL,
     IsLeader BIT DEFAULT 0,
     JoinedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (UserId) REFERENCES Users(UserId),
-    FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId)
+
+    CONSTRAINT FK_UserProject_User
+        FOREIGN KEY (UserId) REFERENCES Users(UserId),
+
+    CONSTRAINT FK_UserProject_Project
+        FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId)
 );
 
 
--- 5. Tasks (có IsParent + ParentId)
+/* =====================================================
+   C. TASKS
+===================================================== */
+
 CREATE TABLE Tasks (
-    TaskId INT IDENTITY(1,1) PRIMARY KEY,
+    TaskId INT IDENTITY PRIMARY KEY,
     ParentId INT NULL,
-    IsParent BIT DEFAULT 0,                        -- NEW
+    IsParent BIT DEFAULT 0,
+
     ProjectId INT NOT NULL,
     Title NVARCHAR(200) NOT NULL,
     Description NVARCHAR(MAX),
+
     Priority NVARCHAR(20) DEFAULT 'Medium',
     Status NVARCHAR(20) DEFAULT 'ToDo',
     ProgressPercent INT DEFAULT 0,
+
     Deadline DATETIME,
     CreatedBy INT NOT NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
-    FOREIGN KEY (CreatedBy) REFERENCES Users(UserId),
-    FOREIGN KEY (ParentId) REFERENCES Tasks(TaskId)
+
+    CONSTRAINT FK_Task_Project
+        FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
+
+    CONSTRAINT FK_Task_Creator
+        FOREIGN KEY (CreatedBy) REFERENCES Users(UserId),
+
+    CONSTRAINT FK_Task_Parent
+        FOREIGN KEY (ParentId) REFERENCES Tasks(TaskId)
 );
 
-
--- 6. TaskAssignment
 CREATE TABLE TaskAssignment (
-    TaskAssignmentId INT IDENTITY(1,1) PRIMARY KEY,
+    TaskAssignmentId INT IDENTITY PRIMARY KEY,
     TaskId INT NOT NULL,
     UserId INT NOT NULL,
     AssignedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
-    FOREIGN KEY (UserId) REFERENCES Users(UserId)
+    DeadlineMailSent BIT DEFAULT 0,
+
+    CONSTRAINT FK_TaskAssignment_Task
+        FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
+
+    CONSTRAINT FK_TaskAssignment_User
+        FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
 
-
--- 7. TaskAttachments
 CREATE TABLE TaskAttachments (
-    AttachmentId INT IDENTITY(1,1) PRIMARY KEY,
+    AttachmentId INT IDENTITY PRIMARY KEY,
     TaskId INT NOT NULL,
     FileName NVARCHAR(255),
     FilePath NVARCHAR(MAX),
-    FileType NVARCHAR(50),
+    FileType NVARCHAR(255),
     FileSize BIGINT,
     UploadedBy INT NOT NULL,
     UploadedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
-    FOREIGN KEY (UploadedBy) REFERENCES Users(UserId)
+
+    CONSTRAINT FK_Attachment_Task
+        FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
+
+    CONSTRAINT FK_Attachment_User
+        FOREIGN KEY (UploadedBy) REFERENCES Users(UserId)
 );
 
 
-/* ================================
-   C. COMMUNICATION
-=================================*/
+/* =====================================================
+   D. COMMUNICATION & LOGGING
+===================================================== */
 
 CREATE TABLE Comments (
-    CommentId INT IDENTITY(1,1) PRIMARY KEY,
+    CommentId INT IDENTITY PRIMARY KEY,
     TaskId INT NOT NULL,
     UserId INT NOT NULL,
     Content NVARCHAR(MAX) NOT NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
+
+    CONSTRAINT FK_Comment_Task
+        FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
+
+    CONSTRAINT FK_Comment_User
+        FOREIGN KEY (UserId) REFERENCES Users(UserId)
+);
+
+CREATE TABLE ActivityLog (
+    ActivityLogId INT IDENTITY PRIMARY KEY,
+
+    UserId INT NOT NULL,
+    TargetUserId INT NULL,
+    ProjectId INT NOT NULL,
+    TaskId INT NULL,
+
+    ActionType NVARCHAR(50) NOT NULL,
+    OldValue NVARCHAR(MAX),
+    NewValue NVARCHAR(MAX),
+    Message NVARCHAR(500) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (UserId) REFERENCES Users(UserId),
+    FOREIGN KEY (TargetUserId) REFERENCES Users(UserId),
+    FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
+    FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId)
+);
+
+CREATE TABLE TaskHistory (
+    TaskHistoryId INT IDENTITY PRIMARY KEY,
+    TaskId INT NULL,
+    UserId INT NOT NULL,
+    Action NVARCHAR(50) NOT NULL,
+    Description NVARCHAR(255) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+
     FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
 
+CREATE TABLE RecycleBin (
+    RecycleId INT IDENTITY PRIMARY KEY,
+    EntityType NVARCHAR(50) NOT NULL,
+    EntityId INT NOT NULL,
+    DataSnapshot NVARCHAR(MAX) NOT NULL,
+    DeletedBy INT NULL,
+    DeletedAt DATETIME DEFAULT GETDATE()
+);
 
-/* ================================
-   D. REPORTS
-=================================*/
+
+/* =====================================================
+   E. REPORTS
+===================================================== */
 
 CREATE TABLE Reports (
-    ReportId INT IDENTITY(1,1) PRIMARY KEY,
+    ReportId INT IDENTITY PRIMARY KEY,
     ProjectId INT NOT NULL,
     LeaderId INT NOT NULL,
     ReportType NVARCHAR(20),
     FilePath NVARCHAR(MAX) NOT NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
+
     FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
     FOREIGN KEY (LeaderId) REFERENCES Users(UserId)
 );
 
-CREATE TABLE RecycleBin (
-    RecycleId INT IDENTITY(1,1) PRIMARY KEY,
 
-    EntityType NVARCHAR(50) NOT NULL,         -- 'Task'
-    EntityId INT NOT NULL,                    -- Id gốc của bản ghi
+/* =====================================================
+   F. SEED DATA
+===================================================== */
 
-    DataSnapshot NVARCHAR(MAX) NOT NULL,      -- Lưu JSON chứa toàn bộ dữ liệu Task
+INSERT INTO Roles (RoleName)
+VALUES ('Mentor'), ('Intern');
 
-    DeletedBy INT NULL,                       -- Id người xoá (nhưng không FK)
-    DeletedAt DATETIME DEFAULT GETDATE()
-);
-
-CREATE TABLE ActivityLog (
-    ActivityLogId INT IDENTITY(1,1) PRIMARY KEY,
-
-    UserId INT NOT NULL,              -- người thực hiện
-    TargetUserId INT NULL,             -- người bị ảnh hưởng
-
-    ProjectId INT NOT NULL,
-    TaskId INT NULL,
-
-    ActionType NVARCHAR(50) NOT NULL,  -- STATUS_CHANGED, COMMENT_ADDED...
-    OldValue NVARCHAR(MAX) NULL,
-    NewValue NVARCHAR(MAX) NULL,
-    Message NVARCHAR(500) NOT NULL,
-
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
-
-    CONSTRAINT FK_ActivityLog_User
-        FOREIGN KEY (UserId) REFERENCES Users(UserId),
-
-    CONSTRAINT FK_ActivityLog_TargetUser
-        FOREIGN KEY (TargetUserId) REFERENCES Users(UserId),
-
-    CONSTRAINT FK_ActivityLog_Project
-        FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
-
-    CONSTRAINT FK_ActivityLog_Task
-        FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId)
-);
-
-CREATE TABLE TaskHistory (
-    TaskHistoryId INT IDENTITY(1,1) PRIMARY KEY,
-    TaskId INT NULL,
-    UserId INT NOT NULL,
-    Action NVARCHAR(50) NOT NULL,
-    Description NVARCHAR(255) NOT NULL,
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
-
-    CONSTRAINT FK_TaskHistory_Task
-        FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
-
-    CONSTRAINT FK_TaskHistory_User
-        FOREIGN KEY (UserId) REFERENCES [Users](UserId)
-);
-
-
-ALTER TABLE TaskAttachments
-ALTER COLUMN FileType NVARCHAR(255);
-
-ALTER TABLE TaskAssignment
-ADD DeadlineMailSent BIT DEFAULT 0;
-/* ================================
-   E. SEED DATA
-=================================*/
-
--- Roles
-INSERT INTO Roles (RoleName) VALUES
-('Mentor'),
-('Intern');
-
--- Users
-INSERT INTO Users(FullName, Email, PasswordHash, RoleId)
+INSERT INTO Users (FullName, Email, PasswordHash, RoleId)
 VALUES
-('Nguyen Thanh Mentor', 'mentor@example.com', '123', 1),
-('Tran Van Intern 1', 'intern1@example.com', '123', 2),
-('Tran Van Intern 2', 'intern2@example.com', '123', 2),
-('Tran Van Intern 3', 'intern3@example.com', '123', 2),
-('Nghiem Minh Duc', 'nghiemducls123@gmail.com', '123', 2);
-
-
--- Projects
-INSERT INTO Projects (ProjectName, Description, Deadline, CreatedBy)
-VALUES
-('Lab Management System', 'System for managing lab tasks', '2025-03-30', 1),
-('Evaluation Tool', 'Evaluation tool for interns', '2025-04-10', 1);
-
--- Members
-INSERT INTO UserProject (UserId, ProjectId, IsLeader)
-VALUES
-(1, 1, 1),
-(2, 1, 0),
-(3, 1, 0),
-
-(1, 2, 1),
-(4, 2, 0);
-
-
--- Tasks (Parents)
-INSERT INTO Tasks (ProjectId, Title, IsParent, Priority, Status, Deadline, CreatedBy)
-VALUES
-(1, 'Design Database', 1, 'High', 'InProgress', '2025-02-10', 1),    -- TaskId = 1
-(1, 'Develop API', 1, 'Medium', 'ToDo', '2025-02-20', 2),             -- TaskId = 2
-(2, 'Define Evaluation Criteria', 1, 'High', 'InProgress', '2025-03-01', 1); -- TaskId = 3
-
-
--- SubTasks
-INSERT INTO Tasks (ProjectId, ParentId, Title, IsParent, Status, CreatedBy)
-VALUES
-(1, 1, 'Create ERD', 0, 'InProgress', 2),          -- TaskId = 4
-(1, 1, 'Review ERD with mentor', 0, 'ToDo', 1),    -- TaskId = 5
-(1, 2, 'Build authentication API', 0, 'ToDo', 3);  -- TaskId = 6
-
-
--- TaskAssignments
-INSERT INTO TaskAssignment (TaskId, UserId)
-VALUES
-(1, 1),
-(2, 2),
-(3, 1),
-(4, 2),
-(5, 1),
-(6, 3);
-
-
--- Comments
-INSERT INTO Comments (TaskId, UserId, Content)
-VALUES
-(1, 2, 'Database đang thiết kế'),
-(4, 2, 'ERD bản nháp đã hoàn thành'),
-(6, 3, 'Đang code Auth API');
-
-
--- Attachments
-INSERT INTO TaskAttachments (TaskId, FileName, FilePath, FileType, FileSize, UploadedBy)
-VALUES
-(4, 'erd_draft.png', '/uploads/erd_draft.png', 'image', 205000, 2),
-(1, 'db_schema.pdf', '/uploads/db_schema.pdf', 'pdf', 1034000, 1);
-
-
--- Reports
-INSERT INTO Reports (ProjectId, LeaderId, ReportType, FilePath)
-VALUES
-(1, 1, 'weekly', '{}'),
-(2, 1, 'daily', '{}');
+(N'Trần Bình Dương', 'DuongTB@fe.edu.vn', '123', 1),
+(N'Trần Long Vũ', 'tlv04102004@gmail.com', '123', 2),
+(N'Nghiêm Minh Đức', 'intern2@example.com', '123', 2),
+(N'Nguyễn Huy Nghĩa', 'intern3@example.com', '123', 2);
