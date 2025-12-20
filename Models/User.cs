@@ -43,6 +43,8 @@ public partial class User
 
     public virtual ICollection<TaskAttachment> TaskAttachments { get; set; } = new List<TaskAttachment>();
 
+    public virtual ICollection<TaskHistory> TaskHistories { get; set; } = new List<TaskHistory>();
+
     public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
 
     public virtual ICollection<UserProject> UserProjects { get; set; } = new List<UserProject>();

@@ -181,6 +181,21 @@ CREATE TABLE ActivityLog (
         FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId)
 );
 
+CREATE TABLE TaskHistory (
+    TaskHistoryId INT IDENTITY(1,1) PRIMARY KEY,
+    TaskId INT NULL,
+    UserId INT NOT NULL,
+    Action NVARCHAR(50) NOT NULL,
+    Description NVARCHAR(255) NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_TaskHistory_Task
+        FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId),
+
+    CONSTRAINT FK_TaskHistory_User
+        FOREIGN KEY (UserId) REFERENCES [Users](UserId)
+);
+
 
 ALTER TABLE TaskAttachments
 ALTER COLUMN FileType NVARCHAR(255);
