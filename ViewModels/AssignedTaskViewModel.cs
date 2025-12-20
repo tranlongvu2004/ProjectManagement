@@ -7,7 +7,7 @@
         public string TaskTitle { get; set; }
         public string ProjectName { get; set; }
         public DateTime? Deadline { get; set; }
-        public TaskStatus Status { get; set; }
+        public string? Status { get; set; }
     }
 
 }

@@ -1,4 +1,6 @@
-﻿namespace PorjectManagement.ViewModels
+﻿using PorjectManagement.Models;
+
+namespace PorjectManagement.ViewModels
 {
     public class ActivityLogViewModel
     {
@@ -7,6 +9,7 @@
         public int? TaskId { get; set; }
         public string Message { get; set; }
         public DateTime CreatedAt { get; set; }
+        public Project Project { get; set; }
     }
 
 }

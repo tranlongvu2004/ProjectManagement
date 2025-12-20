@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
+using PorjectManagement.ViewModels;
 
 namespace PorjectManagement.Controllers
 {
@@ -13,28 +14,44 @@ namespace PorjectManagement.Controllers
             _context = context;
         }
 
-        public IActionResult HistoryLog()
+        public async Task<IActionResult> HistoryLog()
         {
-            int? currentUserId = HttpContext.Session.GetInt32("UserId"); // lấy từ session
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
-            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
-
-            ViewBag.WorkedOn = _context.ActivityLogs
-                .Include(a => a.Project)
-                .Include(a => a.Task)
-                .Where(a => a.UserId == currentUserId &&
-                            a.CreatedAt >= thirtyDaysAgo)
+            var workedOn = await _context.ActivityLogs
+                .Where(a => a.UserId == userId
+                         && a.CreatedAt >= DateTime.Now.AddDays(-30))
                 .OrderByDescending(a => a.CreatedAt)
-                .ToList();
+                .Select(a => new ActivityLogViewModel
+                {
+                    ActivityLogId = a.ActivityLogId,
+                    ProjectId = a.ProjectId,
+                    TaskId = a.TaskId,
+                    Message = a.Message,
+                    CreatedAt = a.CreatedAt,
+                    Project = a.Project
+                })
+                .ToListAsync();
 
-            ViewBag.AssignedToMe = _context.TaskAssignments
-                .Include(ta => ta.Task)
-                    .ThenInclude(t => t.Project)
-                .Where(ta => ta.UserId == currentUserId)
-                .OrderByDescending(ta => ta.AssignedAt)
-                .ToList();
+            var assignedToMe = await _context.TaskAssignments
+                .Where(t => t.UserId == userId)
+                .Include(t => t.Task)
+                .Select(t => new AssignedTaskViewModel
+                {
+                    TaskId = t.Task.TaskId,
+                    ProjectId = t.Task.ProjectId,
+                    TaskTitle = t.Task.Title,
+                    ProjectName = t.Task.Project.ProjectName,
+                    Deadline = t.Task.Deadline,
+                    Status = t.Task.Status.ToString()
+                })
+                .ToListAsync();
 
-            return View();
+            return View(new HistoryLogViewModel
+            {
+                WorkedOn = workedOn,
+                AssignedToMe = assignedToMe
+            });
         }
     }
 }
