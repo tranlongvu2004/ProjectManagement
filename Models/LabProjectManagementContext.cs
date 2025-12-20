@@ -36,6 +36,8 @@ public partial class LabProjectManagementContext : DbContext
 
     public virtual DbSet<TaskAttachment> TaskAttachments { get; set; }
 
+    public virtual DbSet<TaskHistory> TaskHistories { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ActivityLog>(entity =>
@@ -258,6 +260,28 @@ public partial class LabProjectManagementContext : DbContext
                 .HasForeignKey(d => d.UploadedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__TaskAttac__Uploa__5BE2A6F2");
+        });
+
+        modelBuilder.Entity<TaskHistory>(entity =>
+        {
+            entity.HasKey(e => e.TaskHistoryId).HasName("PK__TaskHist__2F15B73C95D53FE0");
+
+            entity.ToTable("TaskHistory");
+
+            entity.Property(e => e.Action).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Description).HasMaxLength(255);
+
+            entity.HasOne(d => d.Task).WithMany(p => p.TaskHistories)
+                .HasForeignKey(d => d.TaskId)
+                .HasConstraintName("FK_TaskHistory_Task");
+
+            entity.HasOne(d => d.User).WithMany(p => p.TaskHistories)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TaskHistory_User");
         });
 
         modelBuilder.Entity<User>(entity =>

@@ -53,4 +53,6 @@ public partial class Task
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = new List<TaskAssignment>();
 
     public virtual ICollection<TaskAttachment> TaskAttachments { get; set; } = new List<TaskAttachment>();
+
+    public virtual ICollection<TaskHistory> TaskHistories { get; set; } = new List<TaskHistory>();
 }
