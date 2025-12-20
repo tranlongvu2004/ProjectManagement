@@ -262,6 +262,7 @@
 <body>
     @{
         var roleId = Context.Session.GetInt32("RoleId");
+        var name = Context.Session.GetString("FullName");
     }
 
     <header>
@@ -286,6 +287,9 @@
                         <input class="form-control rounded-pill px-3" type="search" placeholder="Search for project, member..."
                                aria-label="Search" />
                     </form>
+                    <a>
+                        Welcome, @name!
+                    </a>
                     <!-- RIGHT ICONS -->
                     <div class="d-flex align-items-center gap-2">
 
@@ -338,9 +342,12 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <a asp-controller="HistoryLog" asp-action="HistoryLog" class="menu-item">
-            For you
+        @if (roleId == 2)
+        {
+            <a asp-controller="HistoryLog" asp-action="HistoryLog" class="menu-item">
+                For you
         </a>
+        }
 
         <a asp-controller="Home" asp-action="Index" class="menu-item">
             Overview

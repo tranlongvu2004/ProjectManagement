@@ -60,7 +60,7 @@ namespace PorjectManagement.Repository
 
         public User? getUserById(int userId)
         {
-            return _context.Users.FirstOrDefault(u => u.UserId == userId);
+            return _context.Users.Include(us => us.UserProjects).ThenInclude(p => p.Project).FirstOrDefault(u => u.UserId == userId);
         }
 
         public void UpdateProfile(User user)

@@ -57,7 +57,8 @@ namespace PorjectManagement.Controllers
             HttpContext.Session.SetString("UserEmail", user.Email);
             HttpContext.Session.SetInt32("RoleId", user.RoleId);
             HttpContext.Session.SetInt32("UserId", user.UserId);  
-    
+            HttpContext.Session.SetString("FullName", user.FullName);
+            ViewBag.fullName = user.FullName;
             if (user.RoleId == 1)
             {
                 return RedirectToAction("Index", "Home");

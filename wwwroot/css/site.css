@@ -386,6 +386,11 @@ a {
         color: var(--text-color);
         border-color: var(--border-color);
     }
+    .user-profile-card .list-group-item {
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
 
         .user-profile-card .form-control:focus {
             background-color: var(--input-bg);
