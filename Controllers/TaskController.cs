@@ -161,6 +161,14 @@ namespace PorjectManagement.Controllers
                 message: $"created task \"{task.Title}\"",
                 createdAt: DateTime.Now
             );
+            await _taskHistoryService.AddAsync(
+             newTaskId,
+                userId,
+             "TASK_CREATED",
+             $"create task \"{task.Title}\""
+ );
+
+
 
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
