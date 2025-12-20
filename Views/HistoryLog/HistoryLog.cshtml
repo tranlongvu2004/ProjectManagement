@@ -1,0 +1,38 @@
+﻿<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#worked">
+            Worked on
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#assigned">
+            Assigned to me
+        </a>
+    </li>
+</ul>
+
+<div class="tab-content mt-3">
+    <div class="tab-pane fade show active" id="worked">
+        @foreach (var a in ViewBag.WorkedOn)
+        {
+            <div class="mb-2">
+                <strong>@a.Message</strong><br />
+                <small class="text-muted">
+                    @a.Project.ProjectName · @a.CreatedAt
+                </small>
+            </div>
+        }
+    </div>
+
+    <div class="tab-pane fade" id="assigned">
+        @foreach (var ta in ViewBag.AssignedToMe)
+        {
+            <div class="mb-2">
+                <strong>@ta.Task.Title</strong><br />
+                <small class="text-muted">
+                    @ta.Task.Project.ProjectName · @ta.Task.Status
+                </small>
+            </div>
+        }
+    </div>
+</div>

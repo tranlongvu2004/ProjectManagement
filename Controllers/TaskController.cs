@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using PorjectManagement.Models;
+using PorjectManagement.Service;
 using PorjectManagement.Service.Interface;
 using PorjectManagement.ViewModels;
 
@@ -15,19 +17,22 @@ namespace PorjectManagement.Controllers
         private readonly ICommentService _commentService;
         private readonly IProjectServices _projectServices;
         private readonly LabProjectManagementContext _context;
+        private readonly IActivityLogService _activityLogService;
 
         public TaskController(
             ITaskService taskService,
             IUserProjectService userProjectService,
             ICommentService commentService,
             IProjectServices projectServices,
-            LabProjectManagementContext context)
+            LabProjectManagementContext context,
+            IActivityLogService activityLogService)
         {
             _taskService = taskService;
             _userProjectService = userProjectService;
             _commentService = commentService;
             _projectServices = projectServices;
             _context = context;
+            _activityLogService = activityLogService;
         }
 
         [HttpGet]
@@ -70,6 +75,9 @@ namespace PorjectManagement.Controllers
                 Value = t.TaskId.ToString(),
                 Text = t.Title
             }).ToList();
+
+            
+
             return View(vm);
         }
 
@@ -135,10 +143,23 @@ namespace PorjectManagement.Controllers
             };
 
             var newTaskId = await _taskService.CreateTaskAsync(task);
+
+            //Duc Nghiem
+            _activityLogService.Log(
+            
+                userId: userId,
+                projectId: model.ProjectId,
+                taskId: newTaskId,
+                actionType: "TASK_CREATED",
+                message: $"created task \"{task.Title}\"",
+                createdAt: DateTime.Now
+            );
+
             if (model.SelectedUserIds != null && model.SelectedUserIds.Any())
                 await _taskService.AssignUsersToTaskAsync(newTaskId, model.SelectedUserIds);
 
             await _projectServices.UpdateProjectStatusAsync(model.ProjectId);
+            await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Create Task successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
@@ -171,6 +192,29 @@ namespace PorjectManagement.Controllers
             try
             {
                 await _taskService.AssignTaskAsync(model.TaskId, model.SelectedUserId);
+
+                //Duc Nghiem
+                var task = await _context.Tasks
+                    .Include(t => t.Project)
+                    .FirstAsync(t => t.TaskId == model.TaskId);
+
+                var assignedUser = await _context.Users
+                    .FirstAsync(u => u.UserId == model.SelectedUserId);
+
+                var currentUserId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+                _activityLogService.Log(
+                    userId: currentUserId,
+                    projectId: task.ProjectId,
+                    taskId: task.TaskId,
+                    actionType: "TASK_ASSIGNED",
+                    message: $"assigned task \"{task.Title}\" to {assignedUser.FullName}",
+                    createdAt: DateTime.Now,
+                    targetUserId: assignedUser.UserId
+                );
+
+                await _context.SaveChangesAsync();
+
                 ViewBag.SuccessMessage = "Assign task successfully!";
                 return RedirectToAction("Assign", new { id = model.TaskId, success = true });
             }
@@ -300,14 +344,63 @@ namespace PorjectManagement.Controllers
             {
                 var userEmail = HttpContext.Session.GetString("UserEmail");
                 var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+                //Duc Nghiem
+                var oldTask = await _context.Tasks
+                    .AsNoTracking()
+                    .FirstAsync(t => t.TaskId == model.TaskId);
 
                 bool success = await _taskService.UpdateTaskAsync(model, currentUser.UserId);
+
 
                 if (!success)
                 {
                     TempData["Error"] = "Cant update task.";
                     return RedirectToAction("BacklogUI", "Backlog", new { projectId = model.ProjectId });
                 }
+
+                var newTask = await _context.Tasks
+                    .FirstAsync(t => t.TaskId == model.TaskId);
+
+                if (oldTask.Title != newTask.Title)
+                {
+                    _activityLogService.Log(
+                        currentUser.UserId,
+                        newTask.ProjectId,
+                        newTask.TaskId,
+                        "TASK_UPDATED",
+                        $"changed title from \"{oldTask.Title}\" to \"{newTask.Title}\"",
+                        DateTime.Now
+                    );
+                }
+
+                // 🔹 Status
+                if (oldTask.Status != newTask.Status)
+                {
+                    _activityLogService.Log(
+                        currentUser.UserId,
+                        newTask.ProjectId,
+                        newTask.TaskId,
+                        "TASK_UPDATED",
+                        $"changed status from {oldTask.Status} to {newTask.Status}",
+                        DateTime.Now
+                    );
+                }
+
+                // 🔹 Deadline
+                if (oldTask.Deadline != newTask.Deadline)
+                {
+                    _activityLogService.Log(
+                        currentUser.UserId,
+                        newTask.ProjectId,
+                        newTask.TaskId,
+                        "TASK_UPDATED",
+                        $"changed deadline from {oldTask.Deadline:dd/MM/yyyy} to {newTask.Deadline:dd/MM/yyyy}",
+                        DateTime.Now
+                    );
+                }
+
+                // 5️⃣ SAVE LOG
+                await _context.SaveChangesAsync();
 
                 await _projectServices.UpdateProjectStatusAsync(model.ProjectId);
 

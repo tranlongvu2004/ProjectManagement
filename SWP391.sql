@@ -202,7 +202,8 @@ VALUES
 ('Nguyen Thanh Mentor', 'mentor@example.com', '123', 1),
 ('Tran Van Intern 1', 'intern1@example.com', '123', 2),
 ('Tran Van Intern 2', 'intern2@example.com', '123', 2),
-('Tran Van Intern 3', 'intern3@example.com', '123', 2);
+('Tran Van Intern 3', 'intern3@example.com', '123', 2),
+('Nghiem Minh Duc', 'nghiemducls123@gmail.com', '123', 2);
 
 
 -- Projects
