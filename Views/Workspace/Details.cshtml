@@ -4,8 +4,8 @@
     var currentUserId = Context.Session.GetInt32("UserId");
     var isLeader = Model.Members.Any(x => x.UserId == currentUserId && x.IsLeader);
 }
-
-<div class="p-4">
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+<div class="p-4 project-workspace">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
@@ -113,10 +113,7 @@
                     {
                         <div class="col-md-6 col-lg-4 mb-3">
                             <div class="d-flex align-items-center p-3 border rounded">
-                                <div class="avatar-circle me-3" 
-                                     style="width: 48px; height: 48px; border-radius: 50%; 
-                                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                            display: flex; align-items: center; justify-content: center;">
+                                <div class="avatar-circle me-3">
                                     <span class="text-white fw-bold">
                                         @member.FullName.Substring(0, 1).ToUpper()
                                     </span>
@@ -125,7 +122,7 @@
                                     <div class="fw-semibold">@member.FullName</div>
                                     <small class="text-muted">@member.Email</small>
                                     <div class="mt-1">
-                                        <small class="badge bg-light text-dark">@member.RoleName</small>
+                                        <small class="badge badge-role">@member.RoleName</small>
                                         @if (member.IsLeader)
                                         {
                                             <small class="badge bg-warning text-dark ms-1">Leader</small>
@@ -144,22 +141,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    body {
-        background-color: #f8f9fa;
-    }
-
-    .card {
-        border-radius: 12px;
-    }
-
-    .progress {
-        border-radius: 10px;
-    }
-
-    .badge {
-        font-weight: 500;
-        padding: 0.4em 0.8em;
-    }
-</style>
