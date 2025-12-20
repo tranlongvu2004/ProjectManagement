@@ -1,22 +1,407 @@
+/* ===============================
+   BASE
+================================ */
 html {
-  font-size: 14px;
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* ===============================
+   THEME VARIABLES
+================================ */
+:root {
+    --bg-color: #f8f9fa;
+    --text-color: #212529;
+    --card-bg: #ffffff;
+    --border-color: #dee2e6;
+    --muted-text: #6c757d;
+    --input-bg: #ffffff;
+    --hover-bg: #f1f3f5;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #e9ecef;
+    --card-bg: #1e1e1e;
+    --border-color: #2a2a2a;
+    --muted-text: #adb5bd;
+    --input-bg: #1c1c1c;
+    --hover-bg: #2a2a2a;
 }
-
 body {
-  margin-bottom: 60px;
+    background: var(--bg-color);
+    color: var(--text-color);
 }
+
+a {
+    color: #4dabf7;
+}
+
+.navbar,
+.sidebar {
+    background: var(--card-bg) !important;
+    border-color: var(--border-color);
+}
+
+.navbar-brand {
+    color: #4dabf7 !important;
+}
+.card,
+.card-body,
+.accordion-item {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .card {
+    box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+}
+
+[data-theme="dark"] .accordion-button {
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+
+    [data-theme="dark"] .accordion-button::after {
+        filter: invert(1);
+    }
+
+[data-theme="dark"] .accordion-body {
+    background: var(--bg-color);
+}
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--card-bg);
+    color: var(--text-color);
+    border-radius: 10px;
+    overflow: hidden;
+    /* Bootstrap fix */
+    --bs-table-bg: var(--card-bg);
+    --bs-table-color: var(--text-color);
+    --bs-table-border-color: var(--border-color);
+}
+
+    .table th,
+    .table td {
+        padding: 12px;
+        vertical-align: middle;
+        border-color: var(--border-color);
+    }
+
+    .table thead th {
+        background: var(--hover-bg);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .table tbody tr:hover {
+        background: var(--hover-bg);
+    }
+
+/* FIX table-light */
+[data-theme="dark"] .table-light {
+    background: var(--card-bg) !important;
+    color: var(--text-color);
+}
+.parent-row {
+    background: var(--card-bg);
+    font-weight: 500;
+}
+
+.subtask-row {
+    background: var(--hover-bg);
+    border-left: 4px solid var(--border-color);
+}
+
+.user-row:hover {
+    background: var(--hover-bg) !important;
+}
+.form-control,
+.form-select,
+#searchBox,
+.input-custom {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+    .form-control::placeholder {
+        color: var(--muted-text);
+    }
+.btn-light,
+.btn-outline-secondary {
+    background: var(--hover-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.btn-edit {
+    background: transparent;
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 12px;
+}
+
+    .btn-edit:hover {
+        background: var(--hover-bg);
+    }
+
+.btn-assign-task {
+    background: #0d6efd;
+    color: #fff;
+    border-radius: 6px;
+    padding: 4px 12px;
+    border: none;
+}
+.badge.bg-primary {
+    background-color: #e1e7ff !important;
+    color: #3955ff !important;
+}
+
+.badge.bg-warning.text-dark {
+    background-color: #ffe9b6 !important;
+    color: #7a5a00 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #ececec !important;
+    color: #555 !important;
+}
+
+[data-theme="dark"] .badge.bg-primary {
+    background-color: #1e3a8a !important;
+    color: #bfdbfe !important;
+}
+
+[data-theme="dark"] .badge.bg-warning.text-dark {
+    background-color: #78350f !important;
+    color: #fde68a !important;
+}
+
+[data-theme="dark"] .badge.bg-secondary {
+    background-color: #374151 !important;
+    color: #e5e7eb !important;
+}
+.summary-bar {
+    display: flex;
+    height: 14px;
+    border-radius: 8px;
+    background: var(--hover-bg);
+}
+
+.output-list {
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+.menu-item {
+    color: var(--text-color);
+}
+
+    .menu-item:hover,
+    .menu-item.active {
+        background: var(--hover-bg);
+    }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #495057;
+    border-radius: 10px;
+}
+[data-theme="dark"] .fc {
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .fc-daygrid-day,
+[data-theme="dark"] .fc-col-header-cell,
+[data-theme="dark"] .fc-theme-standard td,
+[data-theme="dark"] .fc-theme-standard th {
+    background: var(--bg-color);
+    border-color: #333;
+}
+
+[data-theme="dark"] .fc-button {
+    background: #2b2b2b;
+    color: #e9ecef;
+    border-color: #444;
+}
+/* ===============================
+   ADD MEMBERS PAGE
+================================ */
+
+.add-members .card {
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    background: var(--card-bg);
+}
+
+.add-members table thead th {
+    background: var(--hover-bg);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.add-members .user-row:hover {
+    background: var(--hover-bg) !important;
+}
+
+.add-members .fw-bold {
+    color: var(--text-color);
+}
+
+.add-members #searchBox {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+/* ===============================
+   MY PROJECTS PAGE
+================================ */
+
+.my-projects h2 {
+    color: var(--text-color);
+}
+
+.my-projects .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.my-projects .table {
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+
+    .my-projects .table thead th {
+        background: var(--hover-bg);
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    .my-projects .table tbody tr:hover {
+        background: var(--hover-bg);
+    }
+
+.my-projects .text-muted {
+    color: var(--muted-text) !important;
+}
+
+/* badges fix */
+[data-theme="dark"] .my-projects .badge.bg-light {
+    background: #2a2a2a !important;
+    color: #e9ecef !important;
+}
+/* ===============================
+   PROJECT WORKSPACE
+================================ */
+
+.project-workspace {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+    .project-workspace .card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .project-workspace .text-muted {
+        color: var(--muted-text) !important;
+    }
+
+    /* progress */
+    .project-workspace .progress {
+        background: var(--hover-bg);
+        border-radius: 10px;
+    }
+
+    .project-workspace .progress-bar {
+        font-weight: 600;
+    }
+
+    /* member card */
+    .project-workspace .member-item {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+    }
+
+    /* avatar */
+    .project-workspace .avatar-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+
+    /* badges */
+    .project-workspace .badge-role {
+        background: var(--hover-bg);
+        color: var(--text-color);
+    }
+
+/* dark override */
+[data-theme="dark"] .project-workspace .badge-role {
+    background: #2a2a2a;
+    color: #e9ecef;
+}
+/* member list card */
+.member-list {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    max-height: 300px;
+    overflow-y: auto;
+}
+/* ===== USER PROFILE ===== */
+.user-profile-card {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+    .user-profile-card .form-control {
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+        .user-profile-card .form-control:focus {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            box-shadow: none;
+        }
+        .user-profile-card .form-control[readonly] {
+            background-color: var(--hover-bg);
+            color: var(--muted-text);
+        }
+    .user-profile-card img {
+        border-color: var(--border-color);
+    }
+    .user-profile-card h2,
+    .container h2 {
+        color: var(--text-color);
+    }
+
+
