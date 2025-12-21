@@ -662,10 +662,11 @@
             <div class="modal-body">
 
                 <div id="commentsList"
-                     class="comment-list">
+                     style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
                     <p class="text-center text-muted">Loading comments...</p>
                 </div>
 
+                <!-- Hidden input luôn tồn tại -->
                 <input type="hidden" id="commentTaskId" />
 
                 @if (roleId == 2)
@@ -673,8 +674,6 @@
                     <form asp-controller="Task"
                           asp-action="AddComment"
                           method="post">
-
-                        @Html.AntiForgeryToken()
 
                         <input type="hidden"
                                name="taskId"
@@ -697,7 +696,7 @@
                 else
                 {
                     <div class="alert alert-info mb-0">
-                        View comments
+                        <i class="bi bi-info-circle"></i> You can view comments only
                     </div>
                 }
 
@@ -814,12 +813,17 @@
             const taskName = this.dataset.taskName;
 
             document.getElementById('commentTaskId').value = taskId;
-            document.getElementById('commentTaskIdForm').value = taskId; // ⭐ THIẾU DÒNG NÀY
+
+            // Chỉ set giá trị cho form input nếu nó tồn tại (roleId == 2)
+            const formInput = document.getElementById('commentTaskIdForm');
+            if (formInput) {
+                formInput.value = taskId;
+            }
+
             document.getElementById('commentTaskName').innerText = taskName;
 
             // Load comments
             loadComments(taskId);
-            setTimeout(enhanceCommentsForEdit, 300);
         });
     });
 
@@ -828,7 +832,12 @@
         commentsContainer.innerHTML = '<p class="text-center text-muted">Loading...</p>';
 
         fetch(`/api/comments/${taskId}`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return res.json();
+            })
             .then(comments => {
                 if (comments.length === 0) {
                     commentsContainer.innerHTML = '<p class="text-muted text-center">No comments yet. Be the first to comment!</p>';
@@ -861,130 +870,140 @@
                 });
 
                 commentsContainer.innerHTML = html;
+
+                // Chỉ enhance edit/delete cho roleId == 2
+                const roleId = @(Context.Session.GetInt32("RoleId") ?? 0);
+                if (roleId === 2) {
+                    setTimeout(enhanceCommentsForEdit, 300);
+                }
             })
             .catch(err => {
-                commentsContainer.innerHTML = '<p class="text-danger">Failed to load comments.</p>';
+                console.error('Error loading comments:', err);
+                commentsContainer.innerHTML = '<p class="text-danger">Failed to load comments. Please try again.</p>';
             });
     }
-
-
 </script>
 <script>
-function enhanceCommentsForEdit() {
-    document.querySelectorAll('#commentsList .comment-item').forEach(item => {
+    // Script cho edit/delete comments (chỉ cho roleId == 2)
+    const CURRENT_USER_ID = @(Context.Session.GetInt32("UserId") ?? 0);
+    const CURRENT_ROLE_ID = @(Context.Session.GetInt32("RoleId") ?? 0);
+
+    function enhanceCommentsForEdit() {
+        // Chỉ chạy nếu là Intern/InternLead
+        if (CURRENT_ROLE_ID !== 2) return;
+
+        document.querySelectorAll('#commentsList .comment-item').forEach(item => {
             const commentUserId = parseInt(item.dataset.userId);
-        if (commentUserId !== CURRENT_USER_ID) return;
-        if (item.querySelector('.comment-more')) return;
+            if (commentUserId !== CURRENT_USER_ID) return;
+            if (item.querySelector('.comment-more')) return;
 
-        item.style.position = 'relative'; 
+            item.style.position = 'relative';
 
-        const contentP = item.querySelector('p');
-        if (!contentP) return;
+            const contentP = item.querySelector('p');
+            if (!contentP) return;
 
-        const commentId = item.dataset.id;
-        const oldText = contentP.innerText;
+            const commentId = item.dataset.id;
+            const oldText = contentP.innerText;
 
-        // nút ...
-        const moreBtn = document.createElement('span');
-        moreBtn.innerText = '...';
-        moreBtn.classList.add('comment-more');
-        moreBtn.style.cursor = 'pointer';
-        moreBtn.style.float = 'right';
-        moreBtn.style.fontWeight = 'bold';
+            // Nút ...
+            const moreBtn = document.createElement('span');
+            moreBtn.innerText = '...';
+            moreBtn.classList.add('comment-more');
+            moreBtn.style.cursor = 'pointer';
+            moreBtn.style.float = 'right';
+            moreBtn.style.fontWeight = 'bold';
 
-        contentP.parentElement.prepend(moreBtn);
+            contentP.parentElement.prepend(moreBtn);
 
-        // menu nhỏ
-        const menu = document.createElement('div');
-        menu.style.position = 'absolute';
-        menu.style.right = '10px';
-        menu.style.top = '25px';
-        menu.style.background = '#fff';
-        menu.style.border = '1px solid #ccc';
-        menu.style.padding = '5px';
-        menu.style.display = 'none';
-        menu.style.zIndex = '1000';
-
-        const editBtn = document.createElement('div');
-        editBtn.innerText = 'Edit';
-        editBtn.style.cursor = 'pointer';
-
-        const deleteBtn = document.createElement('div');
-        deleteBtn.innerText = 'Delete';
-        deleteBtn.style.cursor = 'pointer';
-
-        menu.appendChild(deleteBtn);
-        menu.appendChild(editBtn);
-        item.appendChild(menu);
-
-        // click ...
-        moreBtn.onclick = function (e) {
-            e.stopPropagation();
-            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-        };
-
-        // click chỉnh sửa
-        editBtn.onclick = function () {
+            // Menu nhỏ
+            const menu = document.createElement('div');
+            menu.style.position = 'absolute';
+            menu.style.right = '10px';
+            menu.style.top = '25px';
+            menu.style.background = '#fff';
+            menu.style.border = '1px solid #ccc';
+            menu.style.padding = '5px';
             menu.style.display = 'none';
+            menu.style.zIndex = '1000';
 
-            contentP.innerHTML = `
-                <textarea class="form-control mb-2">${oldText}</textarea>
-                <button class="btn btn-sm btn-primary">Send</button>
-            `;
+            const editBtn = document.createElement('div');
+            editBtn.innerText = 'Edit';
+            editBtn.style.cursor = 'pointer';
 
-            contentP.querySelector('button').onclick = function () {
-                const newContent = contentP.querySelector('textarea').value;
+            const deleteBtn = document.createElement('div');
+            deleteBtn.innerText = 'Delete';
+            deleteBtn.style.cursor = 'pointer';
 
-                fetch('/Task/UpdateComment', {
+            menu.appendChild(deleteBtn);
+            menu.appendChild(editBtn);
+            item.appendChild(menu);
+
+            // Click ...
+            moreBtn.onclick = function (e) {
+                e.stopPropagation();
+                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            };
+
+            // Click chỉnh sửa
+            editBtn.onclick = function () {
+                menu.style.display = 'none';
+
+                contentP.innerHTML = `
+                    <textarea class="form-control mb-2">${oldText}</textarea>
+                    <button class="btn btn-sm btn-primary">Send</button>
+                `;
+
+                contentP.querySelector('button').onclick = function () {
+                    const newContent = contentP.querySelector('textarea').value;
+
+                    fetch('/Task/UpdateComment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            commentId: commentId,
+                            content: newContent
+                        })
+                    })
+                    .then(r => {
+                        if (r.ok) {
+                            const taskId = document.getElementById('commentTaskId').value;
+                            loadComments(taskId);
+                        } else {
+                            alert('Update failed');
+                        }
+                    });
+                };
+            };
+
+            // Click xóa
+            deleteBtn.onclick = function () {
+                menu.style.display = 'none';
+
+                if (!confirm('Are you sure?')) return;
+
+                fetch('/Task/DeleteComment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
-                    body: JSON.stringify({
-                        commentId: commentId,
-                        content: newContent
-                    })
+                    body: JSON.stringify({ commentId })
                 })
                 .then(r => {
                     if (r.ok) {
                         const taskId = document.getElementById('commentTaskId').value;
                         loadComments(taskId);
-                        setTimeout(enhanceCommentsForEdit, 300);
                     } else {
-                        alert('Update failed');
+                        alert('Delete failed');
                     }
                 });
             };
-        };
 
-                deleteBtn.onclick = function () {
-            menu.style.display = 'none';
-
-            if (!confirm('Are you sure?')) return;
-
-            fetch('/Task/DeleteComment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'same-origin',
-                body: JSON.stringify({ commentId })
-            })
-            .then(r => {
-                if (r.ok) {
-                    const taskId = document.getElementById('commentTaskId').value;
-                    loadComments(taskId);
-                    setTimeout(enhanceCommentsForEdit, 300);
-                } else {
-                    alert('Delete failed');
-                }
+            // Click ra ngoài thì đóng menu
+            document.addEventListener('click', function () {
+                menu.style.display = 'none';
             });
-        };
-
-
-        // click ra ngoài thì đóng menu
-        document.addEventListener('click', function () {
-            menu.style.display = 'none';
         });
-    });
-}
+    }
 </script>
 <script>
     const CURRENT_USER_ID = @(
