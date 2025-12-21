@@ -196,6 +196,7 @@
                             </label>
                             <select asp-for="LeaderId" class="form-select" id="leader-select" required>
                                 <option value="">-- Please choose Leader --</option>
+                                @* Options load by JavaScript *@
                             </select>
                             <small class="text-muted">
                                 <i class="bi bi-info-circle"></i> The leader must be a member (not Mentor) chosen above.
@@ -223,12 +224,15 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    
+
     <script>
         $(document).ready(function () {
             setTimeout(function() {
                 $('.alert').fadeOut('slow');
             }, 5000);
+
+            // Lưu current leader từ Model
+            const CURRENT_LEADER_ID = '@Model.LeaderId';
 
             // Mentor checkbox luôn submit
             $('#editProjectForm').on('submit', function() {
@@ -250,30 +254,39 @@
 
             function updateLeaderOptions() {
                 const leaderSelect = $('#leader-select');
-                const currentLeader = leaderSelect.val();
-                
+                const currentSelectedLeader = leaderSelect.val(); // Leader đang chọn trong dropdown
+
                 // Clear existing options (trừ option đầu tiên)
                 leaderSelect.find('option:not(:first)').remove();
 
                 // Thêm options cho các user KHÔNG PHẢI Mentor đã chọn
                 $('.user-checkbox:checked').each(function () {
                     const userId = $(this).val();
-                    const userName = $(this).next('label').find('.fw-semibold').text();
+                    const userName = $(this).next('label').find('.fw-semibold').text().trim();
                     const role = $(this).data('role');
-                    
+
                     // No Mentor in dropdown Leader
                     if (role !== 'Mentor') {
-                        leaderSelect.append(
-                            $('<option></option>')
-                                .val(userId)
-                                .text(userName)
-                        );
+                        const option = $('<option></option>')
+                            .val(userId)
+                            .text(userName);
+
+                        // Đánh dấu option này là current leader (hiển thị trực quan)
+                        if (userId == CURRENT_LEADER_ID) {
+                            option.text(userName + ' ⭐ (Current Leader)');
+                        }
+
+                        leaderSelect.append(option);
                     }
                 });
 
-                // Restore leader nếu vẫn còn trong danh sách
-                if (currentLeader) {
-                    leaderSelect.val(currentLeader);
+                // Giữ leader đang chọn, nếu không có thì dùng CURRENT_LEADER_ID
+                if (currentSelectedLeader && leaderSelect.find(`option[value="${currentSelectedLeader}"]`).length > 0) {
+                    leaderSelect.val(currentSelectedLeader);
+                } else if (CURRENT_LEADER_ID && leaderSelect.find(`option[value="${CURRENT_LEADER_ID}"]`).length > 0) {
+                    leaderSelect.val(CURRENT_LEADER_ID);
+                } else {
+                    leaderSelect.val(''); 
                 }
             }
 
@@ -313,7 +326,6 @@
         });
     </script>
 }
-
 <style>
     .avatar-circle {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
