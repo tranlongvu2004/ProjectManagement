@@ -226,9 +226,12 @@ VALUES
 (N'Nghiêm Minh Đức', 'nghiemducls123@gmail.com', '123', 2),
 (N'Nguyễn Huy Nghĩa', 'intern3@example.com', '123', 2);
 
-INSERT INTO Projects(ProjectId, ProjectName, Description, Deadline, Status, CreatedBy, CreatedAt, UpdatedAt)
+INSERT INTO Projects(ProjectName, Description, Deadline, Status, CreatedBy, CreatedAt, UpdatedAt)
 VALUES
-(1, 'Lab Management System', 'Project about manage lab', '2026-01-20 00:00:00.000', 'InProgress', 1, '2025-12-20 21:43:40.700', '2025-12-20 21:43:40.700')
+('Lab Management System', 'Project about manage lab', '2026-01-20 00:00:00.000', 'InProgress', 1, '2025-12-20 21:43:40.700', '2025-12-20 21:43:40.700')
+
+DECLARE @ProjectId INT;
+SELECT @ProjectId = ProjectId FROM Projects WHERE ProjectName = 'Lab Management System';
 
 /* ================================
    TASKS
@@ -236,9 +239,9 @@ VALUES
 -- Parent tasks
 INSERT INTO Tasks(ParentId, IsParent, ProjectId, Title, Description, Priority, Status, ProgressPercent, Deadline, CreatedBy, CreatedAt, UpdatedAt)
 VALUES
-(NULL, 1, 1, 'Setup Database', 'Design database schema for the Lab Management System', 'High', 'ToDo', 100, '2025-12-25', 1, GETDATE(), GETDATE()),
-(NULL, 1, 1, 'Develop Backend APIs', 'Create API endpoints for managing labs, projects, and tasks', 'Medium', 'Doing', 100, '2026-01-05', 1, GETDATE(), GETDATE()),
-(NULL, 1, 1, 'Frontend UI', 'Design and implement user interface', 'Medium', 'ToDo', 100, '2026-01-10', 1, GETDATE(), GETDATE());
+(NULL, 1, @ProjectId, 'Setup Database', 'Design database schema for the Lab Management System', 'High', 'ToDo', 100, '2025-12-25', 1, GETDATE(), GETDATE()),
+(NULL, 1, @ProjectId, 'Develop Backend APIs', 'Create API endpoints for managing labs, projects, and tasks', 'Medium', 'Doing', 100, '2026-01-05', 1, GETDATE(), GETDATE()),
+(NULL, 1, @ProjectId, 'Frontend UI', 'Design and implement user interface', 'Medium', 'ToDo', 100, '2026-01-10', 1, GETDATE(), GETDATE());
 
 -- Subtasks for 'Setup Database'
 INSERT INTO Tasks(ParentId, IsParent, ProjectId, Title, Description, Priority, Status, ProgressPercent, Deadline, CreatedBy, CreatedAt, UpdatedAt)

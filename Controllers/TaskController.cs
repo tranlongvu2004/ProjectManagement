@@ -123,6 +123,41 @@ namespace PorjectManagement.Controllers
                     );
                 }
             }
+            if (model.IsSubTask)
+            {
+                if (!model.ParentTaskId.HasValue)
+                {
+                    ModelState.AddModelError(
+                        "ParentTaskId",
+                        "Please select a parent task"
+                    );
+                }
+                else
+                {
+                    var parentTask = await _context.Tasks
+                        .FirstOrDefaultAsync(t => t.TaskId == model.ParentTaskId.Value);
+
+                    if (parentTask == null)
+                    {
+                        ModelState.AddModelError(
+                            "ParentTaskId",
+                            "Parent task does not exist"
+                        );
+                    }
+                    else
+                    {
+                        if (model.Deadline.HasValue && parentTask.Deadline.HasValue &&
+                            model.Deadline.Value > parentTask.Deadline.Value)
+                        {
+                            ModelState.AddModelError(
+                                "Deadline",
+                                $"Subtask deadline cannot exceed parent task deadline ({parentTask.Deadline:dd/MM/yyyy})"
+                            );
+                        }
+                    }
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 ViewBag.ProjectList = new SelectList(
