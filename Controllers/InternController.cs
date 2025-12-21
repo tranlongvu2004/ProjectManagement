@@ -28,7 +28,7 @@ public class InternController : Controller
         // Search by name
         if (!string.IsNullOrWhiteSpace(keyword))
         {
-            query = query.Where(u => u.FullName.Contains(keyword));
+            query = query.Where(u => u.FullName.ToLower().Contains(keyword.ToLower()));
         }
 
         // Sort
