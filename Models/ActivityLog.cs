@@ -44,5 +44,8 @@ public static class ActivityAction
     public const string COMMENT_ADDED = "COMMENT_ADDED";
     public const string COMMENT_EDITED = "COMMENT_EDITED";
     public const string COMMENT_DELETED = "COMMENT_DELETED";
+    public const string ATTACHMENT_ADDED = "ATTACHMENT_ADDED";
+    public const string ATTACHMENT_DELETED = "ATTACHMENT_DELETED";
+    public const string ATTACHMENT_REPLACED = "ATTACHMENT_REPLACED";
 }
 

@@ -507,9 +507,7 @@ namespace PorjectManagement.Controllers
         .First()
                 });
 
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-                return Unauthorized();
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
             var hasAttachment = await _context.TaskAttachments
         .AnyAsync(a => a.TaskId == taskId);
@@ -547,7 +545,7 @@ namespace PorjectManagement.Controllers
                 FilePath = "/uploads/" + fileName,
                 FileType = file.ContentType,
                 FileSize = file.Length,
-                UploadedBy = userId.Value,
+                UploadedBy = userId,
                 UploadedAt = DateTime.Now
             };
 
@@ -556,11 +554,22 @@ namespace PorjectManagement.Controllers
 
             await _taskHistoryService.AddAsync(
                 taskId,
-                userId.Value,
+                userId,
                 "ATTACHMENT_ADDED",
                 $"has add new attachment \"{file.FileName}\""
             );
 
+            _activityLogService.Log(
+                    userId: userId,
+                    projectId: await _context.Tasks
+                        .Where(t => t.TaskId == taskId)
+                        .Select(t => t.ProjectId)
+                        .FirstOrDefaultAsync(),
+                    taskId: taskId,
+                    actionType: "ATTACHMENT_ADDED",
+                    message: $"Added an attachment",
+                    createdAt: DateTime.Now
+                    );
 
 
             TempData["SuccessMessage"] = "Upload file successfully!";
@@ -576,8 +585,7 @@ namespace PorjectManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteAttachment(int taskId)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized();
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
             var attachment = await _context.TaskAttachments
                 .FirstOrDefaultAsync(a => a.TaskId == taskId);
@@ -604,10 +612,22 @@ namespace PorjectManagement.Controllers
             await _context.SaveChangesAsync();
             await _taskHistoryService.AddAsync(
       attachment.TaskId,
-      userId.Value,
+      userId,
       "ATTACHMENT_DELETED",
       $"has deleted \"{attachment.FileName}\""
   );
+
+            _activityLogService.Log(
+                    userId: userId,
+                    projectId: await _context.Tasks
+                        .Where(t => t.TaskId == taskId)
+                        .Select(t => t.ProjectId)
+                        .FirstOrDefaultAsync(),
+                    taskId: taskId,
+                    actionType: "ATTACHMENT_DELETED",
+                    message: $"Deleted an attachment",
+                    createdAt: DateTime.Now
+                    );
 
 
             TempData["SuccessMessage"] = "Delete attachment successfully!";
@@ -633,9 +653,7 @@ namespace PorjectManagement.Controllers
                         .First()
                 });
 
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-                return Unauthorized();
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
             var oldAttachment = await _context.TaskAttachments
                 .FirstOrDefaultAsync(a => a.TaskId == taskId);
@@ -675,7 +693,7 @@ namespace PorjectManagement.Controllers
                 FilePath = "/uploads/" + fileName,
                 FileType = file.ContentType,
                 FileSize = file.Length,
-                UploadedBy = userId.Value,
+                UploadedBy = userId,
                 UploadedAt = DateTime.Now
             };
 
@@ -684,10 +702,23 @@ namespace PorjectManagement.Controllers
 
             await _taskHistoryService.AddAsync(
     attachment.TaskId,
-    userId.Value,
+    userId,
     "ATTACHMENT_REPLACED",
     $"has replace file \"{attachment.FileName}\""
 );
+
+            _activityLogService.Log(
+                    userId: userId,
+                    projectId: await _context.Tasks
+                        .Where(t => t.TaskId == taskId)
+                        .Select(t => t.ProjectId)
+                        .FirstOrDefaultAsync(),
+                    taskId: taskId,
+                    actionType: "ATTACHMENT_REPLACED",
+                    message: $"Replaced an attachment",
+                    createdAt: DateTime.Now
+                    );
+
             TempData["SuccessMessage"] = "Replace attachment successfully!";
             return RedirectToAction("BacklogUI", "Backlog", new
             {
