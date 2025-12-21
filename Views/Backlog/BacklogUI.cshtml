@@ -121,6 +121,13 @@
     display: none !important;
 }
 
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+
+
 </style>
 
 <div class="container mt-4">
@@ -610,6 +617,12 @@
 
         </tbody>
     </table>
+
+    <nav class="mt-3">
+    <ul class="pagination justify-content-center" id="pagination"></ul>
+</nav>
+
+
 </div>
 
 <!-- POP UP DELETE NOTI -->
@@ -1013,3 +1026,75 @@
         Context.Session.GetInt32("UserId") ?? 0
     );
 </script>
+
+<!--   Paging   -->
+
+<script>
+    const PAGE_SIZE = 5; // số parent task / trang
+    let currentPage = 1;
+
+    // Chỉ lấy parent rows
+    const parentRows = Array.from(document.querySelectorAll('tr.parent-row'));
+
+    function renderPage(page) {
+        currentPage = page;
+
+        // Ẩn tất cả
+        parentRows.forEach(r => {
+            r.style.display = 'none';
+
+            // Ẩn cả subtasks
+            const id = r.dataset.id;
+            document
+                .querySelectorAll(`.subtask-of-${id}`)
+                .forEach(st => st.style.display = 'none');
+        });
+
+        // Hiện parent theo page
+        const start = (page - 1) * PAGE_SIZE;
+        const end = start + PAGE_SIZE;
+
+        parentRows.slice(start, end).forEach(r => {
+            r.style.display = '';
+
+            // reset icon
+            const toggle = r.querySelector('.toggle-btn');
+            if (toggle) toggle.textContent = '▶';
+        });
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(parentRows.length / PAGE_SIZE);
+        const ul = document.getElementById('pagination');
+        ul.innerHTML = '';
+
+        // Prev
+        ul.innerHTML += `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="renderPage(${currentPage - 1})">Prev</a>
+            </li>
+        `;
+
+        // Pages
+        for (let i = 1; i <= totalPages; i++) {
+            ul.innerHTML += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="renderPage(${i})">${i}</a>
+                </li>
+            `;
+        }
+
+        // Next
+        ul.innerHTML += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="renderPage(${currentPage + 1})">Next</a>
+            </li>
+        `;
+    }
+
+    // Init
+    renderPage(1);
+</script>
+
