@@ -1,5 +1,6 @@
 ﻿@model List<CreateReportViewModel>
 <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
 <h2 class="mb-4">📊 Team Performance Reports</h2>
 
 @if (!Model.Any())
@@ -17,14 +18,13 @@ else
             var report = Model[i];
             var collapseId = $"collapse{i}";
             var headingId = $"heading{i}";
+
             <div class="accordion-item mb-2">
                 <h2 class="accordion-header" id="@headingId">
                     <button class="accordion-button collapsed"
                             type="button"
                             data-bs-toggle="collapse"
-                            data-bs-target="#@collapseId"
-                            aria-expanded="false"
-                            aria-controls="@collapseId">
+                            data-bs-target="#@collapseId">
 
                         <strong>Report @(i + 1)</strong>
                         <span class="ms-3 text-muted">
@@ -35,31 +35,30 @@ else
 
                 <div id="@collapseId"
                      class="accordion-collapse collapse"
-                     aria-labelledby="@headingId"
                      data-bs-parent="#reportAccordion">
 
                     <div class="accordion-body">
 
-                        <table class="table table-bordered text-center">
+                        <table class="table table-bordered text-center align-middle">
                             <tr class="fw-semibold">
                                 <th>Members</th>
-                                @foreach (var m in report.TeamMembers)
+                                @foreach (var m in report.Members)
                                 {
                                     <th>@m.FullName</th>
                                 }
                             </tr>
 
                             <tr>
-                                <th>Plan</th>
-                                @foreach (var m in report.TeamMembers)
+                                <th>Task / Plan</th>
+                                @foreach (var m in report.Members)
                                 {
-                                    <td>@m.Plan</td>
+                                    <td>@m.Task</td>
                                 }
                             </tr>
 
                             <tr>
                                 <th>Actual</th>
-                                @foreach (var m in report.TeamMembers)
+                                @foreach (var m in report.Members)
                                 {
                                     <td>@m.Actual</td>
                                 }
@@ -67,41 +66,12 @@ else
 
                             <tr>
                                 <th>Progress %</th>
-                                @foreach (var m in report.TeamMembers)
+                                @foreach (var m in report.Members)
                                 {
-                                    <td>@m.ProgressPercent %</td>
+                                    <td>@(m.ProgressPercent ?? 0)%</td>
                                 }
                             </tr>
-                            <tr>
-                                <th>Output</th>
-                                @foreach (var m in report.TeamMembers)
-                                {
-                                    <td>@m.Output</td>
-                                }
-                            </tr>
-                            <tr>
-                                <th>Issue</th>
-                                @foreach (var m in report.TeamMembers)
-                                {
-                                    <td>@m.Issue</td>
-                                }
-                            </tr>
-                            <tr>
-                                <th>Action</th>
-                                @foreach (var m in report.TeamMembers)
-                                {
-                                    <td>@m.Action</td>
-                                }
-                            </tr>
-                            <tr>
-                                <th>NextPlan</th>
-                                @foreach (var m in report.TeamMembers)
-                                {
-                                    <td>@m.NextPlan</td>
-                                }
-                            </tr>                           
                         </table>
-
                     </div>
                 </div>
             </div>

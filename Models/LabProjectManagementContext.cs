@@ -37,6 +37,8 @@ public partial class LabProjectManagementContext : DbContext
     public virtual DbSet<TaskAttachment> TaskAttachments { get; set; }
 
     public virtual DbSet<TaskHistory> TaskHistories { get; set; }
+    public virtual DbSet<ReportMember> ReportMembers { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -134,23 +136,64 @@ public partial class LabProjectManagementContext : DbContext
 
         modelBuilder.Entity<Report>(entity =>
         {
-            entity.HasKey(e => e.ReportId).HasName("PK__Reports__D5BD480549830E86");
+            entity.HasKey(e => e.ReportId).HasName("PK_Reports");
+
+            entity.Property(e => e.ReportType)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            entity.Property(e => e.TeamExecutePercent)
+                .IsRequired();
+
+            entity.Property(e => e.TeamNextPlan)
+                .IsRequired();
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.ReportType).HasMaxLength(20);
 
-            entity.HasOne(d => d.Leader).WithMany(p => p.Reports)
-                .HasForeignKey(d => d.LeaderId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Reports__LeaderI__656C112C");
-
-            entity.HasOne(d => d.Project).WithMany(p => p.Reports)
+            entity.HasOne(d => d.Project)
+                .WithMany(p => p.Reports)
                 .HasForeignKey(d => d.ProjectId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Reports__Project__6477ECF3");
+                .HasConstraintName("FK_Report_Project");
+
+            entity.HasOne(d => d.Leader)
+                .WithMany(p => p.Reports)
+                .HasForeignKey(d => d.LeaderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Report_Leader");
         });
+
+        modelBuilder.Entity<ReportMember>(entity =>
+        {
+            entity.HasKey(e => e.ReportMemberId).HasName("PK_ReportMembers");
+
+            entity.Property(e => e.FullName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(e => e.Task)
+                .HasColumnType("nvarchar(max)");
+
+            entity.Property(e => e.Actual)
+                .HasColumnType("nvarchar(max)");
+
+            entity.Property(e => e.ProgressPercent);
+
+            entity.HasOne(d => d.Report)
+                .WithMany(p => p.Members)
+                .HasForeignKey(d => d.ReportId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ReportMember_Report");
+
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.ReportMembers)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ReportMember_User");
+        });
+
 
         modelBuilder.Entity<Role>(entity =>
         {
