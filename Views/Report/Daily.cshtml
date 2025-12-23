@@ -1,60 +1,57 @@
 ﻿@model CreateReportViewModel
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<div class="card p-4">
+    <h5 class="mb-4">Members Report</h5>
 
-<form asp-controller="Report" asp-action="UploadDaily" method="post">
-    <input type="hidden" name="ProjectId" value="@Model.ProjectId" />
-    <input type="hidden" name="ReportType" value="daily" />
+    <form asp-controller="Report"
+          asp-action="UploadDaily"
+          method="post">
 
-    <h5>Members Report</h5>
+        <input type="hidden" asp-for="ProjectId" />
+        <input type="hidden" asp-for="ReportType" />
 
-    @for (int i = 0; i < Model.Members.Count; i++)
-    {
-        <div class="border p-3 mb-3">
-            <strong>@Model.Members[i].FullName</strong>
+        @for (int i = 0; i < Model.Members.Count; i++)
+        {
+            <div class="report-member mb-4 p-3">
+                <div class="fw-semibold mb-2">
+                    @Model.Members[i].FullName
+                </div>
 
-            <input type="hidden" name="Members[@i].UserId"
-                   value="@Model.Members[i].UserId" />
-            <input type="hidden" name="Members[@i].FullName"
-                   value="@Model.Members[i].FullName" />
+                <input type="hidden"
+                       name="Members[@i].UserId"
+                       value="@Model.Members[i].UserId" />
 
-            <input class="form-control mb-2"
-                   name="Members[@i].Task"
-                   placeholder="Task / Plan" />
+                <input type="hidden"
+                       name="Members[@i].FullName"
+                       value="@Model.Members[i].FullName" />
 
-            <input class="form-control mb-2"
-                   name="Members[@i].Actual"
-                   placeholder="Actual" />
+                <div class="mb-2">
+                    <input class="form-control"
+                           name="Members[@i].Task"
+                           placeholder="Task / Plan" />
+                </div>
 
-            <input class="form-control mb-2"
-                   type="number"
-                   name="Members[@i].ProgressPercent"
-                   placeholder="Progress (%)" />
+                <div class="mb-2">
+                    <input class="form-control"
+                           name="Members[@i].Actual"
+                           placeholder="Actual" />
+                </div>
 
+                <div class="mb-2">
+                    <input class="form-control"
+                           type="number"
+                           min="0"
+                           max="100"
+                           name="Members[@i].ProgressPercent"
+                           placeholder="Progress (%)" />
+                </div>
+            </div>
+        }
+
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">
+                Submit Report
+            </button>
         </div>
-    }
-
-    <button type="submit" class="btn btn-primary">
-        Submit Report
-    </button>
-</form>
-
-
-<script>
-    $("#dailyReportForm").submit(function (e) {
-        e.preventDefault();
-
-        $.ajax({
-            url: '/Report/UploadDaily',
-            type: 'POST',
-            data: $(this).serialize(),
-            success: function (res) {
-                if (res.success) {
-                    alert(res.message);
-                    window.location.href =
-                        `/Report/ViewReport/${res.reportId}`;
-                } else {
-                    alert(res.message);
-                }
-            }
-        });
-    });
-</script>
+    </form>
+</div>

@@ -47,33 +47,32 @@ namespace PorjectManagement.Controllers
 
             return View(vm);
         }
+
         [HttpPost]
         public async Task<IActionResult> UploadDaily(CreateReportViewModel model)
         {
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
-                return Json(new { success = false, message = "Access denied" });
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
 
             int? leaderId = HttpContext.Session.GetInt32("UserId");
             if (leaderId == null)
-                return Json(new { success = false, message = "Not logged in" });
+                return RedirectToAction("Login", "User");
 
             if (!_reportService.IsLeaderOfProject(leaderId.Value, model.ProjectId))
-                return Json(new { success = false, message = "Not leader" });
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
 
             if (!ModelState.IsValid)
-                return Json(new { success = false, message = "Invalid data" });
-
-            var report = await _reportService.CreateDailyReportAsync(
-                model, leaderId.Value);
-
-            return Json(new
             {
-                success = true,
-                reportId = report.ReportId,
-                message = "Daily report created successfully"
-            });
+                var vm = _reportService.BuildDailyReportForm(model.ProjectId);
+                return View("Daily", vm);
+            }
+
+            await _reportService.CreateDailyReportAsync(model, leaderId.Value);
+
+            return RedirectToAction("ViewReport", new { projectId = model.ProjectId });
         }
+
 
     }
 }

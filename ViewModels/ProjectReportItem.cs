@@ -10,10 +10,6 @@ namespace PorjectManagement.ViewModels
         public string Leader { get; set; } = null!;
         public string ReportType { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
-
-        public int TeamExecutePercent { get; set; }
-        public string TeamNextPlan { get; set; } = null!;
-
         public List<TeamMemberVM> Members { get; set; } = new();
     }
 }
