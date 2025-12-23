@@ -1,196 +1,57 @@
 ﻿@model CreateReportViewModel
-
-@{
-    ViewData["Title"] = "Daily Report";
-    var members = Model.TeamMembers;
-}
 <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-<!-- ALERT MESSAGE -->
+<div class="card p-4">
+    <h5 class="mb-4">Members Report</h5>
 
-<div id="dailyAlert" class="alert d-none" role="alert"></div>
+    <form asp-controller="Report"
+          asp-action="UploadDaily"
+          method="post">
 
-<form id="dailyForm">
-    <input type="hidden" name="ProjectId" value="@Model.ProjectId" />
-    <input type="hidden" name="ReportType" value="Daily" />
+        <input type="hidden" asp-for="ProjectId" />
+        <input type="hidden" asp-for="ReportType" />
 
-    ```
-    <table class="table table-bordered text-center align-middle">
-        <tr>
-            <th style="width:200px">Daily Report on</th>
-            <th colspan="@members.Count">
-                Day: @DateTime.Now.ToString("dd-MMMM")
-            </th>
-        </tr>
+        @for (int i = 0; i < Model.Members.Count; i++)
+        {
+            <div class="report-member mb-4 p-3">
+                <div class="fw-semibold mb-2">
+                    @Model.Members[i].FullName
+                </div>
 
-        <!-- TEAM MEMBERS -->
-        <tr>
-            <th>Team members</th>
-            @for (int i = 0; i < members.Count; i++)
-            {
-                <th>
-                    @members[i].FullName
-                    <input type="hidden" name="TeamMembers[@i].UserId" value="@members[i].UserId" />
-                    <input type="hidden" name="TeamMembers[@i].FullName" value="@members[i].FullName" />
-                </th>
-            }
-        </tr>
+                <input type="hidden"
+                       name="Members[@i].UserId"
+                       value="@Model.Members[i].UserId" />
 
-        <!-- PLAN -->
-        <tr>
-            <th>Plan</th>
-            @for (int i = 0; i < members.Count; i++)
-            {
-                <td>
-                    <textarea class="form-control" name="Tasks[@i].Plan" required></textarea>
-                </td>
-            }
-        </tr>
+                <input type="hidden"
+                       name="Members[@i].FullName"
+                       value="@Model.Members[i].FullName" />
 
-        <!-- ACTUAL -->
-        <tr>
-            <th>Actual</th>
-            @for (int i = 0; i < members.Count; i++)
-            {
-                <td>
-                    <textarea class="form-control" name="Tasks[@i].Actual" required></textarea>
-                </td>
-            }
-        </tr>
+                <div class="mb-2">
+                    <input class="form-control"
+                           name="Members[@i].Task"
+                           placeholder="Task / Plan" />
+                </div>
 
-        <!-- STATUS MEMBER -->
-        <tr>
-            <th>Status and % execute / plan member</th>
-            @for (int i = 0; i < members.Count; i++)
-            {
-                <td>
-                    <input type="number" class="form-control" min="0" max="100" name="Tasks[@i].ProgressPercent" required />
-                </td>
-            }
-        </tr>
+                <div class="mb-2">
+                    <input class="form-control"
+                           name="Members[@i].Actual"
+                           placeholder="Actual" />
+                </div>
 
-        <!-- OUTPUT -->
-        <tr>
-            <th>Output</th>
-            @for (int i = 0; i < members.Count; i++)
-            {
-                <td>
-                    <textarea class="form-control" name="Tasks[@i].Output" required></textarea>
-                </td>
-            }
-        </tr>
-
-        <!-- ISSUE -->
-        <tr>
-            <th>Issue</th>
-            @for (int i = 0; i < members.Count; i++)
-            {
-                <td>
-                    <textarea class="form-control" name="Tasks[@i].Issue" required></textarea>
-                </td>
-            }
-        </tr>
-
-        <!-- ACTION -->
-        <tr>
-            <th>Action</th>
-            @for (int i = 0; i < members.Count; i++)
-            {
-                <td>
-                    <textarea class="form-control" name="Tasks[@i].Action" required></textarea>
-                </td>
-            }
-        </tr>
-
-        <!-- NEXT PLAN -->
-        <tr>
-            <th>Next Plan</th>
-            @for (int i = 0; i < members.Count; i++)
-            {
-                <td>
-                    <textarea class="form-control" name="Tasks[@i].NextPlan" required></textarea>
-                </td>
-            }
-        </tr>
-
-        <!-- TEAM STATUS -->
-        <tr>
-            <th>Status and % execute / plan Team</th>
-            <td colspan="@members.Count">
-                <input type="number" class="form-control" min="0" max="100" name="TeamExecutePercent" required />
-            </td>
-        </tr>
-
-        <!-- TEAM NEXT PLAN -->
-        <tr>
-            <th>Team Next Plan</th>
-            <td colspan="@members.Count">
-                <textarea class="form-control" name="TeamNextPlan" required></textarea>
-            </td>
-        </tr>
-    </table>
-
-    <button type="button" class="btn btn-primary" onclick="submitDaily()">
-        Submit Daily Report
-    </button>
-    ```
-
-</form>
-
-<script>
-    function submitDaily() {
-
-        let isValid = true;
-
-        // lấy toàn bộ input + textarea trong form
-        const fields = document.querySelectorAll(
-            "#dailyForm textarea, #dailyForm input[type='number']"
-        );
-
-        fields.forEach(f => {
-            // reset trạng thái cũ
-            f.classList.remove("is-invalid");
-
-            // check rỗng
-            if (!f.value || f.value.trim() === "") {
-                f.classList.add("is-invalid");
-                isValid = false;
-            }
-        });
-
-        // nếu còn ô lỗi → dừng
-        if (!isValid) {
-            return;
+                <div class="mb-2">
+                    <input class="form-control"
+                           type="number"
+                           min="0"
+                           max="100"
+                           name="Members[@i].ProgressPercent"
+                           placeholder="Progress (%)" />
+                </div>
+            </div>
         }
 
-        // ====== SUBMIT NHƯ CŨ ======
-        const form = document.getElementById("dailyForm");
-        const formData = new FormData(form);
-
-        fetch("/Report/UploadDaily", {
-            method: "POST",
-            body: formData
-        })
-        .then(res => {
-            if (!res.ok) throw new Error();
-            return res.json();
-        })
-        .then(data => {
-            const alertBox = document.getElementById("dailyAlert");
-            alertBox.classList.remove("d-none", "alert-danger");
-            alertBox.classList.add("alert-success");
-            alertBox.innerHTML = `
-                <strong> Upload daily report success!</strong>
-            `;
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        })
-        .catch(() => {
-            const alertBox = document.getElementById("dailyAlert");
-            alertBox.classList.remove("d-none", "alert-success");
-            alertBox.classList.add("alert-danger");
-            alertBox.innerText = " Upload daily report failed";
-        });
-    }
-</script>
-
-
-
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">
+                Submit Report
+            </button>
+        </div>
+    </form>
+</div>

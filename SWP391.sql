@@ -196,19 +196,41 @@ CREATE TABLE RecycleBin (
 
 
 /* =====================================================
-   E. REPORTS
+   E. REPORTS (REFACTORED - NO JSON STORAGE)
 ===================================================== */
 
+-- Report header (thông tin chung của report)
 CREATE TABLE Reports (
     ReportId INT IDENTITY PRIMARY KEY,
     ProjectId INT NOT NULL,
     LeaderId INT NOT NULL,
-    ReportType NVARCHAR(20),
-    FilePath NVARCHAR(MAX) NOT NULL,
+    ReportType NVARCHAR(20) NOT NULL,   -- daily / weekly
+    TeamExecutePercent INT NOT NULL,
+    TeamNextPlan NVARCHAR(MAX) NOT NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
 
-    FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
-    FOREIGN KEY (LeaderId) REFERENCES Users(UserId)
+    CONSTRAINT FK_Report_Project
+        FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId),
+
+    CONSTRAINT FK_Report_Leader
+        FOREIGN KEY (LeaderId) REFERENCES Users(UserId)
+);
+
+-- Report detail (mỗi member = 1 dòng)
+CREATE TABLE ReportMembers (
+    ReportMemberId INT IDENTITY PRIMARY KEY,
+    ReportId INT NOT NULL,
+
+    UserId INT NOT NULL,
+    FullName NVARCHAR(100) NOT NULL,
+
+    Task NVARCHAR(MAX),
+    Actual NVARCHAR(MAX),
+    ProgressPercent INT,
+    CONSTRAINT FK_ReportMember_Report
+        FOREIGN KEY (ReportId) REFERENCES Reports(ReportId),
+    CONSTRAINT FK_ReportMember_User
+        FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
 
 

@@ -82,13 +82,11 @@ namespace PorjectManagement.Testing
     {
         new CreateReportViewModel
         {
-            ProjectId = 1,
-            TeamExecutePercent = 50
+            ProjectId = 1
         },
         new CreateReportViewModel
         {
-            ProjectId = 1,
-            TeamExecutePercent = 70
+            ProjectId = 1
         }
     };
 

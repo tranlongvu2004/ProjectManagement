@@ -7,11 +7,9 @@ namespace PorjectManagement.ViewModels
         public int ReportId { get; set; }
         public int ProjectId { get; set; }
 
-        public string Leader { get; set; }
-
-        public string? ReportType { get; set; }
-        public DateTime? CreatedAt { get; set; }
-
-        public string FilePath { get; set; } = null!;
+        public string Leader { get; set; } = null!;
+        public string ReportType { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
+        public List<TeamMemberVM> Members { get; set; } = new();
     }
 }

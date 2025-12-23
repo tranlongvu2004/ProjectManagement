@@ -53,33 +53,26 @@ namespace PorjectManagement.Controllers
         {
             int roleId = HttpContext.Session.GetInt32("RoleId") ?? 0;
             if (roleId != 2)
-            {
-                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path });
-            }
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
+
             int? leaderId = HttpContext.Session.GetInt32("UserId");
-            if (leaderId == null) return RedirectToAction("Login", "User");
+            if (leaderId == null)
+                return RedirectToAction("Login", "User");
 
             if (!_reportService.IsLeaderOfProject(leaderId.Value, model.ProjectId))
-                return Forbid();
+                return RedirectToAction("AccessDeny", "Error", new { returnUrl = HttpContext.Request.Path + HttpContext.Request.QueryString });
+
             if (!ModelState.IsValid)
             {
-                return Json(new
-                {
-                    success = false,
-                    message = " Please fill in all required fields."
-                });
+                var vm = _reportService.BuildDailyReportForm(model.ProjectId);
+                return View("Daily", vm);
             }
 
-            var report = await _reportService.CreateDailyReportAsync(model, leaderId.Value);
+            await _reportService.CreateDailyReportAsync(model, leaderId.Value);
 
-            // trả message để show trên màn
-            return Json(new
-            {
-                success = true,
-                message = "Daily report uploaded successfully!",
-                reportId = report.ReportId,
-                projectId = model.ProjectId
-            });
+            return RedirectToAction("ViewReport", new { projectId = model.ProjectId });
         }
+
+
     }
 }

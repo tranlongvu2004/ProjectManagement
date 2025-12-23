@@ -739,7 +739,6 @@ a {
     margin-top: 6px;
 }
 
-
 /* ===============================
    TASK HISTORY PAGE (DARK/LIGHT)
 ================================ */
@@ -827,7 +826,58 @@ a {
         background: var(--card-bg);
     }
 
+/* ===============================
+   FIX INPUT WHITE IN DARK MODE
+================================ */
 
+[data-theme="dark"] input.form-control,
+[data-theme="dark"] textarea.form-control,
+[data-theme="dark"] select.form-select {
+    background-color: var(--input-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+    /* Focus state */
+    [data-theme="dark"] input.form-control:focus,
+    [data-theme="dark"] textarea.form-control:focus,
+    [data-theme="dark"] select.form-select:focus {
+        background-color: var(--input-bg) !important;
+        color: var(--text-color) !important;
+        border-color: #4dabf7 !important;
+        box-shadow: 0 0 0 1px rgba(77, 171, 247, 0.35);
+    }
+
+    /* Placeholder */
+    [data-theme="dark"] input.form-control::placeholder {
+        color: var(--muted-text);
+    }
+
+/* Autofill (Chrome / Edge) */
+[data-theme="dark"] input:-webkit-autofill,
+[data-theme="dark"] input:-webkit-autofill:hover,
+[data-theme="dark"] input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text-color);
+    -webkit-box-shadow: 0 0 0px 1000px var(--input-bg) inset;
+    transition: background-color 9999s ease-in-out 0s;
+}
+/* Remove number input white bg + spinner mismatch */
+[data-theme="dark"] input[type="number"] {
+    background-color: var(--input-bg) !important;
+    color: var(--text-color);
+}
+
+/* Optional: hide spinner if bạn muốn */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.report-member {
+    background: linear-gradient( 180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.08) );
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
 
 
 

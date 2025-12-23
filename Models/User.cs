@@ -36,6 +36,7 @@ public partial class User
     public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
 
     public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
+    public virtual ICollection<ReportMember> ReportMembers { get; set; } = new List<ReportMember>();
 
     public virtual Role Role { get; set; } = null!;
 

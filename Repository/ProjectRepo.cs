@@ -66,21 +66,33 @@ namespace PorjectManagement.Repository
         }
 
         // Method dev/Vu
-        public Task<List<ProjectReportItem>> GetProjectReportAsync(int projectId)
+        public async Task<List<ProjectReportItem>> GetProjectReportAsync(int projectId)
         {
-            var query = from r in _context.Reports
-                        where r.ProjectId == projectId
-                        select new ProjectReportItem
-                        {
-                            ReportId = r.ReportId,
-                            ProjectId = r.ProjectId,
-                            Leader = r.Leader.FullName,
-                            ReportType = r.ReportType,
-                            CreatedAt = r.CreatedAt,
-                            FilePath = r.FilePath
-                        };
-            return query.ToListAsync();
+            var reports = await _context.Reports
+                .Include(r => r.Leader)
+                .Include(r => r.Members)
+                .Where(r => r.ProjectId == projectId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return reports.Select(r => new ProjectReportItem
+            {
+                ReportId = r.ReportId,
+                ProjectId = r.ProjectId,
+                Leader = r.Leader.FullName,
+                ReportType = r.ReportType,
+                CreatedAt = r.CreatedAt,
+                Members = r.Members.Select(m => new TeamMemberVM
+                {
+                    UserId = m.UserId,
+                    FullName = m.FullName,
+                    Task = m.Task,
+                    Actual = m.Actual,
+                    ProgressPercent = m.ProgressPercent
+                }).ToList()
+            }).ToList();
         }
+
 
         public async Task<List<ProjectTaskItem>> GetProjectTasksAsync(int projectId)
         {
