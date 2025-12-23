@@ -11,8 +11,5 @@ public class CreateReportViewModel
     [Required]
     [MinLength(1, ErrorMessage = "At least one member is required")]
     public List<TeamMemberVM> Members { get; set; } = new();
-
-    [Required(ErrorMessage = "Team next plan is required")]
-
     public DateTime? CreatedAt { get; set; }
 }

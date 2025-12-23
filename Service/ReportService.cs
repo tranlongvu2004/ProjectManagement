@@ -35,7 +35,7 @@ namespace PorjectManagement.Service
                 .Include(r => r.Members)
                 .Where(r =>
                     r.ProjectId == projectId &&
-                    (r.ReportType == "daily" || r.ReportType == "weekly")
+                    (r.ReportType == "daily")
                 )
                 .OrderByDescending(r => r.CreatedAt)
                 .ToList();

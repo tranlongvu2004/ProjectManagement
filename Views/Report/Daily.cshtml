@@ -1,6 +1,6 @@
 ﻿@model CreateReportViewModel
 
-<form id="dailyReportForm">
+<form asp-controller="Report" asp-action="UploadDaily" method="post">
     <input type="hidden" name="ProjectId" value="@Model.ProjectId" />
     <input type="hidden" name="ReportType" value="daily" />
 
@@ -50,7 +50,7 @@
                 if (res.success) {
                     alert(res.message);
                     window.location.href =
-                        `/Report/Detail/${res.reportId}`;
+                        `/Report/ViewReport/${res.reportId}`;
                 } else {
                     alert(res.message);
                 }

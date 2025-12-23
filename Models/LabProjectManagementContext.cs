@@ -142,12 +142,6 @@ public partial class LabProjectManagementContext : DbContext
                 .HasMaxLength(20)
                 .IsRequired();
 
-            entity.Property(e => e.TeamExecutePercent)
-                .IsRequired();
-
-            entity.Property(e => e.TeamNextPlan)
-                .IsRequired();
-
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

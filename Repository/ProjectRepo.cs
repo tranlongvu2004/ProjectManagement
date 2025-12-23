@@ -82,10 +82,6 @@ namespace PorjectManagement.Repository
                 Leader = r.Leader.FullName,
                 ReportType = r.ReportType,
                 CreatedAt = r.CreatedAt,
-
-                TeamExecutePercent = r.TeamExecutePercent,
-                TeamNextPlan = r.TeamNextPlan,
-
                 Members = r.Members.Select(m => new TeamMemberVM
                 {
                     UserId = m.UserId,

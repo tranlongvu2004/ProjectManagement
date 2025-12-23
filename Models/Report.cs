@@ -10,8 +10,6 @@ public partial class Report
     public int LeaderId { get; set; }
 
     public string ReportType { get; set; } = "daily";
-    public int TeamExecutePercent { get; set; }
-    public string TeamNextPlan { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
 
     public virtual User Leader { get; set; } = null!;
