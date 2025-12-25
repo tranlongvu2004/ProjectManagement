@@ -69,7 +69,7 @@
                             <input asp-for="Deadline" 
                                    type="date" 
                                    class="form-control" 
-                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                   min="@DateTime.Today.AddDays(3).ToString("yyyy-MM-dd")" />
                             <span asp-validation-for="Deadline" class="text-danger small"></span>
                         </div>
 

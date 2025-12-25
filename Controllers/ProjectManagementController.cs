@@ -174,6 +174,7 @@ namespace PorjectManagement.Controllers
                 return Content("<script>alert('No update permissions project.'); window.location.href='/Project/Index';</script>", "text/html");
             }
 
+            //var minDeadline = DateTime.Today.AddDays(3);
             if (model.Deadline.Date < DateTime.Now.Date)
             {
                 ModelState.AddModelError("Deadline", "Deadline not in past");
