@@ -63,7 +63,7 @@ namespace PorjectManagement.Service
         public CreateReportViewModel BuildDailyReportForm(int projectId)
         {
             var members = _context.UserProjects
-                .Where(x => x.ProjectId == projectId)
+                .Where(x => x.ProjectId == projectId && x.User.Role.RoleId == 2)
                 .Select(x => new TeamMemberVM
                 {
                     UserId = x.UserId,
@@ -108,21 +108,7 @@ namespace PorjectManagement.Service
 
             _context.Reports.Add(report);
             await _context.SaveChangesAsync();
-
-
             return report;
-        }
-
-        // =====================================================
-        // NOT IMPLEMENTED (OPTIONAL)
-        // =====================================================
-        public Task<bool> UploadReportAsync(
-            int projectId,
-            string reportType,
-            IFormFile file,
-            int leaderId)
-        {
-            throw new NotImplementedException();
         }
     }
 }

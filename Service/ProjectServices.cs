@@ -41,9 +41,9 @@ namespace PorjectManagement.Service
 
             if (workspace.Project != null)
             {
-                //workspace.Project.Status = workspace.OverallProgress >= 100 
-                //    ? "Completed" 
-                //    : "InProgress";
+                workspace.Project.Status = workspace.OverallProgress >= 100
+                    ? "Completed"
+                    : "InProgress";
             }
 
             return workspace;
