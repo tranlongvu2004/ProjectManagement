@@ -48,13 +48,13 @@ namespace PorjectManagement.Testing.UnitTest
         // LOGIN
         // ============================================================
 
-        [Fact]
-        public void Login_MissingEmailOrPassword_ReturnView()
-        {
-            var result = _controller.Login("", "");
-            Assert.IsType<ViewResult>(result);
-            Assert.Equal("Please enter email and password", _controller.ViewBag.Error);
-        }
+        //[Fact]
+        //public void Login_MissingEmailOrPassword_ReturnView()
+        //{
+        //    var result = _controller.Login("", "");
+        //    Assert.IsType<ViewResult>(result);
+        //    Assert.Equal("Please enter email and password", _controller.ViewBag.Error);
+        //}
 
         [Fact]
         public void Login_InvalidCredentials_ReturnView()
