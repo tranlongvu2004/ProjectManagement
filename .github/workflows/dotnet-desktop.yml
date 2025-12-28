@@ -30,6 +30,10 @@ jobs:
 
     - name: Build solution
       run: msbuild PorjectManagement.sln /p:Configuration=Release
+      
+    - name: List all csproj files
+      run: |
+        dir -Recurse *.csproj
 
     # 🔥 PUBLISH WEB MVC (BẮT BUỘC publish csproj)
     - name: Publish Web MVC
