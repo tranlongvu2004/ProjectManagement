@@ -4,15 +4,19 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: windows-latest
 
     env:
-      WEB_PROJECT: PorjectManagement/PorjectManagement.csproj
+      # ✅ ĐÚNG theo project bạn cung cấp
+      WEB_PROJECT: ProjectManagement/ProjectManagement.csproj
       PUBLISH_DIR: ${{ github.workspace }}\publish
-      IIS_DIR: C:\Deploy\PorjectManagement
+      IIS_DIR: C:\Deploy\ProjectManagement
 
     steps:
     - name: Checkout source
@@ -22,38 +26,38 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     - name: Restore NuGet
-      run: nuget restore PorjectManagement.sln
+      run: nuget restore ProjectManagement.sln
 
-    - name: Build
-      run: msbuild PorjectManagement.sln /p:Configuration=Release
+    - name: Build solution
+      run: msbuild ProjectManagement.sln /p:Configuration=Release
 
-    # 🔥 PUBLISH ĐÚNG CÁCH
+    # 🔥 PUBLISH WEB MVC (BẮT BUỘC publish csproj)
     - name: Publish Web MVC
-  run: |
-    msbuild ${{ env.WEB_PROJECT }} `
-      /p:Configuration=Release `
-      /p:DeployOnBuild=true `
-      /p:WebPublishMethod=FileSystem `
-      /p:DeleteExistingFiles=true `
-      /p:PublishDir="$env:PUBLISH_DIR\"
+      run: |
+        msbuild $env:WEB_PROJECT `
+          /p:Configuration=Release `
+          /p:DeployOnBuild=true `
+          /p:WebPublishMethod=FileSystem `
+          /p:DeleteExistingFiles=true `
+          /p:PublishDir="$env:PUBLISH_DIR\"
 
-    # 🔍 DEBUG (BẮT BUỘC – để bạn thấy publish thật)
-  -name: Verify publish output
-  run: |
-    echo "Publish dir: $env:PUBLISH_DIR"
-    dir $env:PUBLISH_DIR
+    # 🔍 VERIFY – để chắc chắn publish đã sinh file
+    - name: Verify publish output
+      run: |
+        echo "Publish directory:"
+        echo $env:PUBLISH_DIR
+        dir $env:PUBLISH_DIR
 
-
-    # 🚀 DEPLOY
-    -name: Deploy to IIS
-    run: |
-        if (!(Test-Path "${{ env.PUBLISH_DIR }}")) {
+    # 🚀 DEPLOY TO IIS
+    - name: Deploy to IIS
+      run: |
+        if (!(Test-Path $env:PUBLISH_DIR)) {
           Write-Error "Publish folder NOT FOUND"
           exit 1
         }
 
-        Remove-Item "${{ env.IIS_DIR }}\*" -Recurse -Force -ErrorAction SilentlyContinue
-        Copy-Item "${{ env.PUBLISH_DIR }}\*" "${{ env.IIS_DIR }}\" -Recurse -Force
+        Remove-Item "$env:IIS_DIR\*" -Recurse -Force -ErrorAction SilentlyContinue
+        Copy-Item "$env:PUBLISH_DIR\*" "$env:IIS_DIR\" -Recurse -Force
 
-    -name: Restart IIS
-    run: iisreset
+    - name: Restart IIS
+      run: iisreset
