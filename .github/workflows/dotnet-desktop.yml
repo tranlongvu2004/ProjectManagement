@@ -14,9 +14,9 @@ jobs:
 
     env:
       # ✅ ĐÚNG theo project bạn cung cấp
-      WEB_PROJECT: ProjectManagement/ProjectManagement.csproj
+      WEB_PROJECT: PorjectManagement/PorjectManagement.csproj
       PUBLISH_DIR: ${{ github.workspace }}\publish
-      IIS_DIR: C:\Deploy\ProjectManagement
+      IIS_DIR: C:\Deploy\PorjectManagement
 
     steps:
     - name: Checkout source
@@ -26,10 +26,10 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     - name: Restore NuGet
-      run: nuget restore ProjectManagement.sln
+      run: nuget restore PorjectManagement.sln
 
     - name: Build solution
-      run: msbuild ProjectManagement.sln /p:Configuration=Release
+      run: msbuild PorjectManagement.sln /p:Configuration=Release
 
     # 🔥 PUBLISH WEB MVC (BẮT BUỘC publish csproj)
     - name: Publish Web MVC
