@@ -1,0 +1,44 @@
+name: CI/CD ASP.NET MVC
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+
+    - name: Restore packages
+      run: nuget restore PorjectManagement.sln
+
+    - name: Build solution
+      run: msbuild MyApp.sln /p:Configuration=Release
+
+    - name: Run tests
+      run: vstest.console.exe **\bin\Release\*Tests.dll
+
+    # 🔽 PUBLISH WEB
+    - name: Publish MVC Web
+      run: |
+        msbuild MyApp.Web/PorjectManagement.csproj `
+          /p:DeployOnBuild=true `
+          /p:Configuration=Release `
+          /p:PublishDir=${{ github.workspace }}\publish\
+
+    # 🔽 DEPLOY TO IIS FOLDER
+    - name: Deploy to IIS
+      run: |
+        Remove-Item "C:\Deploy\MyApp\*" -Recurse -Force -ErrorAction SilentlyContinue
+        Copy-Item "${{ github.workspace }}\publish\*" "C:\Deploy\MyApp\" -Recurse -Force
+
+    # 🔽 OPTIONAL: RESTART IIS
+    - name: Restart IIS
+      run: iisreset
