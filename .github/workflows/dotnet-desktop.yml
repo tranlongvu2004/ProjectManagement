@@ -26,12 +26,17 @@ jobs:
         msbuild PorjectManagement.sln `
           /p:DeployOnBuild=true `
           /p:Configuration=Release `
-          /p:PublishDir=${{ github.workspace }}\publish\
+          /p:PublishDir="${{ env.PUBLISH_DIR }}\"
 
     - name: Deploy to IIS
       run: |
-        Remove-Item "C:\Deploy\PorjectManagement\*" -Recurse -Force -ErrorAction SilentlyContinue
-        Copy-Item "${{ github.workspace }}\publish\*" "C:\Deploy\PorjectManagement\" -Recurse -Force
+        if (!(Test-Path "${{ env.PUBLISH_DIR }}")) {
+          Write-Error "Publish folder not found!"
+        exit 1
+           }
+
+        Remove-Item "C:\Deploy\ProjectManagement\*" -Recurse -Force -ErrorAction SilentlyContinue
+        Copy-Item "${{ env.PUBLISH_DIR }}\*" "C:\Deploy\ProjectManagement\" -Recurse -Force
 
     - name: Restart IIS
       run: iisreset
