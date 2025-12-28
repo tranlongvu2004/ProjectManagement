@@ -1,0 +1,15 @@
+name: CI/CD ASP.NET MVC
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: microsoft/setup-msbuild@v2
+    - run: nuget restore PorjectManagement.sln
+    - run: msbuild PorjectManagement.sln /p:Configuration=Release
