@@ -23,7 +23,7 @@ jobs:
 
     - name: Publish Web
       run: |
-        msbuild PorjectManagement/PorjectManagement.csproj `
+        msbuild PorjectManagement.sln `
           /p:DeployOnBuild=true `
           /p:Configuration=Release `
           /p:PublishDir=${{ github.workspace }}\publish\
