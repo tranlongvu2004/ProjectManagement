@@ -29,23 +29,24 @@ jobs:
 
     # 🔥 PUBLISH ĐÚNG CÁCH
     - name: Publish Web MVC
-      run: |
-        msbuild ${{ env.WEB_PROJECT }} `
-          /p:Configuration=Release `
-          /p:DeployOnBuild=true `
-          /p:WebPublishMethod=FileSystem `
-          /p:DeleteExistingFiles=true `
-          /p:PublishDir="${{ env.PUBLISH_DIR }}\"
+  run: |
+    msbuild ${{ env.WEB_PROJECT }} `
+      /p:Configuration=Release `
+      /p:DeployOnBuild=true `
+      /p:WebPublishMethod=FileSystem `
+      /p:DeleteExistingFiles=true `
+      /p:PublishDir="$env:PUBLISH_DIR\"
 
     # 🔍 DEBUG (BẮT BUỘC – để bạn thấy publish thật)
-    - name: Verify publish output
-      run: |
-        echo "Publish folder content:"
-        dir ${{ env.PUBLISH_DIR }}
+  -name: Verify publish output
+  run: |
+    echo "Publish dir: $env:PUBLISH_DIR"
+    dir $env:PUBLISH_DIR
+
 
     # 🚀 DEPLOY
-    - name: Deploy to IIS
-      run: |
+  -name: Deploy to IIS
+  run: |
         if (!(Test-Path "${{ env.PUBLISH_DIR }}")) {
           Write-Error "Publish folder NOT FOUND"
           exit 1
@@ -54,5 +55,5 @@ jobs:
         Remove-Item "${{ env.IIS_DIR }}\*" -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item "${{ env.PUBLISH_DIR }}\*" "${{ env.IIS_DIR }}\" -Recurse -Force
 
-    - name: Restart IIS
-      run: iisreset
+  -name: Restart IIS
+  run: iisreset
