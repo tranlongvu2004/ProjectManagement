@@ -14,7 +14,7 @@ jobs:
 
     env:
       # ✅ ĐÚNG theo project bạn cung cấp
-      WEB_PROJECT: PorjectManagement/PorjectManagement.csproj
+      WEB_PROJECT: ProjectManagement/PorjectManagement.csproj
       PUBLISH_DIR: ${{ github.workspace }}\publish
       IIS_DIR: C:\Deploy\PorjectManagement
 
