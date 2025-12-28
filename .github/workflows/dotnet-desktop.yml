@@ -45,8 +45,8 @@ jobs:
 
 
     # 🚀 DEPLOY
-  -name: Deploy to IIS
-  run: |
+    -name: Deploy to IIS
+    run: |
         if (!(Test-Path "${{ env.PUBLISH_DIR }}")) {
           Write-Error "Publish folder NOT FOUND"
           exit 1
@@ -55,5 +55,5 @@ jobs:
         Remove-Item "${{ env.IIS_DIR }}\*" -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item "${{ env.PUBLISH_DIR }}\*" "${{ env.IIS_DIR }}\" -Recurse -Force
 
-  -name: Restart IIS
-  run: iisreset
+    -name: Restart IIS
+    run: iisreset
