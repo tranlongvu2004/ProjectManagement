@@ -1,15 +1,36 @@
-name: CI/CD ASP.NET MVC
+name: Deploy ASP.NET MVC
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
 
 jobs:
-  build:
+  deploy:
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
+
     - uses: microsoft/setup-msbuild@v2
-    - run: nuget restore PorjectManagement.sln
-    - run: msbuild PorjectManagement.sln /p:Configuration=Release
+
+    - name: Restore
+      run: nuget restore PorjectManagement.sln
+
+    - name: Build
+      run: msbuild PorjectManagement.sln /p:Configuration=Release
+
+    - name: Publish Web
+      run: |
+        msbuild PorjectManagement.Web/PorjectManagement.Web.csproj `
+          /p:DeployOnBuild=true `
+          /p:Configuration=Release `
+          /p:PublishDir=${{ github.workspace }}\publish\
+
+    - name: Deploy to IIS
+      run: |
+        Remove-Item "C:\Deploy\PorjectManagement\*" -Recurse -Force -ErrorAction SilentlyContinue
+        Copy-Item "${{ github.workspace }}\publish\*" "C:\Deploy\PorjectManagement\" -Recurse -Force
+
+    - name: Restart IIS
+      run: iisreset
