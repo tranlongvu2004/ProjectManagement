@@ -1,20 +1,17 @@
-name: CI/CD ASP.NET MVC
+name: CI/CD ASP.NET Core MVC
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
   pull_request:
-    branches:
-      - master
+    branches: [ master ]
 
 jobs:
   build-and-deploy:
     runs-on: windows-latest
 
     env:
-      # ✅ ĐÚNG theo project bạn cung cấp
-      WEB_PROJECT: PorjectManagement.csproj
+      PROJECT_FILE: PorjectManagement.csproj
       PUBLISH_DIR: ${{ github.workspace }}\publish
       IIS_DIR: C:\Deploy\ProjectManagement
 
@@ -22,42 +19,42 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
 
-    - name: Restore NuGet
-      run: nuget restore PorjectManagement.sln
+    - name: Restore dependencies
+      run: dotnet restore
 
-    - name: Build solution
-      run: msbuild PorjectManagement.sln /p:Configuration=Release
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
 
-    - name: List all csproj files
+    - name: Publish
       run: |
-        dir -Recurse *.csproj
+        if (Test-Path $env:PUBLISH_DIR) {
+          Remove-Item $env:PUBLISH_DIR -Recurse -Force
+        }
 
-    # 🔥 PUBLISH WEB MVC (BẮT BUỘC publish csproj)
-    - name: Publish Web MVC
-      run: |
-        msbuild $env:WEB_PROJECT `
-          /p:Configuration=Release `
-          /p:DeployOnBuild=true `
-          /p:WebPublishMethod=FileSystem `
-          /p:DeleteExistingFiles=true `
-          /p:PublishDir="$env:PUBLISH_DIR\"
+        dotnet publish $env:PROJECT_FILE `
+          -c Release `
+          -o "$env:PUBLISH_DIR"
 
-    # 🔍 VERIFY – để chắc chắn publish đã sinh file
     - name: Verify publish output
       run: |
         echo "Publish directory:"
         echo $env:PUBLISH_DIR
         dir $env:PUBLISH_DIR
 
-    # 🚀 DEPLOY TO IIS
     - name: Deploy to IIS
       run: |
         if (!(Test-Path $env:PUBLISH_DIR)) {
           Write-Error "Publish folder NOT FOUND"
           exit 1
+        }
+
+        if (!(Test-Path $env:IIS_DIR)) {
+          New-Item -ItemType Directory -Path $env:IIS_DIR
         }
 
         Remove-Item "$env:IIS_DIR\*" -Recurse -Force -ErrorAction SilentlyContinue
