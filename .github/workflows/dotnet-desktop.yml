@@ -14,9 +14,9 @@ jobs:
 
     env:
       # ✅ ĐÚNG theo project bạn cung cấp
-      WEB_PROJECT: ProjectManagement.csproj
+      WEB_PROJECT: PorjectManagement.csproj
       PUBLISH_DIR: ${{ github.workspace }}\publish
-      IIS_DIR: C:\Deploy\PorjectManagement
+      IIS_DIR: C:\Deploy\ProjectManagement
 
     steps:
     - name: Checkout source
