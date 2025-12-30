@@ -1,37 +1,64 @@
-name: Deploy ASP.NET MVC
+name: CI/CD ASP.NET Core MVC
 
 on:
   push:
-    branches: [master]
+    branches: [ master ]
   pull_request:
-    branches: [master]
+    branches: [ master ]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: windows-latest
 
+    env:
+      PROJECT_FILE: PorjectManagement.csproj
+      PUBLISH_DIR: ${{ github.workspace }}\publish
+      IIS_DIR: C:\Deploy\ProjectManagement
+
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout source
+      uses: actions/checkout@v4
 
-    - uses: microsoft/setup-msbuild@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
 
-    - name: Restore
-      run: nuget restore PorjectManagement.sln
+    - name: Restore dependencies
+      run: dotnet restore
 
     - name: Build
-      run: msbuild PorjectManagement.sln /p:Configuration=Release
+      run: dotnet build --configuration Release --no-restore
 
-    - name: Publish Web
+    - name: Publish
       run: |
-        msbuild PorjectManagement/PorjectManagement.csproj `
-          /p:DeployOnBuild=true `
-          /p:Configuration=Release `
-          /p:PublishDir=${{ github.workspace }}\publish\
+        if (Test-Path $env:PUBLISH_DIR) {
+          Remove-Item $env:PUBLISH_DIR -Recurse -Force
+        }
+
+        dotnet publish $env:PROJECT_FILE `
+          -c Release `
+          -o "$env:PUBLISH_DIR"
+
+    - name: Verify publish output
+      run: |
+        echo "Publish directory:"
+        echo $env:PUBLISH_DIR
+        dir $env:PUBLISH_DIR
 
     - name: Deploy to IIS
       run: |
-        Remove-Item "C:\Deploy\PorjectManagement\*" -Recurse -Force -ErrorAction SilentlyContinue
-        Copy-Item "${{ github.workspace }}\publish\*" "C:\Deploy\PorjectManagement\" -Recurse -Force
+        if (!(Test-Path $env:PUBLISH_DIR)) {
+          Write-Error "Publish folder NOT FOUND"
+          exit 1
+        }
+
+        if (!(Test-Path $env:IIS_DIR)) {
+          New-Item -ItemType Directory -Path $env:IIS_DIR
+        }
+
+        Remove-Item "$env:IIS_DIR\*" -Recurse -Force -ErrorAction SilentlyContinue
+        Copy-Item "$env:PUBLISH_DIR\*" "$env:IIS_DIR\" -Recurse -Force
 
     - name: Restart IIS
       run: iisreset
