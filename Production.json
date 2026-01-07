@@ -1,0 +1,23 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "MyCnn": "Server=(local);uid=sa;pwd=123;database=LabProjectManagement;TrustServerCertificate=True"
+  },
+  "Smtp": {
+    "Host": "smtp.gmail.com",
+    "Port": "587",
+    "Username": "tasklab.noreply@gmail.com",
+    "Password": "zhwywlnccylhvlte",
+    "From": "TaskLab <tasklab.noreply@gmail.com>"
+  },
+  "EnvironmentName": "Production",
+  "EnableEmail": true,
+  "EnableLog": false
+
+}

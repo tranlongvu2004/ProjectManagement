@@ -1,4 +1,5 @@
 ﻿@using PorjectManagement.ViewModels
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -275,7 +276,12 @@
                 <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
                     TaskLab
                 </a>
-
+                @if (!Env.IsProduction())
+                {
+                    <div style="background:red;color:white;padding:5px;text-align:center">
+                        ENV: @Env.EnvironmentName
+                    </div>
+                }
                 <!-- Mobile button -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
                         aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
